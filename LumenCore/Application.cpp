@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-// Emedded font
+// Embedded font
 #include "Roboto-Regular.embed"
 
 extern bool g_ApplicationRunning;

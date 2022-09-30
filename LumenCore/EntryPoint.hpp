@@ -17,7 +17,6 @@ namespace Lumen {
             app->Run();
             delete app;
         }
-
         return 0;
     }
 
