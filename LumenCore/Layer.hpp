@@ -6,12 +6,12 @@
 #define LUMEN_LAYER_HPP
 
 namespace Lumen {
-    class Layer
-    {
+    class Layer {
     public:
         virtual ~Layer() = default;
 
         virtual void OnAttach() {}
+
         virtual void OnDetach() {}
 
         virtual void OnUIRender() {}

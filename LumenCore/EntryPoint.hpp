@@ -5,22 +5,21 @@
 #ifndef LUMEN_ENTRYPOINT_HPP
 #define LUMEN_ENTRYPOINT_HPP
 
-extern Lumen::Application* Lumen::CreateApplication(int argc, char** argv);
+extern Lumen::Application *Lumen::CreateApplication(int argc, char **argv);
+
 bool g_ApplicationRunning = true;
 
 namespace Lumen {
 
-	int Main(int argc, char** argv)
-	{
-		while (g_ApplicationRunning)
-		{
-			Lumen::Application* app = Lumen::CreateApplication(argc, argv);
-			app->Run();
-			delete app;
-		}
+    int Main(int argc, char **argv) {
+        while (g_ApplicationRunning) {
+            Lumen::Application *app = Lumen::CreateApplication(argc, argv);
+            app->Run();
+            delete app;
+        }
 
-		return 0;
-	}
+        return 0;
+    }
 
 }
 
@@ -30,14 +29,13 @@ namespace Lumen {
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
-	return Lumen::Main(__argc, __argv);
+    return Lumen::Main(__argc, __argv);
 }
 
 #else
 
-int main(int argc, char** argv)
-{
-	return Lumen::Main(argc, argv);
+int main(int argc, char **argv) {
+    return Lumen::Main(argc, argv);
 }
 
 #endif // WL_DIST
