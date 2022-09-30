@@ -15,6 +15,8 @@ namespace Lumen {
         virtual void OnDetach() {}
 
         virtual void OnUIRender() {}
+
+        virtual void OnUpdate(float ts) {}
     };
 }
 

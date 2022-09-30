@@ -17,6 +17,6 @@ add_executable(Lumen Lumen/LumenApp.cpp
         LumenCore/Layer.hpp
         LumenCore/Random.cpp
         LumenCore/Random.hpp
-        LumenCore/Timer.hpp)
+        LumenCore/Timer.hpp Lumen/LumenRenderer/Camera.cpp Lumen/LumenRenderer/Camera.hpp LumenCore/Inputs/Input.cpp LumenCore/Inputs/Input.hpp LumenCore/Inputs/KeyCodes.hpp Lumen/LumenRenderer/Renderer.cpp Lumen/LumenRenderer/Renderer.hpp)
 
 target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm)
