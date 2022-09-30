@@ -8,7 +8,7 @@ find_package(Vulkan REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-add_executable(Lumen main.cpp
+add_executable(Lumen Lumen/LumenApp.cpp
         LumenCore/Application.cpp
         LumenCore/Application.hpp
         LumenCore/EntryPoint.hpp

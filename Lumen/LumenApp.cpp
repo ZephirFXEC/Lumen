@@ -1,6 +1,6 @@
-#include "LumenCore/Application.hpp"
-#include "LumenCore/EntryPoint.hpp"
-#include "LumenCore/Image.hpp"
+#include "../LumenCore/Application.hpp"
+#include "../LumenCore/EntryPoint.hpp"
+#include "../LumenCore/Image.hpp"
 
 class ExampleLayer : public Lumen::Layer {
 public:
@@ -15,9 +15,9 @@ public:
 
 Lumen::Application *Lumen::CreateApplication(int argc, char **argv) {
     Lumen::ApplicationSpecification spec;
-    spec.Name = "Walnut Example";
+    spec.Name = "Lumen";
 
-    Lumen::Application *app = new Lumen::Application(spec);
+    auto *app = new Lumen::Application(spec);
     app->PushLayer<ExampleLayer>();
     app->SetMenubarCallback([app]() {
         if (ImGui::BeginMenu("File")) {
