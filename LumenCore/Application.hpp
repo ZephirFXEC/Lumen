@@ -28,16 +28,23 @@ namespace Lumen {
     class Application {
     public:
         explicit Application(const ApplicationSpecification &applicationSpecification = ApplicationSpecification());
+
         ~Application();
-        static Application& Get();
+
+        static Application &Get();
+
         void Run();
+
         void Close();
+
         void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
+
         float GetTime();
-        GLFWwindow* GetWindowHandle() const { return m_WindowHandle; }
+
+        GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
 
 
-        template<typename T>
+        template <typename T>
         void PushLayer() {
             static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
             m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
@@ -50,20 +57,25 @@ namespace Lumen {
 
 
         static VkInstance GetInstance();
+
         static VkPhysicalDevice GetPhysicalDevice();
+
         static VkDevice GetDevice();
+
         static VkCommandBuffer GetCommandBuffer(bool begin);
 
         static void FlushCommandBuffer(VkCommandBuffer commandBuffer);
+
         static void SubmitResourceFree(std::function<void()> &&func);
 
     private:
         void Init();
+
         void Shutdown();
 
     private:
         ApplicationSpecification m_Specification;
-        GLFWwindow* m_WindowHandle = nullptr;
+        GLFWwindow *m_WindowHandle = nullptr;
         bool m_Running = false;
 
         float m_TimeStep = 0.0f;

@@ -9,8 +9,7 @@
 #include <iostream>
 
 namespace Lumen {
-    typedef enum class KeyCode : uint16_t
-    {
+    typedef enum class KeyCode : uint16_t {
         // From glfw3.h
         Space = 32,
         Apostrophe = 39, /* ' */
@@ -144,23 +143,20 @@ namespace Lumen {
         Menu = 348
     } Key;
 
-    enum class KeyState
-    {
+    enum class KeyState {
         None = -1,
         Pressed,
         Held,
         Released
     };
 
-    enum class CursorMode
-    {
+    enum class CursorMode {
         Normal = 0,
         Hidden = 1,
         Locked = 2
     };
 
-    typedef enum class MouseButton : uint16_t
-    {
+    typedef enum class MouseButton : uint16_t {
         Button0 = 0,
         Button1 = 1,
         Button2 = 2,
@@ -173,14 +169,12 @@ namespace Lumen {
     } Button;
 
 
-    inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
-    {
+    inline std::ostream &operator<<(std::ostream &os, KeyCode keyCode) {
         os << static_cast<int32_t>(keyCode);
         return os;
     }
 
-    inline std::ostream& operator<<(std::ostream& os, MouseButton button)
-    {
+    inline std::ostream &operator<<(std::ostream &os, MouseButton button) {
         os << static_cast<int32_t>(button);
         return os;
     }

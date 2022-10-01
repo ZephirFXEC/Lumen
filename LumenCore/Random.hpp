@@ -29,11 +29,11 @@ namespace Lumen {
         }
 
         static glm::vec3 Vec3() {
-            return {Float(), Float(), Float()};
+            return { Float(), Float(), Float() };
         }
 
         static glm::vec3 Vec3(float min, float max) {
-            return {Float() * (max - min) + min, Float() * (max - min) + min, Float() * (max - min) + min};
+            return { Float() * (max - min) + min, Float() * (max - min) + min, Float() * (max - min) + min };
         }
 
         static glm::vec3 InUnitSphere() {

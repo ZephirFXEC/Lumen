@@ -13,6 +13,7 @@ namespace Lumen {
     class Input {
     public:
         static bool IsKeyDown(KeyCode keycode);
+
         static bool IsMouseButtonDown(MouseButton button);
 
         static glm::vec2 GetMousePosition();

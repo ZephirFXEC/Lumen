@@ -41,22 +41,22 @@ namespace LumenRender {
         void RecalculateRayDirections();
 
     private:
-        glm::mat4 m_Projection{1.0f};
-        glm::mat4 m_View{1.0f};
-        glm::mat4 m_InverseProjection{1.0f};
-        glm::mat4 m_InverseView{1.0f};
+        glm::mat4 m_Projection{ 1.0f };
+        glm::mat4 m_View{ 1.0f };
+        glm::mat4 m_InverseProjection{ 1.0f };
+        glm::mat4 m_InverseView{ 1.0f };
 
         float m_VerticalFOV = 45.0f;
         float m_NearClip = 0.1f;
         float m_FarClip = 100.0f;
 
-        glm::vec3 m_Position{0.0f, 0.0f, 0.0f};
-        glm::vec3 m_ForwardDirection{0.0f, 0.0f, 0.0f};
+        glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
+        glm::vec3 m_ForwardDirection{ 0.0f, 0.0f, 0.0f };
 
         // Cached ray directions
         std::vector<glm::vec3> m_RayDirections;
 
-        glm::vec2 m_LastMousePosition{0.0f, 0.0f};
+        glm::vec2 m_LastMousePosition{ 0.0f, 0.0f };
 
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
     };
