@@ -12,6 +12,15 @@
 #include "stb_image.h"
 
 namespace Lumen {
+
+    void check_vk_result(VkResult err) {
+        if (err == 0)
+            return;
+        fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+        if (err < 0)
+            abort();
+    }
+
     namespace Utils {
 
         static uint32_t GetVulkanMemoryType(VkMemoryPropertyFlags properties, uint32_t type_bits) {
@@ -31,6 +40,8 @@ namespace Lumen {
                     return 4;
                 case ImageFormat::RGBA32F:
                     return 16;
+                case ImageFormat::None:
+                    break;
             }
             return 0;
         }
@@ -41,6 +52,8 @@ namespace Lumen {
                     return VK_FORMAT_R8G8B8A8_UNORM;
                 case ImageFormat::RGBA32F:
                     return VK_FORMAT_R32G32B32A32_SFLOAT;
+                case ImageFormat::None:
+                    break;
             }
             return (VkFormat) 0;
         }
@@ -102,6 +115,7 @@ namespace Lumen {
             info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             err = vkCreateImage(device, &info, nullptr, &m_Image);
+            check_vk_result(err);
             VkMemoryRequirements req;
             vkGetImageMemoryRequirements(device, m_Image, &req);
             VkMemoryAllocateInfo alloc_info = {};
@@ -110,7 +124,9 @@ namespace Lumen {
             alloc_info.memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                                                                     req.memoryTypeBits);
             err = vkAllocateMemory(device, &alloc_info, nullptr, &m_Memory);
+            check_vk_result(err);
             err = vkBindImageMemory(device, m_Image, m_Memory, 0);
+            check_vk_result(err);
         }
 
         // Create the Image View:
@@ -124,6 +140,7 @@ namespace Lumen {
             info.subresourceRange.levelCount = 1;
             info.subresourceRange.layerCount = 1;
             err = vkCreateImageView(device, &info, nullptr, &m_ImageView);
+            check_vk_result(err);
         }
 
         // Create sampler:
@@ -140,6 +157,7 @@ namespace Lumen {
             info.maxLod = 1000;
             info.maxAnisotropy = 1.0f;
             VkResult err = vkCreateSampler(device, &info, nullptr, &m_Sampler);
+            check_vk_result(err);
         }
 
         // Create the Descriptor Set:
@@ -184,6 +202,7 @@ namespace Lumen {
                 buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
                 buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                 err = vkCreateBuffer(device, &buffer_info, nullptr, &m_StagingBuffer);
+                check_vk_result(err);
                 VkMemoryRequirements req;
                 vkGetBufferMemoryRequirements(device, m_StagingBuffer, &req);
                 m_AlignedSize = req.size;
@@ -193,21 +212,25 @@ namespace Lumen {
                 alloc_info.memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                                                         req.memoryTypeBits);
                 err = vkAllocateMemory(device, &alloc_info, nullptr, &m_StagingBufferMemory);
+                check_vk_result(err);
                 err = vkBindBufferMemory(device, m_StagingBuffer, m_StagingBufferMemory, 0);
+                check_vk_result(err);
             }
 
         }
 
         // Upload to Buffer
         {
-            char *map = NULL;
+            char *map = nullptr;
             err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, (void **) (&map));
+            check_vk_result(err);
             memcpy(map, data, upload_size);
             VkMappedMemoryRange range[1] = {};
             range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
             range[0].memory = m_StagingBufferMemory;
             range[0].size = m_AlignedSize;
             err = vkFlushMappedMemoryRanges(device, 1, range);
+            check_vk_result(err);
             vkUnmapMemory(device, m_StagingBufferMemory);
         }
 
@@ -228,7 +251,7 @@ namespace Lumen {
             copy_barrier.subresourceRange.levelCount = 1;
             copy_barrier.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL,
-                                 0, NULL, 1, &copy_barrier);
+                                 0, nullptr, 1, &copy_barrier);
 
             VkBufferImageCopy region = {};
             region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -252,7 +275,7 @@ namespace Lumen {
             use_barrier.subresourceRange.levelCount = 1;
             use_barrier.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                 0, 0, NULL, 0, NULL, 1, &use_barrier);
+                                 0, 0, nullptr, 0, nullptr, 1, &use_barrier);
 
             Application::FlushCommandBuffer(command_buffer);
         }
@@ -263,6 +286,7 @@ namespace Lumen {
             return;
 
         // TODO: max size?
+
 
         m_Width = width;
         m_Height = height;

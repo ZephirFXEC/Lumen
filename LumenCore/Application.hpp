@@ -27,7 +27,7 @@ namespace Lumen {
 
     class Application {
     public:
-        explicit Application(const ApplicationSpecification &applicationSpecification = ApplicationSpecification());
+        explicit Application(ApplicationSpecification applicationSpecification = ApplicationSpecification());
 
         ~Application();
 

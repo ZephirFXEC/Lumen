@@ -3,6 +3,9 @@
 //
 
 #include "Renderer.hpp"
+#include <glm/glm.hpp>
+#include <tbb/tbb.h>
+#include <tbb/parallel_for.h>
 
 namespace LumenRender {
 
@@ -21,15 +24,36 @@ namespace LumenRender {
         RayDesc ray;
         ray.Origin = camera.GetPosition();
 
+#if 0
+        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
+                          [&](const tbb::blocked_range2d<uint32_t>& range) {
+
+                              for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
+                                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
+
+                                      ray.Direction = camera.GetRayDirections()[y * m_Image->GetWidth() + x];
+                                      glm::vec4 color = glm::clamp(TraceRay(ray), 0.0f, 1.0f);
+                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+
+
+                                  }
+                              }
+                          });
+
+#else
+
         for(int y = 0; y < m_Image->GetHeight(); y++) {
             for(int x = 0; x < m_Image->GetWidth(); x++) {
 
                 ray.Direction = camera.GetRayDirections()[y * m_Image->GetWidth() + x];
                 glm::vec4 color = glm::clamp(TraceRay(ray), 0.0f, 1.0f);
+
                 m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
 
             }
         }
+
+#endif
         m_Image->SetData(m_ImageData);
     }
 
@@ -64,14 +88,25 @@ namespace LumenRender {
                 return { 0.0f, 0.0f, 0.0f, 1.0f };
             }
 
-            float t1 = (-b + glm::sqrt(discriminant)) / (2.0f * a);
-            float t2 = (-b - glm::sqrt(discriminant)) / (2.0f * a);
+            float t0 = (-b - sqrt(discriminant)) / (2.0f * a);
+            float t1 = (-b + sqrt(discriminant)) / (2.0f * a);
 
-            glm::vec3 HitPoint = ray.Origin + ray.Direction * glm::min(t1, t2);
+            if(t0 > t1) {
+                std::swap(t0, t1);
+            }
+
+            if(t0 < 0.0f) {
+                t0 = t1;
+                if(t0 < 0.0f) {
+                    return { 0.0f, 0.0f, 0.0f, 1.0f };
+                }
+            }
+
+            glm::vec3 HitPoint = ray.Origin + ray.Direction * t0;
             glm::vec3 Normal = glm::normalize(HitPoint);
 
             glm::vec3 LightDir = glm::normalize(glm::vec3(-1.0f));
-            float Diffuse = glm::max(glm::dot(Normal, -LightDir), 0.0f);
+            float Diffuse = max(glm::dot(Normal, -LightDir), 0.0f);
 
             glm::vec3 Color = { 1.0f, 0.0f, 1.0f };
             return {Color * Diffuse, 1.0f};

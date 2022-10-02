@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vulkan/vulkan.h>
+#include "Application.hpp"
 
 namespace Lumen {
 

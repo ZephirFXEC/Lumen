@@ -11,9 +11,9 @@ namespace LumenRender {
 
     struct RayDesc { // Ray descriptor organized like this for better memory alignment
         glm::vec3 Origin{};
-        float Min{};
+        float Min = 0.0f;
         glm::vec3 Direction{};
-        float Max{};
+        float Max = std::numeric_limits<float>::max();
     };
 
 }

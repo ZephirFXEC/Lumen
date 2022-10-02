@@ -20,6 +20,7 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 #include <iostream>
+#include <utility>
 
 // Embedded font
 #include "Roboto-Regular.embed"
@@ -129,11 +130,11 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
     // Select GPU
     {
         uint32_t gpu_count;
-        err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, NULL);
+        err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, nullptr);
         check_vk_result(err);
         IM_ASSERT(gpu_count > 0);
 
-        VkPhysicalDevice *gpus = (VkPhysicalDevice *) malloc(sizeof(VkPhysicalDevice) * gpu_count);
+        auto *gpus = (VkPhysicalDevice *) malloc(sizeof(VkPhysicalDevice) * gpu_count);
         err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, gpus);
         check_vk_result(err);
 
@@ -157,8 +158,8 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
     // Select graphics queue family
     {
         uint32_t count;
-        vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, NULL);
-        VkQueueFamilyProperties *queues = (VkQueueFamilyProperties *) malloc(sizeof(VkQueueFamilyProperties) * count);
+        vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, nullptr);
+        auto *queues = (VkQueueFamilyProperties *) malloc(sizeof(VkQueueFamilyProperties) * count);
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, queues);
         for (uint32_t i = 0; i < count; i++)
             if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
@@ -306,7 +307,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
         // Free command buffers allocated by Application::GetCommandBuffer
         // These use g_MainWindowData.FrameIndex and not s_CurrentFrameIndex because they're tied to the swapchain image index
         auto &allocatedCommandBuffers = s_AllocatedCommandBuffers[wd->FrameIndex];
-        if (allocatedCommandBuffers.size() > 0) {
+        if (!allocatedCommandBuffers.empty()) {
             vkFreeCommandBuffers(g_Device, fd->CommandPool, (uint32_t) allocatedCommandBuffers.size(),
                                  allocatedCommandBuffers.data());
             allocatedCommandBuffers.clear();
@@ -383,8 +384,8 @@ static void glfw_error_callback(int error, const char *description) {
 
 namespace Lumen {
 
-    Application::Application(const ApplicationSpecification &specification)
-            : m_Specification(specification) {
+    Application::Application(ApplicationSpecification specification)
+            : m_Specification(std::move(specification)) {
         s_Instance = this;
 
         Init();

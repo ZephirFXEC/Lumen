@@ -7,6 +7,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(tbb CONFIG REQUIRED)
 
 add_executable(Lumen Lumen/LumenApp.cpp
         LumenCore/Application.cpp
@@ -26,4 +27,4 @@ add_executable(Lumen Lumen/LumenApp.cpp
         Lumen/LumenRenderer/Renderer.cpp
         Lumen/LumenRenderer/Renderer.hpp Lumen/LumenRenderer/Ray.hpp)
 
-target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm)
+target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
