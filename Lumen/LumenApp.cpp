@@ -9,7 +9,20 @@
 class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
-    : m_Camera(45.0f, 0.1f, 100.0f) {}
+    : m_Camera(45.0f, 0.1f, 100.0f) {
+
+        //m_Scene.Add(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0,1,0)));
+
+       for(int i = 0; i<20; i++) {
+            float height = Lumen::Random::Float()/4;
+            m_Scene.Add(new LumenRender::Sphere(glm::vec3(Lumen::Random::Float()*5, -1 + height, Lumen::Random::Float()*5), height));
+        }
+
+
+       //m_Scene.Add(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f));
+
+
+    }
 
     void OnUpdate(float ts) override {
         m_Camera.OnUpdate(ts);
@@ -20,11 +33,28 @@ public:
         embraceTheDarkness();
 
         ImGui::Begin("Property");
+        ImGui::Checkbox("Pause", &m_toggleRender);
         if (ImGui::Button("Render")) {
             Render();
         }
-
         ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
+        ImGui::End();
+
+        ImGui::Begin("Objects");
+        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
+
+        ImGui::BeginTable("Objects", 2);
+        ImGui::TableSetupColumn("Object");
+        ImGui::TableSetupColumn("Index");
+        ImGui::TableHeadersRow();
+        for (auto& object : m_Scene.GetObjects()) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%s", object->GetName().c_str());
+            ImGui::TableSetColumnIndex(1);
+            ImGui::Text("%d", object->m_Index);
+        }
+        ImGui::EndTable();
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
@@ -41,7 +71,10 @@ public:
         ImGui::End();
         ImGui::PopStyleVar();
 
-        Render();
+        //toggle a button to pause the render
+        if (!m_toggleRender) {
+            Render();
+        }
     }
 
     static void embraceTheDarkness() {
@@ -132,8 +165,7 @@ public:
         m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
         m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
 
-        m_Renderer.Render(m_Camera);
-
+        m_Renderer.Render(m_Camera, m_Scene);
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
@@ -141,9 +173,11 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
+    LumenRender::Scene m_Scene;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};
+    bool m_toggleRender{};
 };
 
 Lumen::Application *Lumen::CreateApplication(int argc, char **argv) {
