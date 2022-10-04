@@ -20,11 +20,11 @@ namespace LumenRender {
 
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
 
-        m_ActiveScene = &scene;
+        m_ActiveScene =  scene;
         m_ActiveCamera = &camera;
 
 
-#if 1
+#if 0
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t>& range) {
@@ -73,17 +73,14 @@ namespace LumenRender {
     }
 
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
-        //check if ray hit any object and return the closest hit
-        HitRecords hitRecords{};
-        hitRecords.m_T = std::numeric_limits<float>::max();
-        for (const auto& object : m_ActiveScene->GetObjects()) {
-            HitRecords temp{};
-            if (object->Hit(ray, temp) && temp.m_T < hitRecords.m_T) {
-                    hitRecords = temp;
-                }
-            }
-        return ClosestHit(ray, hitRecords.m_T, hitRecords.m_Index);
+        HitRecords rec{};
+        if (m_ActiveScene->Hit(ray, rec)) {
+            return ClosestHit(ray, rec.m_T, rec.m_Index);
+        } else {
+            return Miss(ray);
+        }
     }
+
 
     glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y) {
         Ray ray;

@@ -14,7 +14,7 @@
 
 namespace LumenRender {
 
-    class Scene {
+    class Scene : public Object {
     public:
         Scene() = default;
 
@@ -31,6 +31,14 @@ namespace LumenRender {
         }
 
         inline const std::vector<Object*>& GetObjects() const { return m_Objects; }
+
+        bool Hit(const Ray& ray, HitRecords& record) override;
+
+    private:
+        [[nodiscard]] Types GetType() const override { return Types::Scene; }
+        [[nodiscard]] std::string GetName() const override { return "Scene"; }
+        [[nodiscard]] HitRecords GetHitRecords() const override { return {}; }
+
 
     private:
         std::vector<Object*> m_Objects;

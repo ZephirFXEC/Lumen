@@ -10,18 +10,7 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
-
-        //m_Scene.Add(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0,1,0)));
-
-       for(int i = 0; i<20; i++) {
-            float height = Lumen::Random::Float()/4;
-            m_Scene.Add(new LumenRender::Sphere(glm::vec3(Lumen::Random::Float()*5, -1 + height, Lumen::Random::Float()*5), height));
-        }
-
-
-       //m_Scene.Add(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f));
-
-
+        m_Scene.Add(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -2.0f), 1.0f));
     }
 
     void OnUpdate(float ts) override {
@@ -66,7 +55,7 @@ public:
         auto image = m_Renderer.GetFinalImage();
 
         if (image) {
-            ImGui::Image(image->GetDescriptorSet(), { (float) image->GetWidth(), (float) image->GetHeight() }, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(image->GetDescriptorSet(), { (float) image->GetWidth(), (float) image->GetHeight() }, {0, 1}, {1, 0});
         }
         ImGui::End();
         ImGui::PopStyleVar();
