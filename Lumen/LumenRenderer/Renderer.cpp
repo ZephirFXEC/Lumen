@@ -4,7 +4,8 @@
 
 #include <tbb/tbb.h>
 #include "Renderer.hpp"
-#include "Scene/Object.hpp"
+#include <glm/gtx/intersect.hpp>
+#include <glm/gtx/norm.hpp>
 
 namespace LumenRender {
 
@@ -18,9 +19,8 @@ namespace LumenRender {
         }
     }
 
-    void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
+    void Renderer::Render(const LumenRender::Camera &camera) {
 
-        m_ActiveScene =  scene;
         m_ActiveCamera = &camera;
 
 
@@ -73,62 +73,55 @@ namespace LumenRender {
     }
 
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
-        HitRecords rec{};
-        if (m_ActiveScene->Hit(ray, rec)) {
-            return ClosestHit(ray, rec.m_T, rec.m_Index);
-        } else {
-            return Miss(ray);
+
+        glm::vec3 oc = ray.Origin;
+        auto half_b = glm::dot(oc, ray.Direction);
+        auto c = glm::length2(oc) - 1;
+
+        auto discriminant = half_b*half_b - c;
+        if (discriminant < 0) return {};
+        auto sqrtd = glm::sqrt(discriminant);
+
+        // Find the nearest root that lies in the acceptable range.
+        auto root = (-half_b - sqrtd);
+        if (root < 0.001 || std::numeric_limits<float>::max() < root) {
+            root = (-half_b + sqrtd);
+            if (root < 0.001 || std::numeric_limits<float>::max() < root)
+                return {};
         }
+
+        HitRecords rec{};
+        rec.m_T = root;
+        rec.m_Position = ray.At(rec.m_T);
+        rec.m_Normal = glm::normalize(rec.m_Position);
+
+        return rec;
+
     }
 
 
     glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y) {
+
         Ray ray;
         ray.Origin = m_ActiveCamera->GetPosition();
         ray.Direction = m_ActiveCamera->GetRayDirections()[y * m_Image->GetWidth() + x];
 
-        glm::vec3 color(0.0f);
-        float multiplier = 1.0f;
+        HitRecords payload = TraceRay(ray);
 
-        int bounces = 1;
-        for (int i = 0; i < bounces; i++)
-        {
-            HitRecords payload = TraceRay(ray);
-            if (payload.m_T < 0.0f)
-            {
-                glm::vec3 skyColor = {0.0f, 0.0f, 0.0f};
-                color += skyColor * multiplier;
-                break;
-            }
+        glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
 
-            glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
-            float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
+        float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
 
-            glm::vec3 sphereColor = {1.0f, 0.2f, 0.3f};
-            sphereColor *= lightIntensity;
-            color += sphereColor * multiplier;
+        glm::vec3 sphereColor = { 1.0f, 0.2f, 0.3f };
 
-            multiplier *= 0.7f;
+        sphereColor *= lightIntensity;
 
-            ray.Origin = payload.m_Position + payload.m_Normal * 0.0001f;
-            ray.Direction = glm::reflect(ray.Direction, payload.m_Normal);
-        }
-
-        return {color, 1.0f};
+        return { sphereColor, 1.0f };
     }
 
     HitRecords Renderer::ClosestHit(const Ray &ray, float dist, uint32_t ObjectID) {
-        HitRecords payload{};
-        const auto& closestSphere = m_ActiveScene->GetObjects()[ObjectID]->GetHitRecords();
 
-        payload.m_T = dist;
-        glm::vec3 origin = ray.Origin - closestSphere.m_Position;
-        payload.m_Position = ray.At(dist);
-        payload.m_Normal = glm::normalize(payload.m_Position);
-
-        payload.m_Position += closestSphere.m_Position;
-
-        return payload;
+        return {};
     }
 
 

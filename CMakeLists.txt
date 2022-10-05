@@ -29,10 +29,7 @@ if(WIN32)
             Lumen/LumenRenderer/Renderer.cpp
             Lumen/LumenRenderer/Renderer.hpp
             Lumen/LumenRenderer/Ray.hpp
-            Lumen/LumenRenderer/Scene/Scene.cpp
-            Lumen/LumenRenderer/Scene/Scene.hpp
-            Lumen/LumenRenderer/Scene/Object.cpp
-            Lumen/LumenRenderer/Scene/Object.hpp)
+            )
 
     target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui TBB::tbb glm::glm)
 endif()

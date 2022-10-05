@@ -10,8 +10,6 @@
 
 #include "Camera.hpp"
 #include "Ray.hpp"
-#include "Scene/Scene.hpp"
-
 #include <memory>
 #include <glm/glm.hpp>
 
@@ -22,14 +20,14 @@ namespace LumenRender {
     public:
         Renderer() = default;
 
-        void Render(const LumenRender::Camera& camera, const LumenRender::Scene& scene);
+        void Render(const LumenRender::Camera& camera);
 
         void OnResize(uint32_t width, uint32_t height);
 
         std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
-        HitRecords TraceRay(const LumenRender::Ray& ray);
+        static HitRecords TraceRay(const LumenRender::Ray& ray);
         HitRecords ClosestHit(const LumenRender::Ray& ray, float dist, uint32_t ObjectID);
         static HitRecords Miss(const LumenRender::Ray& ray);
 
@@ -38,7 +36,6 @@ namespace LumenRender {
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
-        Scene* m_ActiveScene = nullptr;
         const Camera* m_ActiveCamera = nullptr;
 
         uint32_t *m_ImageData = nullptr;

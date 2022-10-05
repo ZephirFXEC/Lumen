@@ -10,7 +10,6 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
-        m_Scene.Add(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -2.0f), 1.0f));
     }
 
     void OnUpdate(float ts) override {
@@ -29,8 +28,9 @@ public:
         ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
         ImGui::End();
 
+        /*
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
+        ImGui::Text("Objects : %llu", 0);
 
         ImGui::BeginTable("Objects", 2);
         ImGui::TableSetupColumn("Object");
@@ -45,6 +45,7 @@ public:
         }
         ImGui::EndTable();
         ImGui::End();
+        */
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
@@ -154,7 +155,7 @@ public:
         m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
         m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
 
-        m_Renderer.Render(m_Camera, m_Scene);
+        m_Renderer.Render(m_Camera);
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
@@ -162,7 +163,6 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
-    LumenRender::Scene m_Scene;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};
