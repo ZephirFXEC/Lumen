@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 
+/// @brief 
 namespace LumenRender {
 
     struct HitRecords {

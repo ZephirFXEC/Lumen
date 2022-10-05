@@ -4,7 +4,9 @@ project(Lumen)
 set(CMAKE_CXX_STANDARD 20)
 
 if(WIN32)
+
     set(CMAKE_TOOLCHAIN_FILE "F:/repos/vcpkg/scripts/buildsystems/vcpkg.cmake")
+
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Vulkan REQUIRED)
     find_package(imgui CONFIG REQUIRED)
