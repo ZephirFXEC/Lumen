@@ -23,7 +23,7 @@ namespace LumenRender {
     public:
         Renderer() = default;
 
-        void Render(const LumenRender::Camera& camera,  const std::unordered_map<uint32_t, Object *> &objects);
+        void Render(const LumenRender::Camera& camera,  const Triangle &objects);
 
         void OnResize(uint32_t width, uint32_t height);
 
@@ -39,7 +39,7 @@ namespace LumenRender {
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
-        const std::unordered_map<uint32_t, Object*>* m_Objects = {};
+        const Triangle* m_Objects = {};
         const Camera* m_ActiveCamera = nullptr;
 
         uint32_t *m_ImageData = nullptr;

@@ -9,39 +9,70 @@
 #define M_PI 3.14159265358979323846
 #define M_PI_2 6.28318530717958647692
 
+#define EPSILON 0.000001
+#define CROSS(dest,v1,v2) \
+          dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
+          dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
+          dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
+#define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
+#define SUB(dest,v1,v2) \
+          dest[0]=v1[0]-v2[0]; \
+          dest[1]=v1[1]-v2[1]; \
+          dest[2]=v1[2]-v2[2];
+
 
 namespace LumenRender {
 
 
-    bool TriangleIntersect(const Ray &ray, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, HitRecords &hit) {
+    bool TriangleIntersect(const Ray &ray, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float *u, float *v, float *t) {
+        double edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
+        double det,inv_det;
 
-        const glm::vec3& v0v1 = v1 - v0;
-        const glm::vec3& v0v2 = v2 - v0;
+        /* find vectors for two edges sharing vert0 */
+        SUB(edge1, v1, v0);
+        SUB(edge2, v2, v0);
 
-        glm::vec3 pvec = glm::cross(ray.Direction, v0v2);
+        /* begin calculating determinant - also used to calculate U parameter */
+        CROSS(pvec, ray.Direction, edge2);
 
-        float u, v, t;
+        /* if determinant is near zero, ray lies in plane of triangle */
+        det = DOT(edge1, pvec);
 
-        float det = glm::dot(v0v1, pvec);
+        /* calculate distance from vert0 to ray origin */
+        SUB(tvec, ray.Origin, v0);
+        inv_det = 1.0 / det;
 
-        // ray and triangle are parallel if det is close to 0
-        if (fabs(det) < 0.000001) return false;
+        CROSS(qvec, tvec, edge1);
 
-        float invDet = 1 / det;
+        if (det > EPSILON)
+        {
+            *u = DOT(tvec, pvec);
+            if (*u < 0.0 || *u > det)
+                return false;
 
-        glm::vec3 tvec = ray.Origin - v0;
-        u = glm::dot(tvec, pvec) * invDet;
-        if (u < 0 || u > 1) return false;
+            /* calculate V parameter and test bounds */
+            *v = DOT(ray.Direction, qvec);
+            if (*v < 0.0 || *u + *v > det)
+                return false;
 
-        glm::vec3 qvec = glm::cross(tvec, v0v1);
-        v = glm::dot(qvec, ray.Direction) * invDet;
-        if (v < 0 || u + v > 1) return false;
+        }
+        else if(det < -EPSILON)
+        {
+            /* calculate U parameter and test bounds */
+            *u = DOT(tvec, pvec);
+            if (*u > 0.0 || *u < det)
+                return 0;
 
-        t = glm::dot(qvec, v0v2) * invDet;
+            /* calculate V parameter and test bounds */
+            *v = DOT(ray.Direction, qvec) ;
+            if (*v > 0.0 || *u + *v < det)
+                return false;
+        }
+        else return false;  /* ray is parallell to the plane of the triangle */
 
-        hit.m_T = t;
-        hit.m_Position = ray.At(t);
-        hit.m_Normal = glm::normalize(glm::cross(v0v1, v0v2));
+        *t = DOT(edge2, qvec) * inv_det;
+        (*u) *= inv_det;
+        (*v) *= inv_det;
 
         return true;
     }
@@ -110,11 +141,14 @@ namespace LumenRender {
             const glm::vec3 &v1 = P[trisIndex[j + 1]];
             const glm::vec3 &v2 = P[trisIndex[j + 2]];
 
-            if (TriangleIntersect(ray, v0, v1, v2, rec)) {
+            float u, v, t;
+
+            if (TriangleIntersect(ray, v0, v1, v2, &u, &v, &t)) {
+                rec.m_T = t;
+                rec.m_Position = ray.At(rec.m_T);
+                hitSomething = true;
                 if (rec.m_T < hit.m_T) {
                     hit = rec;
-                    hit.m_Normal = N[j];
-                    hitSomething = true;
                 }
             }
         }
@@ -192,4 +226,13 @@ namespace LumenRender {
         return new TriangleMesh(npolys, faceIndex, vertsIndex, P, N, st);
     }
 
+    bool Triangle::Intersect(const Ray &ray, HitRecords &hit) const {
+        float u, v, t;
+        if (TriangleIntersect(ray, m_Vertices[0], m_Vertices[1], m_Vertices[2], &u, &v, &t)) {
+            hit.m_T = t;
+            hit.m_Position = ray.At(hit.m_T);
+            return true;
+        }
+        return false;
+    }
 } // LumenRender

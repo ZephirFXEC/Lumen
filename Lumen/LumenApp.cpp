@@ -13,7 +13,8 @@ public:
 
 
         LumenRender::TriangleMesh *mesh = LumenRender::generatePolySphere(0.2f, 5);
-        m_Objects.insert({0, mesh});
+        auto *tri = new LumenRender::Triangle({-1, 0, 0}, {0, 1, 0}, {1, 0, 0});
+        m_Objects = *new LumenRender::Triangle(*tri);
 
 
 
@@ -38,7 +39,7 @@ public:
 
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Objects.size());
+        //ImGui::Text("Objects : %llu", m_Objects.size());
 /*
         ImGui::BeginTable("Objects", 2);
         ImGui::TableSetupColumn("Object");
@@ -172,7 +173,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
-    std::unordered_map<uint32_t, LumenRender::Object*> m_Objects;
+    LumenRender::Triangle m_Objects;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

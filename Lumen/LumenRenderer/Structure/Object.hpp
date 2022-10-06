@@ -14,6 +14,10 @@
 
 namespace LumenRender {
 
+    struct alignas(16) Vertex {
+        float x, y, z;
+    };
+
 
     class Object {
     public:
@@ -27,6 +31,17 @@ namespace LumenRender {
 
     private:
         uint32_t m_ObjectID{}, m_ShaderID{};
+    };
+
+    class Triangle : public Object {
+    public:
+        Triangle() = default;
+        Triangle(const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2)
+            : m_Vertices{v0, v1, v2} {}
+
+        bool Intersect(const Ray& ray, HitRecords& hit) const override;
+        private:
+            glm::vec3 m_Vertices[3]{};
     };
 
     class TriangleMesh : public Object {

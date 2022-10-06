@@ -63,8 +63,7 @@ namespace LumenRender {
             float pitchDelta = delta.y * GetRotationSpeed();
             float yawDelta = delta.x * GetRotationSpeed();
 
-            glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
-                                                    glm::angleAxis(-yawDelta, glm::vec3(0.f, 1.0f, 0.0f))));
+            glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),glm::angleAxis(-yawDelta, glm::vec3(0.f, 1.0f, 0.0f))));
             m_ForwardDirection = glm::rotate(q, m_ForwardDirection);
 
             moved = true;

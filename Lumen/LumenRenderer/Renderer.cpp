@@ -12,30 +12,24 @@ namespace LumenRender {
 
     namespace Utils {
         uint32_t ConvertToRGBA(glm::vec4 color) {
-            auto r = static_cast<uint32_t>(color.r * 255.0f);
-            auto g = static_cast<uint32_t>(color.g * 255.0f);
-            auto b = static_cast<uint32_t>(color.b * 255.0f);
-            auto a = static_cast<uint32_t>(color.a * 255.0f);
-            return a << 24 | b << 16 | g << 8 | r;
+            return uint32_t (color.a * 255.99f) << 24 | uint32_t (color.b * 255.99f) << 16 | uint32_t (color.g * 255.99f) << 8 | uint32_t (color.r * 255.99f);
         }
     }
 
-    void Renderer::Render(const LumenRender::Camera &camera, const std::unordered_map<uint32_t, Object *> &objects) {
+    void Renderer::Render(const LumenRender::Camera &camera, const Triangle &objects) {
 
         m_ActiveCamera = &camera;
         m_Objects = &objects;
 
 
-#if 1
+#if 0
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t>& range) {
 
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
-                                      glm::vec4 color = PerPixel(x, y);
-                                      color = glm::clamp(color, 0.0f, 1.0f);
-                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y));
                                   }
                               }
                           });
@@ -45,11 +39,7 @@ namespace LumenRender {
 
         for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
             for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
-
-                glm::vec4 color = PerPixel(x, y);
-                color = glm::clamp(color, 0.0f, 1.0f);
-                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
-
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y));
             }
         }
 
@@ -76,18 +66,15 @@ namespace LumenRender {
 
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
         HitRecords records{};
-        for (auto& [id, object] : *m_Objects) {
-            HitRecords temp{};
-            if (object->Intersect(ray, temp)) {
-                records.m_Index = id;
-                records = temp;
+            if (m_Objects->Intersect(ray, records)) {
+                records.m_Index = 0;
+                return records;
             } else {
-                records = Miss(ray);
+                records.m_T = -1.0f;
+                return records;
             }
-        }
-
-        return records;
     }
+
 
 
     glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y) {
