@@ -5,13 +5,16 @@
 #ifndef LUMEN_RENDERER_HPP
 #define LUMEN_RENDERER_HPP
 
+#include <memory>
+#include <glm/glm.hpp>
+
 #include "../../LumenCore/Image.hpp"
 #include "../../LumenCore/Random.hpp"
 
 #include "Camera.hpp"
 #include "Ray.hpp"
-#include <memory>
-#include <glm/glm.hpp>
+#include "Structure/Object.hpp"
+
 
 
 namespace LumenRender {
@@ -20,14 +23,14 @@ namespace LumenRender {
     public:
         Renderer() = default;
 
-        void Render(const LumenRender::Camera& camera);
+        void Render(const LumenRender::Camera& camera,  const std::unordered_map<uint32_t, Object *> &objects);
 
         void OnResize(uint32_t width, uint32_t height);
 
         std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
-        static HitRecords TraceRay(const LumenRender::Ray& ray);
+        HitRecords TraceRay(const LumenRender::Ray& ray);
         HitRecords ClosestHit(const LumenRender::Ray& ray, float dist, uint32_t ObjectID);
         static HitRecords Miss(const LumenRender::Ray& ray);
 
@@ -36,9 +39,11 @@ namespace LumenRender {
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
+        const std::unordered_map<uint32_t, Object*>* m_Objects = {};
         const Camera* m_ActiveCamera = nullptr;
 
         uint32_t *m_ImageData = nullptr;
+
 
     };
 

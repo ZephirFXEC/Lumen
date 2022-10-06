@@ -10,6 +10,7 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
+        m_Objects.insert({ 0, new LumenRender::Triangle({-1,0,0}, {0,1,0}, {1, 0, 0}) });
     }
 
     void OnUpdate(float ts) override {
@@ -28,24 +29,25 @@ public:
         ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
         ImGui::End();
 
-        /*
-        ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", 0);
 
+        ImGui::Begin("Objects");
+        ImGui::Text("Objects : %llu", m_Objects.size());
+/*
         ImGui::BeginTable("Objects", 2);
         ImGui::TableSetupColumn("Object");
         ImGui::TableSetupColumn("Index");
         ImGui::TableHeadersRow();
-        for (auto& object : m_Scene.GetObjects()) {
+        for (auto& object : m_Objects) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%s", object->GetName().c_str());
+            ImGui::Text("%s", object.first->c_str());
             ImGui::TableSetColumnIndex(1);
             ImGui::Text("%d", object->m_Index);
         }
         ImGui::EndTable();
+*/
         ImGui::End();
-        */
+
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
@@ -155,7 +157,7 @@ public:
         m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
         m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
 
-        m_Renderer.Render(m_Camera);
+        m_Renderer.Render(m_Camera, m_Objects);
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
@@ -163,6 +165,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
+    std::unordered_map<uint32_t, LumenRender::Object*> m_Objects;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

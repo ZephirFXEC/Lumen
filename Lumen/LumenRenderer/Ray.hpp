@@ -23,7 +23,7 @@ namespace LumenRender {
         Ray(const glm::vec3& origin, const glm::vec3& direction, float tMin, float tMax)
             : Origin(origin), Direction(direction), Min(tMin), Max(tMax) {}
 
-        [[nodiscard]] glm::vec3 At(float t) const { return Origin + t * Direction; }
+        [[nodiscard]] glm::vec3 At(const float& t) const { return Origin + t * Direction; }
 
 
         glm::vec3 Origin{};
