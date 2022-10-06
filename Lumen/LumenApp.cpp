@@ -10,7 +10,14 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
-        m_Objects.insert({ 0, new LumenRender::Triangle({-1,0,0}, {0,1,0}, {1, 0, 0}) });
+
+
+        LumenRender::TriangleMesh *mesh = LumenRender::generatePolySphere(0.2f, 5);
+        m_Objects.insert({0, mesh});
+
+
+
+
     }
 
     void OnUpdate(float ts) override {

@@ -5,7 +5,11 @@
 #ifndef LUMEN_OBJECT_HPP
 #define LUMEN_OBJECT_HPP
 
-#include <cstdint>
+#include <vector>
+#include <memory>
+#include <cmath>
+#include <glm/glm.hpp>
+
 #include "../Ray.hpp"
 
 namespace LumenRender {
@@ -25,18 +29,28 @@ namespace LumenRender {
         uint32_t m_ObjectID{}, m_ShaderID{};
     };
 
-
-    class Triangle : public Object {
+    class TriangleMesh : public Object {
     public:
-        Triangle() = default;
-        Triangle(const glm::vec3& vert0, const glm::vec3& vert1, const glm::vec3& vert2)
-            : vert0(vert0), vert1(vert1), vert2(vert2) {}
+        TriangleMesh(const uint32_t nfaces,
+                     const std::unique_ptr<uint32_t[]> &faceIndex,
+                     const std::unique_ptr<uint32_t[]> &vertsIndex,
+                     const std::unique_ptr<glm::vec3[]> &verts,
+                     std::unique_ptr<glm::vec3[]> &normals,
+                     std::unique_ptr<glm::vec2[]> &st);
 
         bool Intersect(const Ray& ray, HitRecords& hit) const override;
 
+
     private:
-        glm::vec3 vert0{}, vert1{}, vert2{};
+        uint32_t numTris;                          //number of triangles
+        std::unique_ptr<glm::vec3[]> P;               //triangles vertex position
+        std::unique_ptr<uint32_t[]> trisIndex;    //vertex index array
+        std::unique_ptr<glm::vec3[]> N;               //triangles vertex normals
+        std::unique_ptr<glm::vec2[]> texCoordinates;  //triangles texture coordinates
     };
+
+    TriangleMesh* generatePolySphere(float rad, uint32_t divs);
+
 
 
 

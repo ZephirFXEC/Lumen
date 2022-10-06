@@ -39,7 +39,7 @@ extern bool g_ApplicationRunning;
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif
 
-static VkAllocationCallbacks *g_Allocator = NULL;
+static VkAllocationCallbacks *g_Allocator = nullptr;
 static VkInstance g_Instance = VK_NULL_HANDLE;
 static VkPhysicalDevice g_PhysicalDevice = VK_NULL_HANDLE;
 static VkDevice g_Device = VK_NULL_HANDLE;
@@ -411,7 +411,7 @@ namespace Lumen {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_WindowHandle = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Name.c_str(),
-                                          NULL, NULL);
+                                          nullptr, NULL);
 
         // Setup Vulkan
         if (!glfwVulkanSupported()) {

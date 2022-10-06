@@ -6,7 +6,6 @@
 #include "Renderer.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtx/intersect.hpp>
 #include <glm/gtx/norm.hpp>
 
 namespace LumenRender {
@@ -27,7 +26,7 @@ namespace LumenRender {
         m_Objects = &objects;
 
 
-#if 0
+#if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t>& range) {
@@ -82,6 +81,8 @@ namespace LumenRender {
             if (object->Intersect(ray, temp)) {
                 records.m_Index = id;
                 records = temp;
+            } else {
+                records = Miss(ray);
             }
         }
 
@@ -97,11 +98,12 @@ namespace LumenRender {
 
         HitRecords payload = TraceRay(ray);
 
-        glm::vec3 col = glm::vec3(0.0f);
+        glm::vec3 col;
 
-        // color red if hit
-        if (payload.m_T < 1000.0f && payload.m_T > 0.0f) {
-            col = {1.0f, 0.0f, 0.0f};
+        if(payload.m_T < 0.0f) {
+            col = glm::vec3(0.0f);
+        } else {
+            col = glm::vec3(1.0f, 0.0f, 0.0f);
         }
 
         return {col, 1.0f};
