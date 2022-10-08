@@ -27,7 +27,7 @@ namespace LumenRender {
 
         void OnResize(uint32_t width, uint32_t height);
 
-        std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
+        Lumen::Image* GetFinalImage() const { return m_Image; }
 
     private:
         HitRecords TraceRay(const LumenRender::Ray& ray);
@@ -37,7 +37,7 @@ namespace LumenRender {
         glm::vec4 PerPixel(uint32_t x, uint32_t y);
 
     private:
-        std::shared_ptr<Lumen::Image> m_Image;
+        Lumen::Image* m_Image;
 
         const Triangle* m_Objects = {};
         const Camera* m_ActiveCamera = nullptr;

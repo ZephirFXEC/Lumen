@@ -57,7 +57,7 @@ namespace LumenRender {
 
             m_Image->Resize(width, height);
         } else {
-            m_Image = std::make_shared<Lumen::Image>(width, height, Lumen::ImageFormat::RGBA);
+            m_Image = new Lumen::Image(width, height, Lumen::ImageFormat::RGBA);
         }
 
         delete[] m_ImageData;
@@ -70,8 +70,7 @@ namespace LumenRender {
                 records.m_Index = 0;
                 return records;
             } else {
-                records.m_T = -1.0f;
-                return records;
+                return {{}, 0, {}, -1.0f};
             }
     }
 
