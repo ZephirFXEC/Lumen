@@ -10,18 +10,6 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
-
-        //m_Scene.Add(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0,1,0)));
-
-       for(int i = 0; i<20; i++) {
-            float height = Lumen::Random::Float()/4;
-            m_Scene.Add(new LumenRender::Sphere(glm::vec3(Lumen::Random::Float()*5, -1 + height, Lumen::Random::Float()*5), height));
-        }
-
-
-       //m_Scene.Add(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f));
-
-
     }
 
     void OnUpdate(float ts) override {
@@ -43,6 +31,7 @@ public:
         ImGui::Begin("Objects");
         ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
 
+        /*
         ImGui::BeginTable("Objects", 2);
         ImGui::TableSetupColumn("Object");
         ImGui::TableSetupColumn("Index");
@@ -56,6 +45,8 @@ public:
         }
         ImGui::EndTable();
         ImGui::End();
+
+         */
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
@@ -173,7 +164,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
-    LumenRender::Scene m_Scene;
+    LumenRender::Scene m_Scene{};
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

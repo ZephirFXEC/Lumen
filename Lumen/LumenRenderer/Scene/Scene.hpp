@@ -8,9 +8,7 @@
 #include "Object.hpp"
 
 #include <memory>
-#include <utility>
-#include <vector>
-#include <array>
+#include <unordered_map>
 
 namespace LumenRender {
 
@@ -18,22 +16,28 @@ namespace LumenRender {
     public:
         Scene() = default;
 
-        explicit Scene(std::vector<Object*>  objects) : m_Objects(std::move(objects)) {}
-
-        void Add(Object *object) {
-            m_Objects.push_back(object);
-            m_Objects.back()->m_Index = m_Objects.size() - 1;
+        void AddObject(Object *object) {
+            m_Objects.insert({m_Index, object});
+            m_Index++;
         }
 
         void Clear() {
             m_Objects.clear();
-            free(m_Objects.data());
         }
 
-        inline const std::vector<Object*>& GetObjects() const { return m_Objects; }
+        //return a reference to the object
+        Object *GetObject(uint32_t index) {
+            return m_Objects[index];
+        }
+
+        //return a reference to the list of objects
+        const std::unordered_map<uint32_t, Object *> &GetObjects() const {
+            return m_Objects;
+        }
 
     private:
-        std::vector<Object*> m_Objects;
+        std::unordered_map<uint32_t, Object*> m_Objects;
+        uint32_t m_Index = 0;
     };
 
 } // LumenRender
