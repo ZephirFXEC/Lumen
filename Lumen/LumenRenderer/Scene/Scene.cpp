@@ -6,4 +6,19 @@
 
 namespace LumenRender {
 
+    bool Scene::Hit(const Ray &ray, HitRecords &record) const {
+        HitRecords temp_rec{};
+        bool hit_anything = false;
+        float closest_so_far = std::numeric_limits<float>::max();
+
+        for (const auto& [index, object] : m_Objects) {
+            if (object->Hit(ray, temp_rec) && temp_rec.m_T < closest_so_far) {
+                hit_anything = true;
+                closest_so_far = temp_rec.m_T;
+                record = temp_rec;
+            }
+        }
+
+        return hit_anything;
+    }
 } // LumenRender

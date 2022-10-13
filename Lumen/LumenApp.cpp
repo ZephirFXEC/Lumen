@@ -10,6 +10,8 @@ class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
+        m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
+        m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
     }
 
     void OnUpdate(float ts) override {
@@ -29,7 +31,7 @@ public:
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
+        ImGui::Text("Objects : %llu", m_Scene.m_Objects.size());
 
         /*
         ImGui::BeginTable("Objects", 2);
@@ -164,7 +166,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
-    LumenRender::Scene m_Scene{};
+    LumenRender::Scene m_Scene;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

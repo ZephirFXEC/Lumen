@@ -12,9 +12,10 @@
 
 namespace LumenRender {
 
-    class Scene {
+    class Scene : public Object {
     public:
         Scene() = default;
+        explicit Scene(Object* object) { AddObject(object); }
 
         void AddObject(Object *object) {
             m_Objects.insert({m_Index, object});
@@ -30,12 +31,14 @@ namespace LumenRender {
             return m_Objects[index];
         }
 
-        //return a reference to the list of objects
-        const std::unordered_map<uint32_t, Object *> &GetObjects() const {
-            return m_Objects;
-        }
+        virtual bool Hit(const Ray& ray, HitRecords& record) const override;
+        virtual Types GetType() const override { return Types::Scene; }
+        virtual std::string GetName() const override { return "Scene"; }
+        [[nodiscard]] virtual HitRecords GetHitRecords() const override { return HitRecords{glm::vec3(0.0f), 0, glm::vec3(0.0f), 0.0f}; }
 
-    private:
+
+
+    public:
         std::unordered_map<uint32_t, Object*> m_Objects;
         uint32_t m_Index = 0;
     };

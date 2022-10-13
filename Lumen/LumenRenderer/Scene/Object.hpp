@@ -16,6 +16,7 @@ namespace LumenRender {
         virtual ~Object() = default;
 
         enum Types {
+            Scene,
             Sphere,
             Plane,
             Triangle,
@@ -24,6 +25,7 @@ namespace LumenRender {
         };
 
         virtual Types GetType() const = 0;
+
         virtual std::string GetName() const = 0;
 
         [[nodiscard]] virtual HitRecords GetHitRecords() const = 0;
