@@ -10,7 +10,6 @@ if(WIN32)
     find_package(imgui CONFIG REQUIRED)
     find_package(glm CONFIG REQUIRED)
     find_package(tbb CONFIG REQUIRED)
-    find_package(embree 3 CONFIG REQUIRED)
 
     add_executable(Lumen Lumen/LumenApp.cpp
             LumenCore/Application.cpp
@@ -33,7 +32,9 @@ if(WIN32)
             Lumen/LumenRenderer/Scene/Scene.cpp
             Lumen/LumenRenderer/Scene/Scene.hpp
             Lumen/LumenRenderer/Scene/Object.cpp
-            Lumen/LumenRenderer/Scene/Object.hpp)
+            Lumen/LumenRenderer/Scene/Object.hpp
+            Lumen/LumenRenderer/Structure/Triangle_Mesh.cpp
+            Lumen/LumenRenderer/Structure/Triangle_Mesh.hpp Lumen/LumenRenderer/Structure/Triangle.cpp Lumen/LumenRenderer/Structure/Triangle.hpp)
 
-    target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb embree)
+    target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
 endif()

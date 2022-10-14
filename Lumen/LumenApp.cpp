@@ -3,15 +3,23 @@
 #include "../LumenCore/EntryPoint.hpp"
 #include "../LumenCore/Image.hpp"
 #include "../LumenCore/Timer.hpp"
+
 #include "LumenRenderer/Renderer.hpp"
 #include "LumenRenderer/Camera.hpp"
+#include "LumenRenderer/Structure/Triangle.hpp"
 
 class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
     : m_Camera(45.0f, 0.1f, 100.0f) {
+
+        LumenRender::Vertex v1 = {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)};
+        LumenRender::Vertex v2 = {glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec2(0.5f, 1.0f)};
+        LumenRender::Vertex v3 = {glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)};
+
         m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
         m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        m_Scene.AddObject(new LumenRender::Triangle(v1, v2, v3));
     }
 
     void OnUpdate(float ts) override {

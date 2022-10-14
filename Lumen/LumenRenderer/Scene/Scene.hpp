@@ -32,11 +32,6 @@ namespace LumenRender {
         }
 
         virtual bool Hit(const Ray& ray, HitRecords& record) const override;
-        virtual Types GetType() const override { return Types::Scene; }
-        virtual std::string GetName() const override { return "Scene"; }
-        [[nodiscard]] virtual HitRecords GetHitRecords() const override { return HitRecords{glm::vec3(0.0f), 0, glm::vec3(0.0f), 0.0f}; }
-
-
 
     public:
         std::unordered_map<uint32_t, Object*> m_Objects;

@@ -26,7 +26,7 @@ namespace LumenRender {
 
 
         glm::vec3 Origin{};
-        float Min = 0.0f;
+        float Min = 0.000001f;
         glm::vec3 Direction{};
         float Max = std::numeric_limits<float>::max();
     };

@@ -11,6 +11,7 @@
 #include "Camera.hpp"
 #include "Ray.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/Object.hpp"
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -30,7 +31,6 @@ namespace LumenRender {
 
     private:
         HitRecords TraceRay(const LumenRender::Ray& ray);
-        HitRecords ClosestHit(const LumenRender::Ray& ray, float dist, uint32_t ObjectID);
         static HitRecords Miss(const LumenRender::Ray& ray);
 
         glm::vec4 PerPixel(uint32_t x, uint32_t y);
@@ -42,7 +42,6 @@ namespace LumenRender {
         const Camera* m_ActiveCamera;
 
         uint32_t *m_ImageData = nullptr;
-
     };
 
 } // LumenRender

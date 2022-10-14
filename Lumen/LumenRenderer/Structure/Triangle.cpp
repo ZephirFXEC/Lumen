@@ -1,93 +1,56 @@
+//
+// Created by enzoc on 14/10/2022.
+//
 
 #include "Triangle.hpp"
 
-#define M_PI 3.14159265358979323846
-#define M_PI_2 6.28318530717958647692
+namespace LumenRender {
+    bool Triangle::Hit(const Ray &ray, HitRecords &record) const {
+        float u, v, temp;
 
-#define EPSILON 0.000001
+        glm::vec3 pvec = glm::cross(ray.Direction, _e2);
+        float det = glm::dot(_e1, pvec);
 
+        if(det == 0.0f) return false;
 
-#define EPSILON 0.000001
-#define CROSS(dest,v1,v2) \
-          dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
-          dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
-          dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
-#define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
-#define SUB(dest,v1,v2) \
-          dest[0]=v1.x-v2.x; \
-          dest[1]=v1.y-v2.y; \
-          dest[2]=v1.z-v2.z;
+        float inv_det = 1.0f / det;
+        glm::vec3 tvec = ray.Origin - _v0;
+        u = glm::dot(tvec, pvec) * inv_det;
+        if(u < 0.0f || u > 1.0f) return false;
 
+        glm::vec3 qvec = glm::cross(tvec, _e1);
+        v = glm::dot(ray.Direction, qvec) * inv_det;
+        if(v < 0.0f || u + v > 1.0f) return false;
 
-namespace LumenRender
-{
+        temp = glm::dot(_e2, qvec) * inv_det;
+        if(temp < ray.Max) {
+            if(temp > ray.Min) {
+                record.m_T = temp;
+                record.m_Position = ray.At(record.m_T);
+                record.m_Normal = _n;
 
+                glm::vec3 bary = GetBarycentricCoordinates(record.m_Position);
+                record.m_Normal = glm::normalize(N[0] * bary.x + N[1] * bary.y + N[2] * bary.z);
 
-    bool TriangleIntersect(const Ray &ray, const Tri &vert, float *u, float *v, float *t) {
-        float edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
-        float det,inv_det;
-
-
-        /* find vectors for two edges sharing vert0 */
-        SUB(edge1, vert.v1, vert.v0);
-        SUB(edge2, vert.v2, vert.v0);
-
-        /* begin calculating determinant - also used to calculate U parameter */
-        CROSS(pvec, ray.Direction, edge2);
-
-        /* if determinant is near zero, ray lies in plane of triangle */
-        det = DOT(edge1, pvec);
-
-        /* calculate distance from vert0 to ray origin */
-        SUB(tvec, ray.Origin, vert.v0);
-        inv_det = 1.0 / det;
-
-        CROSS(qvec, tvec, edge1);
-
-        if (det > EPSILON)
-        {
-            *u = DOT(tvec, pvec);
-            if (*u < 0.0 || *u > det)
-                return false;
-
-            /* calculate V parameter and test bounds */
-            *v = DOT(ray.Direction, qvec);
-            if (*v < 0.0 || *u + *v > det)
-                return false;
-
+                return true;
+            }
         }
-        else if(det < -EPSILON)
-        {
-            /* calculate U parameter and test bounds */
-            *u = DOT(tvec, pvec);
-            if (*u > 0.0 || *u < det)
-                return 0;
 
-            /* calculate V parameter and test bounds */
-            *v = DOT(ray.Direction, qvec) ;
-            if (*v > 0.0 || *u + *v < det)
-                return false;
-        }
-        else return false;  /* ray is parallell to the plane of the triangle */
-
-        *t = DOT(edge2, qvec) * inv_det;
-        (*u) *= inv_det;
-        (*v) *= inv_det;
-
-        return true;
-    }
-
-
-
-    bool Triangle::Intersect(const Ray &ray, HitRecords &hit) const {
-        float u, v, t;
-        if (TriangleIntersect(ray, m_Tri, &u, &v, &t)) {
-            hit.m_T = t;
-            hit.m_Position = ray.At(hit.m_T);
-            return true;
-        }
         return false;
     }
 
-    
-} // namespace LumenRender
+    glm::vec3 Triangle::GetBarycentricCoordinates(const glm::vec3 &p) const {
+        glm::vec3 v2_ = p - _v0;
+        float d00 = glm::dot(_e1, _e1);
+        float d01 = glm::dot(_e1, _e2);
+        float d11 = glm::dot(_e2, _e2);
+        float d20 = glm::dot(v2_, _e1);
+        float d21 = glm::dot(v2_, _e2);
+        float d = d00 * d11 - d01 * d01;
+        float v = (d11 * d20 - d01 * d21) / d;
+        float w = (d00 * d21 - d01 * d20) / d;
+        float u = 1 - v - w;
+        return {u, v, w};
+    }
+
+} // LumenRender

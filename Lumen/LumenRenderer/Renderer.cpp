@@ -4,8 +4,6 @@
 
 #include <tbb/tbb.h>
 #include "Renderer.hpp"
-#include "Scene/Object.hpp"
-#include <glm/gtx/intersect.hpp>
 
 namespace LumenRender {
 
@@ -116,23 +114,6 @@ namespace LumenRender {
         }
 
         return {color, 1.0f};
-    }
-
-    HitRecords Renderer::ClosestHit(const Ray &ray, float dist, uint32_t ObjectID) {
-        HitRecords payload{};
-        const auto& closestSphere = m_ActiveScene->m_Objects.at(ObjectID);
-
-        if(closestSphere->GetType() == Object::Types::Sphere) {
-
-            auto *sphere = dynamic_cast<Sphere*>(closestSphere);
-
-            payload.m_T = dist;
-            payload.m_Position = ray.Origin + ray.Direction * dist;
-            payload.m_Normal = glm::normalize(payload.m_Position - sphere->m_Center);
-            payload.m_Index = ObjectID;
-        }
-
-        return payload;
     }
 
 
