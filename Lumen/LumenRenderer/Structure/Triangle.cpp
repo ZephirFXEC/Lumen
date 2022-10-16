@@ -11,26 +11,26 @@ namespace LumenRender {
         glm::vec3 pvec = glm::cross(ray.Direction, _e2);
         float det = glm::dot(_e1, pvec);
 
-        if(det == 0.0f) return false;
+        if (det == 0.0f) return false;
 
         float inv_det = 1.0f / det;
         glm::vec3 tvec = ray.Origin - _v0;
         u = glm::dot(tvec, pvec) * inv_det;
-        if(u < 0.0f || u > 1.0f) return false;
+        if (u < 0.0f || u > 1.0f) return false;
 
         glm::vec3 qvec = glm::cross(tvec, _e1);
         v = glm::dot(ray.Direction, qvec) * inv_det;
-        if(v < 0.0f || u + v > 1.0f) return false;
+        if (v < 0.0f || u + v > 1.0f) return false;
 
         temp = glm::dot(_e2, qvec) * inv_det;
-        if(temp < ray.Max) {
-            if(temp > ray.Min) {
+        if (temp < ray.Max) {
+            if (temp > ray.Min) {
                 record.m_T = temp;
                 record.m_Position = ray.At(record.m_T);
-                record.m_Normal = _n;
+                record.m_Normal = this->_n;
 
                 glm::vec3 bary = GetBarycentricCoordinates(record.m_Position);
-                record.m_Normal = glm::normalize(N[0] * bary.x + N[1] * bary.y + N[2] * bary.z);
+                record.m_Normal = glm::normalize((bary.x * N[0]) + (bary.y * N[1]) + bary.z * N[2]);
 
                 return true;
             }
@@ -50,7 +50,17 @@ namespace LumenRender {
         float v = (d11 * d20 - d01 * d21) / d;
         float w = (d00 * d21 - d01 * d20) / d;
         float u = 1 - v - w;
-        return {u, v, w};
+        return { u, v, w };
     }
+
+    bool Triangle::GetBounds(AABB &outbox) const {
+        AABB box;
+        box = AABB::Union(box, _v0);
+        box = AABB::Union(box, _v1);
+        box = AABB::Union(box, _v2);
+        outbox = box;
+        return true;
+    }
+
 
 } // LumenRender

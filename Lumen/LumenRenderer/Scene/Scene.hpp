@@ -6,6 +6,7 @@
 #define LUMEN_SCENE_HPP
 
 #include "Object.hpp"
+#include "../Accelerators/Aabb.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -15,10 +16,11 @@ namespace LumenRender {
     class Scene : public Object {
     public:
         Scene() = default;
-        explicit Scene(Object* object) { AddObject(object); }
+
+        explicit Scene(Object *object) { AddObject(object); }
 
         void AddObject(Object *object) {
-            m_Objects.insert({m_Index, object});
+            m_Objects.insert({ m_Index, object });
             m_Index++;
         }
 
@@ -31,10 +33,12 @@ namespace LumenRender {
             return m_Objects[index];
         }
 
-        virtual bool Hit(const Ray& ray, HitRecords& record) const override;
+        bool Hit(const Ray &ray, HitRecords &record) const override;
+
+        bool GetBounds(AABB &outbox) const override;
 
     public:
-        std::unordered_map<uint32_t, Object*> m_Objects;
+        std::unordered_map<uint32_t, Object *> m_Objects;
         uint32_t m_Index = 0;
     };
 

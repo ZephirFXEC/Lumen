@@ -18,15 +18,14 @@ namespace LumenRender {
     }
 
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
-
-        m_ActiveScene = &scene;
         m_ActiveCamera = &camera;
+        m_ActiveBVH = new BVH(scene);
 
 
-#if 1
+#if 0
 
-        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
-                          [&](const tbb::blocked_range2d<uint32_t>& range) {
+        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
+                          [&](const tbb::blocked_range2d<uint32_t> &range) {
 
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
@@ -72,7 +71,7 @@ namespace LumenRender {
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
         HitRecords hitRecords{};
 
-        if(m_ActiveScene->Hit(ray, hitRecords)) {
+        if (m_ActiveBVH->Hit(ray, hitRecords)) {
             return hitRecords;
         } else {
             return Miss(ray);
@@ -89,20 +88,21 @@ namespace LumenRender {
         float multiplier = 1.0f;
 
         int bounces = 1;
-        for (int i = 0; i < bounces; i++)
-        {
+        for (int i = 0; i < bounces; i++) {
             HitRecords payload = TraceRay(ray);
-            if (payload.m_T < 0.0f)
-            {
-                glm::vec3 skyColor = {0.0f, 0.0f, 0.0f};
-                color += skyColor * multiplier;
+            if (payload.m_T < 0.0f) {
+
+                glm::vec3 unit_direction = glm::normalize(ray.Direction);
+                auto t = 0.5f*(unit_direction.y + 1.0f);
+                color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
+
                 break;
             }
 
-            glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
+            glm::vec3 lightDir = glm::normalize(glm::vec3(-2));
             float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
 
-            glm::vec3 sphereColor = {1.0f, 0.2f, 0.3f};
+            glm::vec3 sphereColor = { 1.0f, 0.2f, 0.3f };
             sphereColor *= lightIntensity;
             color += sphereColor * multiplier;
 
@@ -113,7 +113,7 @@ namespace LumenRender {
 
         }
 
-        return {color, 1.0f};
+        return { color, 1.0f };
     }
 
 

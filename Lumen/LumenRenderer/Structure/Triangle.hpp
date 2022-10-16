@@ -18,7 +18,8 @@ namespace LumenRender {
     class Triangle : public Object {
     public:
         Triangle() = default;
-        Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2) {
+
+        Triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2) {
             _v0 = v0.P;
             _v1 = v1.P;
             _v2 = v2.P;
@@ -37,8 +38,11 @@ namespace LumenRender {
             N[2] = v2.N;
         }
 
-        bool Hit(const Ray& ray, HitRecords& record) const override;
-        glm::vec3 GetBarycentricCoordinates(const glm::vec3& p) const;
+        bool Hit(const Ray &ray, HitRecords &record) const override;
+
+        bool GetBounds(AABB &outbox) const override;
+
+        glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
 
     private:
         glm::vec3 _v0{}, _v1{}, _v2{};

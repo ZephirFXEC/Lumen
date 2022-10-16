@@ -19,6 +19,11 @@ namespace LumenRender {
         return false;
     }
 
+    bool Sphere::GetBounds(AABB &outbox) const {
+        outbox = { m_Center - glm::vec3(m_Radius), m_Center + glm::vec3(m_Radius) };
+        return true;
+    }
+
 
     bool Plane::Hit(const Ray &ray, HitRecords &record) const {
         float t;
@@ -30,6 +35,11 @@ namespace LumenRender {
             return true;
         }
         return false;
+    }
+
+    bool Plane::GetBounds(AABB &outbox) const {
+        outbox = { m_Center - glm::vec3(1000.0f), m_Center + glm::vec3(1000.0f) };
+        return true;
     }
 
 

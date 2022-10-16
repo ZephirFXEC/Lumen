@@ -4,7 +4,9 @@ project(Lumen)
 set(CMAKE_CXX_STANDARD 20)
 
 if(WIN32)
+
     set(CMAKE_TOOLCHAIN_FILE "F:/repos/vcpkg/scripts/buildsystems/vcpkg.cmake")
+
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Vulkan REQUIRED)
     find_package(imgui CONFIG REQUIRED)
@@ -34,7 +36,10 @@ if(WIN32)
             Lumen/LumenRenderer/Scene/Object.cpp
             Lumen/LumenRenderer/Scene/Object.hpp
             Lumen/LumenRenderer/Structure/Triangle_Mesh.cpp
-            Lumen/LumenRenderer/Structure/Triangle_Mesh.hpp Lumen/LumenRenderer/Structure/Triangle.cpp Lumen/LumenRenderer/Structure/Triangle.hpp)
+            Lumen/LumenRenderer/Structure/Triangle_Mesh.hpp
+            Lumen/LumenRenderer/Structure/Triangle.cpp
+            Lumen/LumenRenderer/Structure/Triangle.hpp
+            Lumen/LumenRenderer/Accelerators/Aabb.cpp Lumen/LumenRenderer/Accelerators/Aabb.hpp Lumen/LumenRenderer/Accelerators/Bvh.cpp Lumen/LumenRenderer/Accelerators/Bvh.hpp Lumen/LumenRenderer/Utility/Utility.hpp)
 
     target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
 endif()
