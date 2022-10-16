@@ -13,8 +13,7 @@ namespace LumenRender {
             if (invD < 0.0f)
                 std::swap(t0, t1);
             t = t0 > t ? t0 : t;
-            float tMax = t1;
-            if (t > tMax)
+            if (t > t1)
                 return false;
         }
         return true;

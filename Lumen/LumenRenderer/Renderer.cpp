@@ -21,7 +21,6 @@ namespace LumenRender {
         m_ActiveCamera = &camera;
         m_ActiveBVH = new BVH(scene);
 
-
 #if 0
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
@@ -41,9 +40,7 @@ namespace LumenRender {
 
         for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
             for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
-
                 m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(glm::clamp(PerPixel(x, y), 0.0f, 1.0f));
-
             }
         }
 
@@ -92,14 +89,13 @@ namespace LumenRender {
             HitRecords payload = TraceRay(ray);
             if (payload.m_T < 0.0f) {
 
-                glm::vec3 unit_direction = glm::normalize(ray.Direction);
-                auto t = 0.5f*(unit_direction.y + 1.0f);
+                auto t = 0.5f*(glm::normalize(ray.Direction).y + 1.0f);
                 color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
 
                 break;
             }
 
-            glm::vec3 lightDir = glm::normalize(glm::vec3(-2));
+            glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
             float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
 
             glm::vec3 sphereColor = { 1.0f, 0.2f, 0.3f };

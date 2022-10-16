@@ -39,7 +39,11 @@ if(WIN32)
             Lumen/LumenRenderer/Structure/Triangle_Mesh.hpp
             Lumen/LumenRenderer/Structure/Triangle.cpp
             Lumen/LumenRenderer/Structure/Triangle.hpp
-            Lumen/LumenRenderer/Accelerators/Aabb.cpp Lumen/LumenRenderer/Accelerators/Aabb.hpp Lumen/LumenRenderer/Accelerators/Bvh.cpp Lumen/LumenRenderer/Accelerators/Bvh.hpp Lumen/LumenRenderer/Utility/Utility.hpp)
+            Lumen/LumenRenderer/Accelerators/Aabb.cpp
+            Lumen/LumenRenderer/Accelerators/Aabb.hpp
+            Lumen/LumenRenderer/Accelerators/Bvh.cpp
+            Lumen/LumenRenderer/Accelerators/Bvh.hpp
+            Lumen/LumenRenderer/Utility/Utility.hpp)
 
     target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
 endif()

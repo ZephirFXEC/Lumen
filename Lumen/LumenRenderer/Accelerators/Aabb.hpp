@@ -41,26 +41,24 @@ namespace LumenRender {
 
         static AABB Union(const AABB &a, const AABB &b) {
             AABB ret;
-            ret.pMin = glm::vec3(glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y),
-                                 glm::min(a.pMin.z, b.pMin.z));
-            ret.pMax = glm::vec3(glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y),
-                                 glm::max(a.pMax.z, b.pMax.z));
+            ret.pMin = {glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y), glm::min(a.pMin.z, b.pMin.z)};
+            ret.pMax = {glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y), glm::max(a.pMax.z, b.pMax.z)};
             return ret;
         }
 
         static AABB Union(const AABB &a, const glm::vec3 &p) {
             AABB ret;
-            ret.pMin = glm::vec3(glm::min(a.pMin.x, p.x), glm::min(a.pMin.y, p.y), glm::min(a.pMin.z, p.z));
-            ret.pMax = glm::vec3(glm::max(a.pMax.x, p.x), glm::max(a.pMax.y, p.y), glm::max(a.pMax.z, p.z));
+            ret.pMin = {glm::min(a.pMin.x, p.x), glm::min(a.pMin.y, p.y), glm::min(a.pMin.z, p.z)};
+            ret.pMax = {glm::max(a.pMax.x, p.x), glm::max(a.pMax.y, p.y), glm::max(a.pMax.z, p.z)};
             return ret;
         }
 
         static AABB SurroundingBox(AABB &a, AABB b) {
             AABB ret;
-            ret.pMin = glm::vec3(glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y),
-                                 glm::min(a.pMin.z, b.pMin.z));
-            ret.pMax = glm::vec3(glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y),
-                                 glm::max(a.pMax.z, b.pMax.z));
+            ret.pMin = {glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y),
+                                 glm::min(a.pMin.z, b.pMin.z)};
+            ret.pMax = {glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y),
+                                 glm::max(a.pMax.z, b.pMax.z)};
             return ret;
         }
 

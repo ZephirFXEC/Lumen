@@ -13,11 +13,17 @@
 class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
-    : m_Camera(45.0f, 0.1f, 100.0f) {
+    : m_Camera(45.0f, 0.01f, 1000.0f) {
 
-        m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 2.0f, -3.0f), 1));
+        //m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
         //m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-        m_Scene.AddObject(new LumenRender::Triangle_Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)"));
+        //m_Scene.AddObject(new LumenRender::Triangle_Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)"));
+
+        //add 10 random spheres
+        for (int i = 0; i < 10; i++) {
+            m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), Lumen::Random::Float()+0.5f));
+        }
+
 
     }
 

@@ -54,11 +54,9 @@ namespace LumenRender {
     }
 
     bool Triangle::GetBounds(AABB &outbox) const {
-        AABB box;
-        box = AABB::Union(box, _v0);
-        box = AABB::Union(box, _v1);
-        box = AABB::Union(box, _v2);
-        outbox = box;
+        AABB one = AABB(_v0, _v1);
+        AABB two = AABB(_v1, _v2);
+        outbox = AABB::SurroundingBox(one, two);
         return true;
     }
 

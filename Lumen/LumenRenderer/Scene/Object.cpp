@@ -38,7 +38,7 @@ namespace LumenRender {
     }
 
     bool Plane::GetBounds(AABB &outbox) const {
-        outbox = { m_Center - glm::vec3(1000.0f), m_Center + glm::vec3(1000.0f) };
+        outbox = { m_Center - glm::vec3(0.0001f), m_Center + glm::vec3(0.0001f) };
         return true;
     }
 
