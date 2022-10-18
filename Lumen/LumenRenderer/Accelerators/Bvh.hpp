@@ -7,26 +7,33 @@
 
 #include "../Scene/Object.hpp"
 #include "../Scene/Scene.hpp"
+#include "../Structure/Triangle_Mesh.hpp"
+#include <vector>
 
 namespace LumenRender {
 
-    class BVH : public Object {
+    struct BVHNode {
+        AABB aabb;
+        uint32_t leftFirst{}, triCount{};
+        bool isLeaf() const { return triCount > 0; }
+    };
+
+    class BVH {
     public:
         BVH() = default;
-
-        explicit BVH(const Scene &scene) : BVH(scene.m_Objects, 0, scene.m_Objects.size()) {}
-        BVH(const std::unordered_map<uint32_t, Object*> &Objects, size_t start, size_t end);
-
-        bool Hit(const Ray &ray, HitRecords &record) const override;
-
-        bool GetBounds(AABB &outbox) const override;
-
+        void BuildBVH(const Scene& scene);
+        void UpdateNodeBounds(uint32_t nodeIndex);
+        void Subdivide(uint32_t nodeIndex);
+        bool TraverseBVH(const Ray& ray, float tmax, uint32_t nodeIndex, HitRecords& rec) const;
 
     public:
-        Object* m_Left{};
-        Object* m_Right{};
-        AABB m_Box;
+        std::vector<Triangle*> m_TriangleMesh;
+        std::vector<BVHNode> m_BVHNode;
+        std::vector<uint32_t> m_TriIdx{};
+        uint32_t m_rootIndex{}, m_nodeUsed{}, N{};
+
     };
+
 
 
 } // LumenRender

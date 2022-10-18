@@ -5,7 +5,7 @@
 #include "Triangle.hpp"
 
 namespace LumenRender {
-    bool Triangle::Hit(const Ray &ray, HitRecords &record) const {
+    bool Triangle::Hit(const Ray &ray, float t_max, HitRecords &record) const {
         float u, v, temp;
 
         glm::vec3 pvec = glm::cross(ray.Direction, _e2);
@@ -56,8 +56,35 @@ namespace LumenRender {
     bool Triangle::GetBounds(AABB &outbox) const {
         AABB one = AABB(_v0, _v1);
         AABB two = AABB(_v1, _v2);
-        outbox = AABB::SurroundingBox(one, two);
+        outbox = AABB::Union(one, two);
         return true;
+    }
+
+    bool Triangle::Hit(const Ray &ray) const {
+        float u, v, temp;
+
+        glm::vec3 pvec = glm::cross(ray.Direction, _e2);
+        float det = glm::dot(_e1, pvec);
+
+        if (det == 0.0f) return false;
+
+        float inv_det = 1.0f / det;
+        glm::vec3 tvec = ray.Origin - _v0;
+        u = glm::dot(tvec, pvec) * inv_det;
+        if (u < 0.0f || u > 1.0f) return false;
+
+        glm::vec3 qvec = glm::cross(tvec, _e1);
+        v = glm::dot(ray.Direction, qvec) * inv_det;
+        if (v < 0.0f || u + v > 1.0f) return false;
+
+        temp = glm::dot(_e2, qvec) * inv_det;
+        if (temp < ray.Max) {
+            if (temp > ray.Min) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 

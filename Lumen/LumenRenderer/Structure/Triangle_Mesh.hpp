@@ -17,14 +17,14 @@ namespace LumenRender {
     public:
         explicit Triangle_Mesh(const char *file_path);
 
-        bool Hit(const Ray &ray, HitRecords &record) const override;
+        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
 
         bool GetBounds(AABB &outbox) const override;
 
     public:
         std::vector<tinyobj::shape_t> m_shapes;
         std::vector<tinyobj::material_t> m_materials;
-        std::vector<std::shared_ptr<LumenRender::Triangle>> m_Triangles;
+        std::vector<LumenRender::Triangle*> m_Triangles;
     };
 
 } // LumenRender

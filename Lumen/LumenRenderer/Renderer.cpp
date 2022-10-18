@@ -19,9 +19,10 @@ namespace LumenRender {
 
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
         m_ActiveCamera = &camera;
-        m_ActiveBVH = new BVH(scene);
+        m_ActiveScene = &scene;
+        m_ActiveBVH->BuildBVH(*m_ActiveScene);
 
-#if 0
+#if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
@@ -67,8 +68,9 @@ namespace LumenRender {
 
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
         HitRecords hitRecords{};
+        float tmax = std::numeric_limits<float>::max();
 
-        if (m_ActiveBVH->Hit(ray, hitRecords)) {
+        if (m_ActiveScene->Hit(ray, tmax, hitRecords)) {
             return hitRecords;
         } else {
             return Miss(ray);

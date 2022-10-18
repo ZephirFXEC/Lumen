@@ -16,7 +16,7 @@ namespace LumenRender {
     public:
         virtual ~Object() = default;
 
-        virtual bool Hit(const Ray &ray, HitRecords &record) const = 0;
+        virtual bool Hit(const Ray &ray, float t_max, HitRecords &record) const = 0;
 
         virtual bool GetBounds(AABB &outbox) const = 0;
     };
@@ -27,7 +27,7 @@ namespace LumenRender {
 
         Sphere(const glm::vec3 &center, float radius) : m_Center(center), m_Radius(radius) {}
 
-        bool Hit(const Ray &ray, HitRecords &record) const override;
+        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
 
         bool GetBounds(AABB &outbox) const override;
 
@@ -43,7 +43,7 @@ namespace LumenRender {
 
         Plane(const glm::vec3 &center, const glm::vec3 &normal) : m_Center(center), m_Normal(normal) {}
 
-        bool Hit(const Ray &ray, HitRecords &record) const override;
+        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
 
         bool GetBounds(AABB &outbox) const override;
 

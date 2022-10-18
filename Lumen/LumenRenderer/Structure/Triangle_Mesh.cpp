@@ -77,21 +77,21 @@ namespace LumenRender {
 
         // Loops vertices
         for (int i = 0; i < vertices.size(); i += 3) {
-            m_Triangles.push_back(std::make_shared<LumenRender::Triangle>(vertices[i], vertices[i + 1], vertices[i + 2]));
+            m_Triangles.push_back(new LumenRender::Triangle(vertices[i], vertices[i + 1], vertices[i + 2]));
         }
 
         std::cout << "> Successfully opened " << inputfile << "! \n\n";
     }
 
-    bool Triangle_Mesh::Hit(const Ray &ray, HitRecords &record) const {
-        bool hit_tri = false;
-        float t = std::numeric_limits<float>::max();
-
+    bool Triangle_Mesh::Hit(const Ray &ray, float t_max, HitRecords &record) const {
         HitRecords temp{};
+        bool hit_tri = false;
+        float closest = t_max;
+
         for (auto &tri: m_Triangles) {
-            if (tri->Hit(ray, temp) && temp.m_T < t) {
+            if (tri->Hit(ray, t_max, temp) && temp.m_T < closest) {
                 hit_tri = true;
-                t = temp.m_T;
+                closest = temp.m_T;
                 record = temp;
             }
         }

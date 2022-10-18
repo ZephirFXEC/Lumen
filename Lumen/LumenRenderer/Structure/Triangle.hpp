@@ -36,15 +36,19 @@ namespace LumenRender {
             N[0] = v0.N;
             N[1] = v1.N;
             N[2] = v2.N;
+
+            _centroid = (_v0 + _v1 + _v2) / 3.0f;
         }
 
-        bool Hit(const Ray &ray, HitRecords &record) const override;
+        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
+        bool Hit(const Ray &ray) const;
 
         bool GetBounds(AABB &outbox) const override;
 
         glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
 
-    private:
+        glm::vec3 _centroid{};
+    public:
         glm::vec3 _v0{}, _v1{}, _v2{};
         glm::vec3 _e1{}, _e2{};
         glm::vec3 _n{};

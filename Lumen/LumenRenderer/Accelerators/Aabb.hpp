@@ -53,15 +53,6 @@ namespace LumenRender {
             return ret;
         }
 
-        static AABB SurroundingBox(AABB &a, AABB b) {
-            AABB ret;
-            ret.pMin = {glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y),
-                                 glm::min(a.pMin.z, b.pMin.z)};
-            ret.pMax = {glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y),
-                                 glm::max(a.pMax.z, b.pMax.z)};
-            return ret;
-        }
-
         glm::vec3 Diagonal() const {
             return pMax - pMin;
         }
@@ -72,8 +63,7 @@ namespace LumenRender {
         }
 
 
-        bool Hit(const LumenRender::Ray &ray, float &t) const;
-
+        bool Hit(const LumenRender::Ray &ray, float t_min, float t_max) const;
 
         glm::vec3 pMin{};
         glm::vec3 pMax{};
