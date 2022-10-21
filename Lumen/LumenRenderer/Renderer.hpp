@@ -40,9 +40,8 @@ namespace LumenRender {
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
-        const Camera *m_ActiveCamera;
-        const Scene *m_ActiveScene;
-        BVH *m_ActiveBVH;
+        const Camera *m_ActiveCamera{};
+        const Scene *m_ActiveScene{};
         uint32_t *m_ImageData = nullptr;
     };
 

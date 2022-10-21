@@ -8,7 +8,7 @@
 #include "Object.hpp"
 #include "../Accelerators/Aabb.hpp"
 #include "../Structure/Triangle.hpp"
-#include "../Structure/Triangle_Mesh.hpp"
+#include "../Structure/Mesh.hpp"
 
 
 #include <memory>
@@ -20,15 +20,12 @@ namespace LumenRender {
     public:
         Scene() = default;
 
-        explicit Scene(Object *object) { AddObject(object); }
-
         void AddObject(Object *object) {
             m_Objects.insert({ m_Index, object });
             m_Index++;
         }
 
-        void AddObject(Triangle_Mesh* mesh) {
-            m_Triangles = mesh->m_Triangles;
+        void AddObject(Mesh* mesh) {
             m_Objects.insert({ m_Index, mesh});
             m_Index++;
         }
@@ -49,7 +46,6 @@ namespace LumenRender {
 
     public:
         std::unordered_map<uint32_t, Object *> m_Objects;
-        std::vector<Triangle*> m_Triangles;
         uint32_t m_Index = 0;
     };
 

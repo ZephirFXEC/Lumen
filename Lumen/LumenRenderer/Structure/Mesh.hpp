@@ -2,8 +2,8 @@
 // Created by enzoc on 14/10/2022.
 //
 
-#ifndef LUMEN_TRIANGLE_MESH_HPP
-#define LUMEN_TRIANGLE_MESH_HPP
+#ifndef LUMEN_MESH_HPP
+#define LUMEN_MESH_HPP
 
 #include "../Scene/Object.hpp"
 #include "Triangle.hpp"
@@ -13,9 +13,12 @@
 
 namespace LumenRender {
 
-    class Triangle_Mesh : public Object {
+    class Mesh : public Object {
     public:
-        explicit Triangle_Mesh(const char *file_path);
+
+        explicit Mesh(uint32_t primCount);
+
+        explicit Mesh(const char *file_path);
 
         bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
 
@@ -24,9 +27,14 @@ namespace LumenRender {
     public:
         std::vector<tinyobj::shape_t> m_shapes;
         std::vector<tinyobj::material_t> m_materials;
-        std::vector<LumenRender::Triangle*> m_Triangles;
+        LumenRender::Triangle* m_Triangles;
+        LumenRender::TriData* m_TriData;
+        uint32_t m_TriCount = 0;
+        glm::vec3 *P = nullptr, *N = nullptr;
+
+
     };
 
 } // LumenRender
 
-#endif //LUMEN_TRIANGLE_MESH_HPP
+#endif //LUMEN_MESH_HPP

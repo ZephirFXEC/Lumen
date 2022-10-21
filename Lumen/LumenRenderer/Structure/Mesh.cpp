@@ -3,12 +3,22 @@
 //
 #define TINYOBJLOADER_IMPLEMENTATION
 
-#include "Triangle_Mesh.hpp"
+#include "Mesh.hpp"
 
 
 namespace LumenRender {
 
-    Triangle_Mesh::Triangle_Mesh(const char *file_path) {
+
+    Mesh::Mesh(const uint32_t primCount) {
+        m_Triangles = (LumenRender::Triangle *) _aligned_malloc(primCount * sizeof(LumenRender::Triangle), 128);
+        memset((void *) m_Triangles, 0, primCount * sizeof(LumenRender::Triangle));
+        m_TriData = (LumenRender::TriData *) _aligned_malloc(primCount * sizeof(LumenRender::TriData), 64);
+        memset(m_TriData, 0, primCount * sizeof(LumenRender::TriData));
+        m_TriCount = primCount;
+    }
+
+
+    Mesh::Mesh(const char *file_path) {
         std::string inputfile = file_path;
         tinyobj::ObjReaderConfig reader_config;
         reader_config.mtl_search_path = "./"; // Path to material files
@@ -30,10 +40,16 @@ namespace LumenRender {
         auto &shapes = reader.GetShapes();
         auto &materials = reader.GetMaterials();
 
-        std::vector<Vertex> vertices;
 
 // Loop over shapes
         for (const auto &shape: shapes) {
+
+            m_Triangles = new LumenRender::Triangle[shape.mesh.indices.size() / 3];
+            m_TriData = new LumenRender::TriData[shape.mesh.indices.size() / 3];
+            P = new glm::vec3[shape.mesh.indices.size()];
+            N = new glm::vec3[shape.mesh.indices.size()];
+            auto *uv = new glm::vec2[shape.mesh.indices.size()];
+
             // Loop over faces(polygon)
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
@@ -43,13 +59,17 @@ namespace LumenRender {
                 // Loop over vertices in the face.
                 for (size_t v = 0; v < fv; v++) {
                     // access to vertex
-                    Vertex vert{};
+                    Triangle vert{};
 
                     tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
                     tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
                     tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
                     tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
-                    vert.P = { vx, vy, vz };
+                    P[v] = { vx, vy, vz };
+                    m_Triangles[f].vertex0 = P[0];
+                    m_Triangles[f].vertex1 = P[1];
+                    m_Triangles[f].vertex2 = P[2];
+
 
 
                     // Check if `normal_index` is zero or positive. negative = no normal data
@@ -57,39 +77,37 @@ namespace LumenRender {
                         tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
                         tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
                         tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
-                        vert.N = { nx, ny, nz };
+                        N[v] = { nx, ny, nz };
+                        m_TriData[f].N[0] = N[0];
+                        m_TriData[f].N[1] = N[1];
+                        m_TriData[f].N[2] = N[2];
                     }
 
                     // Check if `texcoord_index` is zero or positive. negative = no texcoord data
                     if (idx.texcoord_index >= 0) {
                         tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
                         tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
-                        vert.UV = { tx, ty };
+                        uv[v] = { tx, ty };
                     }
 
-                    vertices.push_back(vert);
                 }
                 index_offset += fv;
             }
         }
 
+        //TODO: build bvh here
 
-
-        // Loops vertices
-        for (int i = 0; i < vertices.size(); i += 3) {
-            m_Triangles.push_back(new LumenRender::Triangle(vertices[i], vertices[i + 1], vertices[i + 2]));
-        }
 
         std::cout << "> Successfully opened " << inputfile << "! \n\n";
     }
 
-    bool Triangle_Mesh::Hit(const Ray &ray, float t_max, HitRecords &record) const {
+    bool Mesh::Hit(const Ray &ray, float t_max, HitRecords &record) const {
         HitRecords temp{};
         bool hit_tri = false;
         float closest = t_max;
 
-        for (auto &tri: m_Triangles) {
-            if (tri->Hit(ray, t_max, temp) && temp.m_T < closest) {
+        for (uint32_t i = 0; i < m_TriCount; i++) {
+            if (m_Triangles[i].Hit(ray, t_max, temp) && temp.m_T < closest) {
                 hit_tri = true;
                 closest = temp.m_T;
                 record = temp;
@@ -98,13 +116,14 @@ namespace LumenRender {
         return hit_tri;
     }
 
-    bool Triangle_Mesh::GetBounds(AABB &outbox) const {
+    bool Mesh::GetBounds(AABB &outbox) const {
         AABB tri_box;
-        for (auto &tri: m_Triangles) {
-            tri->GetBounds(tri_box);
+        for (uint32_t i = 0; i < m_TriCount; i++) {
+            m_Triangles[i].GetBounds(tri_box);
             outbox = AABB::Union(outbox, tri_box);
         }
         return true;
     }
+
 
 } // LumenRender

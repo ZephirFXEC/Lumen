@@ -9,7 +9,7 @@
 
 namespace LumenRender {
 
-    struct HitRecords {
+    struct alignas(32) HitRecords {
         glm::vec3 m_Position;
         uint32_t m_Index;
         glm::vec3 m_Normal;

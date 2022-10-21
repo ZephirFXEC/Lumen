@@ -286,6 +286,8 @@ namespace Lumen {
             return;
 
         // TODO: max size?
+        if (width > 4096 || height > 4096)
+            return;
 
 
         m_Width = width;

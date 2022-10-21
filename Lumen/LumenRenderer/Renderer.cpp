@@ -20,8 +20,6 @@ namespace LumenRender {
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
-        m_ActiveBVH->BuildBVH(*m_ActiveScene);
-
 #if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
@@ -84,32 +82,19 @@ namespace LumenRender {
         ray.Direction = m_ActiveCamera->GetRayDirections()[y * m_Image->GetWidth() + x];
 
         glm::vec3 color(0.0f);
-        float multiplier = 1.0f;
 
-        int bounces = 1;
-        for (int i = 0; i < bounces; i++) {
-            HitRecords payload = TraceRay(ray);
-            if (payload.m_T < 0.0f) {
+        HitRecords payload = TraceRay(ray);
 
-                auto t = 0.5f*(glm::normalize(ray.Direction).y + 1.0f);
-                color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
-
-                break;
-            }
-
-            glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
-            float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
-
-            glm::vec3 sphereColor = { 1.0f, 0.2f, 0.3f };
-            sphereColor *= lightIntensity;
-            color += sphereColor * multiplier;
-
-            multiplier *= 0.7f;
-
-            ray.Origin = payload.m_Position + payload.m_Normal * 0.0001f;
-            ray.Direction = glm::reflect(ray.Direction, payload.m_Normal);
-
+        if (payload.m_T < 0.0f) {
+            auto t = 0.5f*(glm::normalize(ray.Direction).y + 1.0f);
+            color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
         }
+
+        glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
+        float lightIntensity = glm::max(glm::dot(payload.m_Normal, -lightDir), 0.0f); // == cos(angle)
+        glm::vec3 sphereColor = { 1.0f, 0.2f, 0.3f };
+        sphereColor *= lightIntensity;
+        color += sphereColor;
 
         return { color, 1.0f };
     }

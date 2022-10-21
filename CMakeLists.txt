@@ -35,8 +35,8 @@ if(WIN32)
             Lumen/LumenRenderer/Scene/Scene.hpp
             Lumen/LumenRenderer/Scene/Object.cpp
             Lumen/LumenRenderer/Scene/Object.hpp
-            Lumen/LumenRenderer/Structure/Triangle_Mesh.cpp
-            Lumen/LumenRenderer/Structure/Triangle_Mesh.hpp
+            Lumen/LumenRenderer/Structure/Mesh.cpp
+            Lumen/LumenRenderer/Structure/Mesh.hpp
             Lumen/LumenRenderer/Structure/Triangle.cpp
             Lumen/LumenRenderer/Structure/Triangle.hpp
             Lumen/LumenRenderer/Accelerators/Aabb.cpp
