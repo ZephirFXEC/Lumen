@@ -31,9 +31,9 @@ namespace LumenRender {
         std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
-        HitRecords TraceRay(const LumenRender::Ray &ray);
+        HitRecords TraceRay(LumenRender::Ray &ray);
 
-        static HitRecords Miss(const LumenRender::Ray &ray);
+        static HitRecords Miss(LumenRender::Ray &ray);
 
         glm::vec4 PerPixel(uint32_t x, uint32_t y);
 

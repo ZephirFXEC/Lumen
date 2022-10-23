@@ -5,7 +5,7 @@
 #include "Triangle.hpp"
 
 namespace LumenRender {
-    bool Triangle::Hit(const Ray &ray, float t_max, HitRecords &record) const {
+    bool Triangle::Hit(Ray &ray, float t_max) const {
         float u, v, temp;
         glm::vec3 _e1 = vertex1 - vertex0;
         glm::vec3 _e2 = vertex2 - vertex0;
@@ -27,10 +27,10 @@ namespace LumenRender {
         temp = glm::dot(_e2, qvec) * inv_det;
         if (temp < ray.Max) {
             if (temp > ray.Min) {
-                record.m_T = temp;
-                record.m_Position = ray.At(record.m_T);
+                ray.m_Record.m_T = temp;
+                ray.m_Record.m_Position = ray.At(ray.m_Record.m_T);
                 // TODO Proper Normals and UVs
-                record.m_Normal = glm::normalize(glm::cross(_e1, _e2));
+                ray.m_Record.m_Normal = glm::normalize(glm::cross(_e1, _e2));
 
                 return true;
             }

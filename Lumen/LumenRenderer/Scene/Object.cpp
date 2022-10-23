@@ -7,17 +7,17 @@
 
 namespace LumenRender {
 
-    bool Sphere::Hit(const Ray &ray, float t_max, HitRecords &record) const {
+    bool Sphere::Hit(Ray &ray, float t_max) const {
         float t;
-        if (!glm::intersectRaySphere(ray.Origin, ray.Direction, m_Center, m_Radius * m_Radius, t)) {
-            return false;
+        if (glm::intersectRaySphere(ray.Origin, ray.Direction, m_Center, m_Radius * m_Radius, t)) {
+            if (t < t_max) {
+                ray.m_Record.m_T = t;
+                ray.m_Record.m_Position = ray.At(t);
+                ray.m_Record.m_Normal = glm::normalize(ray.m_Record.m_Position - m_Center);
+                return true;
+            }
         }
-
-        record.m_Position = ray.At(t);
-        record.m_Normal = glm::normalize(record.m_Position - m_Center);
-        record.m_T = t;
-
-        return true;
+        return false;
     }
 
     bool Sphere::GetBounds(AABB &outbox) const {
@@ -26,15 +26,15 @@ namespace LumenRender {
     }
 
 
-    bool Plane::Hit(const Ray &ray, float t_max, HitRecords &record) const {
+    bool Plane::Hit(Ray &ray, float t_max) const {
         float t;
         if (!glm::intersectRayPlane(ray.Origin, ray.Direction, m_Center, m_Normal, t)) {
             return false;
         }
 
-        record.m_Position = ray.At(t);
-        record.m_Normal = m_Normal;
-        record.m_T = t;
+        ray.m_Record.m_Position = ray.At(t);
+        ray.m_Record.m_Normal = m_Normal;
+        ray.m_Record.m_T = t;
 
         return true;
     }

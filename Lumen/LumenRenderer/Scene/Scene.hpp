@@ -40,7 +40,7 @@ namespace LumenRender {
         }
 
 
-        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
+        bool Hit(Ray &ray, float t_max) const override;
 
         bool GetBounds(AABB &outbox) const override;
 

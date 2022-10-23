@@ -101,16 +101,16 @@ namespace LumenRender {
         std::cout << "> Successfully opened " << inputfile << "! \n\n";
     }
 
-    bool Mesh::Hit(const Ray &ray, float t_max, HitRecords &record) const {
+    bool Mesh::Hit(Ray &ray, float t_max) const {
         HitRecords temp{};
         bool hit_tri = false;
         float closest = t_max;
 
         for (uint32_t i = 0; i < m_TriCount; i++) {
-            if (m_Triangles[i].Hit(ray, t_max, temp) && temp.m_T < closest) {
+            if (m_Triangles[i].Hit(ray, t_max) && temp.m_T < closest) {
                 hit_tri = true;
                 closest = temp.m_T;
-                record = temp;
+                ray.m_Record = temp;
             }
         }
         return hit_tri;

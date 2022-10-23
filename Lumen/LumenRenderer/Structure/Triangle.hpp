@@ -15,7 +15,7 @@ namespace LumenRender {
         union { glm::vec3 vertex2{}; __m128 v2; };
         union { glm::vec3 centroid{}; __m128 centroid4; }; // total size: 64 bytes
 
-        bool Hit(const Ray &ray, float t_max, HitRecords &record) const override;
+        bool Hit(Ray &ray, float t_max) const override;
 
         bool GetBounds(AABB &outbox) const override;
     };

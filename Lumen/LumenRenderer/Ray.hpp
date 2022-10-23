@@ -9,14 +9,14 @@
 
 namespace LumenRender {
 
-    struct alignas(32) HitRecords {
+    struct HitRecords {
         glm::vec3 m_Position;
         uint32_t m_Index;
         glm::vec3 m_Normal;
         float m_T;
     };
 
-    struct Ray { // Ray descriptor organized like this for better memory alignment
+    __declspec(align(64)) struct Ray { // Ray descriptor organized like this for better memory alignment
 
         Ray() = default;
 
@@ -27,10 +27,11 @@ namespace LumenRender {
 
 
         glm::vec3 Origin{};
-        float Min = 0.000001f;
+        float Min = 0.0f;
         glm::vec3 Direction{};
         float Max = std::numeric_limits<float>::max();
-    };
+        HitRecords m_Record{};
+    }; // total size 64 bytes
 
 }
 #endif //LUMEN_RAY_HPP
