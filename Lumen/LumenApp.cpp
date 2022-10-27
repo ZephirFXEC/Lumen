@@ -15,12 +15,10 @@ public:
 
         //m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
         //m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-        //m_Scene.AddObject(new LumenRender::Triangle_Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)"));
+        auto *mesh = new LumenRender::Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        auto *sphere = new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1);
+        m_Scene.AddObject(sphere);
 
-        //generate random spheres
-        for (int i = 0; i < 50; i++) {
-            m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), 0.7f));
-        }
     }
 
     void OnUpdate(float ts) override {
@@ -45,14 +43,14 @@ public:
         /*
         ImGui::BeginTable("Objects", 2);
         ImGui::TableSetupColumn("Object");
-        ImGui::TableSetupColumn("Index");
+        ImGui::TableSetupColumn("Polycount");
         ImGui::TableHeadersRow();
-        for (auto& object : m_Scene.GetObjects()) {
+        for (const auto& object : m_Scene.GetObjects()) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%s", object->GetName().c_str());
+            ImGui::Text("%s", object.second->GetType() == LumenRender::ObjectType::MESH ? "Mesh" : "Sphere");
             ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%d", object->m_Index);
+            ImGui::Text("%d", m_Scene.);
         }
         ImGui::EndTable();
         ImGui::End();

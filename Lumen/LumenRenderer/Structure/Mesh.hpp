@@ -21,14 +21,14 @@ namespace LumenRender {
         explicit Mesh(const char *file_path);
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
+        ObjectType GetType() const override { return ObjectType::MESH; }
 
     public:
         std::vector<tinyobj::shape_t> m_shapes;
         std::vector<tinyobj::material_t> m_materials;
-        LumenRender::Triangle* m_Triangles;
-        LumenRender::TriData* m_TriData;
+        std::vector<LumenRender::Triangle*> m_Triangles{};
+        std::vector<LumenRender::TriData*> m_TriData{};
         uint32_t m_TriCount = 0;
         glm::vec3 *P = nullptr, *N = nullptr;
 

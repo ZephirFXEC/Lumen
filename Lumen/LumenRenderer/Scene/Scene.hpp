@@ -41,8 +41,8 @@ namespace LumenRender {
 
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
+        ObjectType GetType() const override { return ObjectType::SCENE; }
 
     public:
         std::unordered_map<uint32_t, Object *> m_Objects;

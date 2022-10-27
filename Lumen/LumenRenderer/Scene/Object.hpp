@@ -12,13 +12,20 @@
 
 
 namespace LumenRender {
+    enum class ObjectType {
+        SPHERE,
+        MESH,
+        TRIANGLE,
+        PLANE,
+        SCENE
+    };
+
     class Object {
     public:
         virtual ~Object() = default;
-
         virtual bool Hit(Ray &ray, float t_max) const = 0;
-
         virtual bool GetBounds(AABB &outbox) const = 0;
+        virtual ObjectType GetType() const = 0;
     };
 
     class Sphere : public Object {
@@ -28,8 +35,8 @@ namespace LumenRender {
         Sphere(const glm::vec3 &center, float radius) : m_Center(center), m_Radius(radius) {}
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
+        ObjectType GetType() const override { return ObjectType::SPHERE; }
 
     public:
         glm::vec3 m_Center{};
@@ -44,8 +51,8 @@ namespace LumenRender {
         Plane(const glm::vec3 &center, const glm::vec3 &normal) : m_Center(center), m_Normal(normal) {}
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
+        ObjectType GetType() const override { return ObjectType::PLANE; }
 
     public:
         glm::vec3 m_Center{};

@@ -16,15 +16,15 @@ namespace LumenRender {
         union { glm::vec3 centroid{}; __m128 centroid4; }; // total size: 64 bytes
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
+        ObjectType GetType() const override { return ObjectType::TRIANGLE; }
+
+        glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
     };
 
     struct TriData {
         glm::vec3 N[3];
         glm::vec2 UV[3];
-
-
         char padding; // total size: 64 bytes
     };
 
