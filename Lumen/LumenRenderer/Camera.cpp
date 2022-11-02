@@ -114,8 +114,9 @@ namespace LumenRender {
                 coord = coord * 2.0f - 1.0f; // -1 -> 1
 
                 glm::vec4 target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
-                glm::vec3 rayDirection = glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
-                m_RayDirections[x + y * m_ViewportWidth] = rayDirection;
+                glm::vec3 rayDirection = glm::vec3(
+                        m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
+                m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
 
             }
         }

@@ -3,6 +3,7 @@
 //
 
 #include <tbb/tbb.h>
+#include <numeric>
 #include "Renderer.hpp"
 
 namespace LumenRender {
@@ -15,11 +16,28 @@ namespace LumenRender {
             auto a = static_cast<uint32_t>(color.a * 255.0f);
             return a << 24 | b << 16 | g << 8 | r;
         }
+
+        uint32_t ConvertToRGBA_SPP(glm::vec4 color, uint32_t spp) {
+            auto scale = 1.0f / (float)spp;
+
+            glm::vec4 scaledColor = color * scale;
+
+            auto r = static_cast<uint32_t>(glm::clamp(scaledColor.r, 0.0f, 0.999f) * 256);
+            auto g = static_cast<uint32_t>(glm::clamp(scaledColor.g, 0.0f, 0.999f) * 256);
+            auto b = static_cast<uint32_t>(glm::clamp(scaledColor.b, 0.0f, 0.999f) * 256);
+            auto a = static_cast<uint32_t>(glm::clamp(scaledColor.a, 0.0f, 0.999f) * 256);
+
+            return a << 24 | b << 16 | g << 8 | r;
+        }
+
     }
 
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
+
+        const uint32_t depth = 10;
+
 #if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
@@ -48,6 +66,33 @@ namespace LumenRender {
     }
 
 
+    void Renderer::Accumulate(const Camera &camera, const Scene &scene) {
+        m_ActiveCamera = &camera;
+        m_ActiveScene = &scene;
+
+        const uint32_t spp = 1;
+
+        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
+                          [&](const tbb::blocked_range2d<uint32_t> &range) {
+
+                              for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
+                                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
+                                      glm::vec4 color{ 0, 0, 0, 0 };
+                                      for (uint32_t s = 0; s < spp; s++) {
+
+                                          color += glm::clamp(PerPixel(x, y), 0.0f, 1.0f);
+
+                                      }
+                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA_SPP(color, spp);
+                                  }
+                              }
+                          });
+
+
+        m_Image->SetData(m_ImageData);
+    }
+
+
     void Renderer::OnResize(uint32_t width, uint32_t height) {
         if (m_Image) {
             //no resize needed
@@ -66,6 +111,7 @@ namespace LumenRender {
 
     HitRecords Renderer::TraceRay(LumenRender::Ray &ray) {
         HitRecords hitRecords{};
+
         float tmax = std::numeric_limits<float>::max();
 
         if (m_ActiveScene->Hit(ray, tmax)) {
@@ -107,4 +153,5 @@ namespace LumenRender {
         hitRecords = ray.m_Record;
         return hitRecords;
     }
+
 } // LumenRender

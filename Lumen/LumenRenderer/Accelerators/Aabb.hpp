@@ -41,29 +41,29 @@ namespace LumenRender {
 
         static AABB Union(const AABB &a, const AABB &b) {
             AABB ret;
-            ret.pMin = {glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y), glm::min(a.pMin.z, b.pMin.z)};
-            ret.pMax = {glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y), glm::max(a.pMax.z, b.pMax.z)};
+            ret.pMin = { glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y), glm::min(a.pMin.z, b.pMin.z) };
+            ret.pMax = { glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y), glm::max(a.pMax.z, b.pMax.z) };
             return ret;
         }
 
         static AABB Union(const AABB &a, const glm::vec3 &p) {
             AABB ret;
-            ret.pMin = {glm::min(a.pMin.x, p.x), glm::min(a.pMin.y, p.y), glm::min(a.pMin.z, p.z)};
-            ret.pMax = {glm::max(a.pMax.x, p.x), glm::max(a.pMax.y, p.y), glm::max(a.pMax.z, p.z)};
+            ret.pMin = { glm::min(a.pMin.x, p.x), glm::min(a.pMin.y, p.y), glm::min(a.pMin.z, p.z) };
+            ret.pMax = { glm::max(a.pMax.x, p.x), glm::max(a.pMax.y, p.y), glm::max(a.pMax.z, p.z) };
             return ret;
         }
 
-        glm::vec3 Diagonal() const {
+        [[nodiscard]] glm::vec3 Diagonal() const {
             return pMax - pMin;
         }
 
-        float SurfaceArea() const {
+        [[nodiscard]] float SurfaceArea() const {
             glm::vec3 d = pMax - pMin;
             return 2 * (d.x * d.y + d.x * d.z + d.y * d.z);
         }
 
 
-        bool Hit(const LumenRender::Ray &ray, float t_min, float t_max) const;
+        [[nodiscard]] bool Hit(const LumenRender::Ray &ray, float t_min, float t_max) const;
 
         glm::vec3 pMin{};
         glm::vec3 pMax{};

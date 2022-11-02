@@ -16,8 +16,20 @@ public:
         //m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
         //m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         auto *mesh = new LumenRender::Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        auto *plane = new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         auto *sphere = new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1);
-        m_Scene.AddObject(sphere);
+#if 0
+        //Create 30 spheres
+        for (int i = 0; i < 30; i++) {
+            m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(Lumen::Random::Float() * 5.0f,
+                                                                Lumen::Random::Float() * 5.0f,
+                                                                Lumen::Random::Float() * 5.0f), 0.4f));
+        }
+
+#else
+        m_Scene.AddObject(mesh);
+#endif
+
 
     }
 
@@ -30,32 +42,18 @@ public:
         embraceTheDarkness();
 
         ImGui::Begin("Property");
-        ImGui::Checkbox("Pause", &m_toggleRender);
+        ImGui::Checkbox("Accumulate", &m_toggleRender);
+
         if (ImGui::Button("Render")) {
             Render();
         }
+
         ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
         ImGui::End();
 
         ImGui::Begin("Objects");
         ImGui::Text("Objects : %llu", m_Scene.m_Objects.size());
 
-        /*
-        ImGui::BeginTable("Objects", 2);
-        ImGui::TableSetupColumn("Object");
-        ImGui::TableSetupColumn("Polycount");
-        ImGui::TableHeadersRow();
-        for (const auto& object : m_Scene.GetObjects()) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%s", object.second->GetType() == LumenRender::ObjectType::MESH ? "Mesh" : "Sphere");
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%d", m_Scene.);
-        }
-        ImGui::EndTable();
-        ImGui::End();
-
-         */
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
@@ -73,7 +71,7 @@ public:
 
         //toggle a button to pause the render
         if (m_toggleRender) {
-            Render();
+            Accumulate();
         }
     }
 
@@ -167,6 +165,16 @@ public:
 
         m_Renderer.Render(m_Camera, m_Scene);
         m_ElapsedTime = timer.ElapsedMillis();
+    }
+
+    void Accumulate() {
+        Lumen::Timer timer;
+        m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
+        m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
+
+        m_Renderer.Accumulate(m_Camera, m_Scene);
+        m_ElapsedTime = timer.ElapsedMillis();
+
     }
 
 

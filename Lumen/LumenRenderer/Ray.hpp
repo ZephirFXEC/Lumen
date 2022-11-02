@@ -11,7 +11,7 @@ namespace LumenRender {
 
     struct HitRecords {
         glm::vec3 m_Position;
-        uint32_t m_Index;
+        uint32_t m_PrimIndex;
         glm::vec3 m_Normal;
         float m_T;
     };
@@ -19,6 +19,9 @@ namespace LumenRender {
     __declspec(align(64)) struct Ray { // Ray descriptor organized like this for better memory alignment
 
         Ray() = default;
+
+        Ray(const glm::vec3 &origin, const glm::vec3 &direction) :
+                Origin(origin), Direction(direction) {}
 
         Ray(const glm::vec3 &origin, const glm::vec3 &direction, float tMin, float tMax)
                 : Origin(origin), Direction(direction), Min(tMin), Max(tMax) {}

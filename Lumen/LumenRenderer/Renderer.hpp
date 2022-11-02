@@ -26,9 +26,11 @@ namespace LumenRender {
 
         void Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
 
+        void Accumulate(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
+
         void OnResize(uint32_t width, uint32_t height);
 
-        std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
+        [[nodiscard]] std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
         HitRecords TraceRay(LumenRender::Ray &ray);
@@ -39,10 +41,10 @@ namespace LumenRender {
 
     private:
         std::shared_ptr<Lumen::Image> m_Image;
-
         const Camera *m_ActiveCamera{};
         const Scene *m_ActiveScene{};
         uint32_t *m_ImageData = nullptr;
+        uint32_t m_Depth = 5;
     };
 
 } // LumenRender

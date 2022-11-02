@@ -7,6 +7,7 @@
 
 #include "../Scene/Object.hpp"
 #include <xmmintrin.h>
+
 namespace LumenRender {
 
     __declspec(align(128)) struct Triangle : public Object {
@@ -16,10 +17,12 @@ namespace LumenRender {
         union { glm::vec3 centroid{}; __m128 centroid4; }; // total size: 64 bytes
 
         bool Hit(Ray &ray, float t_max) const override;
-        bool GetBounds(AABB &outbox) const override;
-        ObjectType GetType() const override { return ObjectType::TRIANGLE; }
 
-        glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
+        bool GetBounds(AABB &outbox) const override;
+
+        [[nodiscard]] ObjectType GetType() const override { return ObjectType::TRIANGLE; }
+
+        [[nodiscard]] glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
     };
 
     struct TriData {

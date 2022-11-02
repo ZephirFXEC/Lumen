@@ -25,8 +25,8 @@ namespace LumenRender {
             m_Index++;
         }
 
-        void AddObject(Mesh* mesh) {
-            m_Objects.insert({ m_Index, mesh});
+        void AddObject(Mesh *mesh) {
+            m_Objects.insert({ m_Index, mesh });
             m_Index++;
         }
 
@@ -41,8 +41,10 @@ namespace LumenRender {
 
 
         bool Hit(Ray &ray, float t_max) const override;
+
         bool GetBounds(AABB &outbox) const override;
-        ObjectType GetType() const override { return ObjectType::SCENE; }
+
+        [[nodiscard]] ObjectType GetType() const override { return ObjectType::SCENE; }
 
     public:
         std::unordered_map<uint32_t, Object *> m_Objects;

@@ -46,7 +46,7 @@ namespace Lumen {
             return 0;
         }
 
-        static VkFormat WalnutFormatToVulkanFormat(ImageFormat format) {
+        static VkFormat LumenFormatToVulkanFormat(ImageFormat format) {
             switch (format) {
                 case ImageFormat::RGBA:
                     return VK_FORMAT_R8G8B8A8_UNORM;
@@ -63,7 +63,7 @@ namespace Lumen {
     Image::Image(std::string_view path)
             : m_Filepath(path) {
         int width, height, channels;
-        uint8_t *data = nullptr;
+        uint8_t *data;
 
         if (stbi_is_hdr(m_Filepath.c_str())) {
             data = (uint8_t *) stbi_loadf(m_Filepath.c_str(), &width, &height, &channels, 4);
@@ -76,13 +76,13 @@ namespace Lumen {
         m_Width = width;
         m_Height = height;
 
-        AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
+        AllocateMemory();
         SetData(data);
     }
 
     Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void *data)
             : m_Width(width), m_Height(height), m_Format(format) {
-        AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
+        AllocateMemory();
         if (data)
             SetData(data);
     }
@@ -91,12 +91,12 @@ namespace Lumen {
         Release();
     }
 
-    void Image::AllocateMemory(uint64_t size) {
+    void Image::AllocateMemory() {
         VkDevice device = Application::GetDevice();
 
         VkResult err;
 
-        VkFormat vulkanFormat = Utils::WalnutFormatToVulkanFormat(m_Format);
+        VkFormat vulkanFormat = Utils::LumenFormatToVulkanFormat(m_Format);
 
         // Create the Image
         {
@@ -250,7 +250,7 @@ namespace Lumen {
             copy_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             copy_barrier.subresourceRange.levelCount = 1;
             copy_barrier.subresourceRange.layerCount = 1;
-            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL,
+            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr,
                                  0, nullptr, 1, &copy_barrier);
 
             VkBufferImageCopy region = {};
@@ -286,14 +286,12 @@ namespace Lumen {
             return;
 
         // TODO: max size?
-        if (width > 4096 || height > 4096)
-            return;
 
 
         m_Width = width;
         m_Height = height;
 
         Release();
-        AllocateMemory(m_Width * m_Height * Utils::BytesPerPixel(m_Format));
+        AllocateMemory();
     }
 } // Lumen

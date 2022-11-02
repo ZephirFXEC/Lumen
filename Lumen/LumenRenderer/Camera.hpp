@@ -17,19 +17,19 @@ namespace LumenRender {
 
         void OnResize(uint32_t width, uint32_t height);
 
-        const glm::mat4 &GetProjection() const { return m_Projection; }
+        [[nodiscard]] const glm::mat4 &GetProjection() const { return m_Projection; }
 
-        const glm::mat4 &GetInverseProjection() const { return m_InverseProjection; }
+        [[nodiscard]] const glm::mat4 &GetInverseProjection() const { return m_InverseProjection; }
 
-        const glm::mat4 &GetView() const { return m_View; }
+        [[nodiscard]] const glm::mat4 &GetView() const { return m_View; }
 
-        const glm::mat4 &GetInverseView() const { return m_InverseView; }
+        [[nodiscard]] const glm::mat4 &GetInverseView() const { return m_InverseView; }
 
-        const glm::vec3 &GetPosition() const { return m_Position; }
+        [[nodiscard]] const glm::vec3 &GetPosition() const { return m_Position; }
 
-        const glm::vec3 &GetDirection() const { return m_ForwardDirection; }
+        [[nodiscard]] const glm::vec3 &GetDirection() const { return m_ForwardDirection; }
 
-        const std::vector<glm::vec3> &GetRayDirections() const { return m_RayDirections; }
+        [[nodiscard]] const std::vector<glm::vec3> &GetRayDirections() const { return m_RayDirections; }
 
         static float GetRotationSpeed();
 

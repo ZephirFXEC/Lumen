@@ -45,50 +45,43 @@ namespace LumenRender {
         m_TriData.reserve(m_TriCount);
 
         uint32_t triIndex = 0;
-        for (const auto &shape: m_shapes) {
-            for (const auto &index: shape.mesh.indices) {
+        for (auto & shape : m_shapes) {
+            for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
+                auto fv = size_t(shape.mesh.num_face_vertices.at(f));
                 Triangle tri;
                 TriData triData{};
+                std::vector<glm::vec3> pos, norm;
+                std::vector<glm::vec2> uv;
+                for(size_t v = 0; v < fv; v++) {
+                    tinyobj::index_t idx = shape.mesh.indices[triIndex * fv + v];
 
-                tri.vertex0 = glm::vec3(attrib.vertices[3 * index.vertex_index + 0],
-                                        attrib.vertices[3 * index.vertex_index + 1],
-                                        attrib.vertices[3 * index.vertex_index + 2]);
+                    pos.reserve(3); norm.reserve(3); uv.reserve(3);
+                    pos.emplace_back(attrib.vertices[3 * idx.vertex_index + 0],
+                                     attrib.vertices[3 * idx.vertex_index + 1],
+                                     attrib.vertices[3 * idx.vertex_index + 2]);
 
-                tri.vertex1 = glm::vec3(attrib.vertices[3 * index.vertex_index + 3],
-                                        attrib.vertices[3 * index.vertex_index + 4],
-                                        attrib.vertices[3 * index.vertex_index + 5]);
+                    norm.emplace_back(attrib.normals[3 * idx.normal_index + 0],
+                                      attrib.normals[3 * idx.normal_index + 1],
+                                      attrib.normals[3 * idx.normal_index + 2]);
 
-                tri.vertex2 = glm::vec3(attrib.vertices[3 * index.vertex_index + 6],
-                                        attrib.vertices[3 * index.vertex_index + 7],
-                                        attrib.vertices[3 * index.vertex_index + 8]);
+                    uv.emplace_back(attrib.texcoords[2 * idx.texcoord_index + 0],
+                                    attrib.texcoords[2 * idx.texcoord_index + 1]);
 
-                tri.centroid = (tri.vertex0 + tri.vertex1 + tri.vertex2) / 3.0f;
+                    tri.vertex0 = pos[0];
+                    tri.vertex1 = pos[1];
+                    tri.vertex2 = pos[2];
+                    triData.N[0] = norm[0];
+                    triData.N[1] = norm[1];
+                    triData.N[2] = norm[2];
+                    triData.UV[0] = uv[0];
+                    triData.UV[1] = uv[1];
 
-
-                if(index.normal_index >= 0) {
-                    triData.N[0] = glm::vec3(attrib.normals[3 * index.normal_index + 0],
-                                             attrib.normals[3 * index.normal_index + 1],
-                                             attrib.normals[3 * index.normal_index + 2]);
-
-                    triData.N[1] = glm::vec3(attrib.normals[3 * index.normal_index + 3],
-                                             attrib.normals[3 * index.normal_index + 4],
-                                             attrib.normals[3 * index.normal_index + 5]);
-
-                    triData.N[2] = glm::vec3(attrib.normals[3 * index.normal_index + 6],
-                                             attrib.normals[3 * index.normal_index + 7],
-                                             attrib.normals[3 * index.normal_index + 8]);
                 }
-
-                if(index.texcoord_index >= 0) {
-                    triData.UV[0] = glm::vec2(attrib.texcoords[2 * index.texcoord_index + 0],
-                                              attrib.texcoords[2 * index.texcoord_index + 1]);
-
-                    triData.UV[1] = glm::vec2(attrib.texcoords[2 * index.texcoord_index + 2],
-                                              attrib.texcoords[2 * index.texcoord_index + 3]);
-                }
+                pos.clear(); norm.clear(); uv.clear();
 
                 m_Triangles.push_back(new Triangle(tri));
                 m_TriData.push_back(new TriData(triData));
+                triIndex++;
             }
         }
     }

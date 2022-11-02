@@ -39,9 +39,9 @@ namespace Lumen {
 
         void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
 
-        float GetTime();
+        static float GetTime();
 
-        GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
+        [[nodiscard]] GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
 
 
         template <typename T>
