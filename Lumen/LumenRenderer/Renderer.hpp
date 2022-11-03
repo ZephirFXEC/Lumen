@@ -26,8 +26,6 @@ namespace LumenRender {
 
         void Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
 
-        void Accumulate(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
-
         void OnResize(uint32_t width, uint32_t height);
 
         [[nodiscard]] std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
@@ -44,7 +42,6 @@ namespace LumenRender {
         const Camera *m_ActiveCamera{};
         const Scene *m_ActiveScene{};
         uint32_t *m_ImageData = nullptr;
-        uint32_t m_Depth = 5;
     };
 
 } // LumenRender

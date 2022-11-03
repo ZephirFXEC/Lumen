@@ -17,7 +17,8 @@ namespace LumenRender {
         MESH,
         TRIANGLE,
         PLANE,
-        SCENE
+        SCENE,
+        BVH
     };
 
     class Object {

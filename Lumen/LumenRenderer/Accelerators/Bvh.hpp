@@ -6,7 +6,6 @@
 #define LUMEN_BVH_HPP
 
 #include "../Scene/Object.hpp"
-#include "../Scene/Scene.hpp"
 #include "../Structure/Mesh.hpp"
 #include <vector>
 
@@ -26,7 +25,7 @@ namespace LumenRender {
     };
 
 
-    __declspec(align(64)) class BVH {
+    __declspec(align(64)) class BVH : public Object {
 
         struct BuildJob {
             uint32_t nodeIdx;
@@ -35,14 +34,17 @@ namespace LumenRender {
 
     public:
         BVH() = default;
-
-        explicit BVH(class Mesh *tri_mesh);
+        explicit BVH(Mesh *tri_mesh);
 
         void Build();
 
         void Refit();
 
-        void Intersect(Ray &ray, uint32_t instanceIdx);
+        bool Hit(Ray &ray, float t_max) const override;
+
+        bool GetBounds(AABB &outbox) const override;
+
+        [[nodiscard]] ObjectType GetType() const override { return ObjectType::BVH; }
 
     private:
         void Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, AABB &bounds);

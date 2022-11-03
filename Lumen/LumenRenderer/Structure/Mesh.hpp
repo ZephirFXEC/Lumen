@@ -16,8 +16,6 @@ namespace LumenRender {
     class Mesh : public Object {
     public:
 
-        explicit Mesh(uint32_t primCount);
-
         explicit Mesh(const char *file_path);
 
         bool Hit(Ray &ray, float t_max) const override;

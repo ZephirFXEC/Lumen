@@ -9,17 +9,6 @@
 namespace LumenRender {
 
 
-    Mesh::Mesh(const uint32_t primCount) {
-        /*
-        m_Triangles = (LumenRender::Triangle *) _aligned_malloc(primCount * sizeof(LumenRender::Triangle), 128);
-        memset((void *) m_Triangles, 0, primCount * sizeof(LumenRender::Triangle));
-        m_TriData = (LumenRender::TriData *) _aligned_malloc(primCount * sizeof(LumenRender::TriData), 64);
-        memset(&m_TriData, 0, primCount * sizeof(LumenRender::TriData));
-        m_TriCount = primCount;
-        */
-    }
-
-
     Mesh::Mesh(const char *file_path) {
         std::string err;
         std::string warn;

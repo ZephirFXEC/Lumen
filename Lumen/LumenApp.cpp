@@ -7,6 +7,7 @@
 #include "LumenRenderer/Renderer.hpp"
 #include "LumenRenderer/Camera.hpp"
 #include "LumenRenderer/Structure/Mesh.hpp"
+#include "LumenRenderer/Scene/Scene.hpp"
 
 class ExampleLayer : public Lumen::Layer {
 public:
@@ -18,17 +19,9 @@ public:
         auto *mesh = new LumenRender::Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
         auto *plane = new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         auto *sphere = new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1);
-#if 0
-        //Create 30 spheres
-        for (int i = 0; i < 30; i++) {
-            m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(Lumen::Random::Float() * 5.0f,
-                                                                Lumen::Random::Float() * 5.0f,
-                                                                Lumen::Random::Float() * 5.0f), 0.4f));
-        }
+        auto *bvh = new LumenRender::BVH(mesh);
 
-#else
-        m_Scene.AddObject(mesh);
-#endif
+        m_Scene.AddObject(sphere);
 
 
     }
@@ -71,7 +64,7 @@ public:
 
         //toggle a button to pause the render
         if (m_toggleRender) {
-            Accumulate();
+            Render();
         }
     }
 
@@ -165,16 +158,6 @@ public:
 
         m_Renderer.Render(m_Camera, m_Scene);
         m_ElapsedTime = timer.ElapsedMillis();
-    }
-
-    void Accumulate() {
-        Lumen::Timer timer;
-        m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
-        m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
-
-        m_Renderer.Accumulate(m_Camera, m_Scene);
-        m_ElapsedTime = timer.ElapsedMillis();
-
     }
 
 

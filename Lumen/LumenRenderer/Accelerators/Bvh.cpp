@@ -11,9 +11,9 @@
 
 namespace LumenRender {
 
-    BVH::BVH(struct Mesh *tri_mesh) {
+    BVH::BVH(Mesh *tri_mesh) {
         mesh = tri_mesh;
-        bvhNode = (BVHNode *) _aligned_malloc(sizeof(BVHNode) * mesh->m_TriCount * 2 + 64, 64);
+        bvhNode = (BVHNode *) _aligned_malloc(sizeof(BVHNode) * mesh->m_TriCount * 2 + 128, 128);
         triIdx = new uint32_t[mesh->m_TriCount];
         Build();
     }
@@ -24,10 +24,10 @@ namespace LumenRender {
         nodesUsed = 2;
         memset(bvhNode, 0, mesh->m_TriCount * 2 * sizeof(BVHNode));
         // populate triangle index array
-        for (int i = 0; i < mesh->m_TriCount; i++) triIdx[i] = i;
+        for (uint32_t i = 0; i < mesh->m_TriCount; i++) triIdx[i] = i;
         // calculate triangle centroids for partitioning
         auto tri = mesh->m_Triangles;
-        for (int i = 0; i < mesh->m_TriCount; i++)
+        for (uint32_t i = 0; i < mesh->m_TriCount; i++)
             mesh->m_Triangles.at(i)->centroid =
                     (tri.at(i)->vertex0 + tri.at(i)->vertex1 + tri.at(i)->vertex2) * 0.3333f;
         // assign all triangles to root node
@@ -123,7 +123,7 @@ namespace LumenRender {
 
         for (uint32_t first = node.leftFirst, i = 0; i < node.triCount; i++) {
             uint32_t leafTriIdx = triIdx[first + i];
-            Triangle *leafTri = mesh->m_Triangles.at(leafTriIdx);
+            auto leafTri = mesh->m_Triangles.at(leafTriIdx);
             node.aabbMin = glm::min(node.aabbMin, leafTri->vertex0);
             node.aabbMin = glm::min(node.aabbMin, leafTri->vertex1);
             node.aabbMin = glm::min(node.aabbMin, leafTri->vertex2);
@@ -199,22 +199,42 @@ namespace LumenRender {
 
     }
 
-    void BVH::Intersect(Ray &ray, uint32_t instanceIdx) {
 
+    float BVH::IntersectAABB(Ray &ray, glm::vec3 bmin, glm::vec3 bmax) {
+        float tx1 = (bmin.x - ray.Origin.x) * ray.Direction.x, tx2 = (bmax.x - ray.Origin.x) * ray.Direction.x;
+        float tmin = glm::min( tx1, tx2 ), tmax = glm::max( tx1, tx2 );
+        float ty1 = (bmin.y - ray.Origin.y) * ray.Direction.y, ty2 = (bmax.y - ray.Origin.y) * ray.Direction.y;
+        tmin = glm::max( tmin, glm::min( ty1, ty2 ) ), tmax = glm::min( tmax, glm::max( ty1, ty2 ) );
+        float tz1 = (bmin.z - ray.Origin.z) * ray.Direction.z, tz2 = (bmax.z - ray.Origin.z) * ray.Direction.z;
+        tmin = glm::max( tmin, glm::min( tz1, tz2 ) ), tmax = glm::min( tmax, glm::max( tz1, tz2 ) );
+        if (tmax >= tmin && tmin < ray.m_Record.m_T && tmax > 0) return tmin; else return 1e30f;
+    }
+
+    bool BVH::Hit(Ray &ray, float t_max) const {
         BVHNode* node = &bvhNode[0], * stack[64];
         uint32_t stackPtr = 0;
+        bool hit_tri = false;
         while (true)
         {
+
+            Ray temp = ray;
+            float closest = t_max;
+
             if (node->isLeaf())
             {
                 for (uint32_t i = 0; i < node->triCount; i++)
                 {
-                    uint32_t instPrim = (instanceIdx << 20) + triIdx[node->leftFirst + i];
-                    if(mesh->m_Triangles.at(instPrim & 0xfffff )->Hit(ray, std::numeric_limits<float>::max())) {;
-                        ray.m_Record.m_PrimIndex = instPrim;
+                    auto triangle = mesh->m_Triangles.at(triIdx[node->leftFirst + i]);
+                    if (triangle->Hit(temp, closest))
+                    {
+                        ray.m_Record = temp.m_Record;
+                        closest = ray.m_Record.m_T;
+                        hit_tri = true;
                     }
                 }
-                if (stackPtr == 0) break; else node = stack[--stackPtr];
+
+                if (stackPtr == 0) break;
+                else node = stack[--stackPtr];
                 continue;
             }
             BVHNode* child1 = &bvhNode[node->leftFirst];
@@ -233,16 +253,11 @@ namespace LumenRender {
                 if (dist2 != 1e30f) stack[stackPtr++] = child2;
             }
         }
-
+        return hit_tri;
     }
 
-    float BVH::IntersectAABB(Ray &ray, glm::vec3 bmin, glm::vec3 bmax) {
-        float tx1 = (bmin.x - ray.Origin.x) * ray.Direction.x, tx2 = (bmax.x - ray.Origin.x) * ray.Direction.x;
-        float tmin = glm::min( tx1, tx2 ), tmax = glm::max( tx1, tx2 );
-        float ty1 = (bmin.y - ray.Origin.y) * ray.Direction.y, ty2 = (bmax.y - ray.Origin.y) * ray.Direction.y;
-        tmin = glm::max( tmin, glm::min( ty1, ty2 ) ), tmax = glm::min( tmax, glm::max( ty1, ty2 ) );
-        float tz1 = (bmin.z - ray.Origin.z) * ray.Direction.z, tz2 = (bmax.z - ray.Origin.z) * ray.Direction.z;
-        tmin = glm::max( tmin, glm::min( tz1, tz2 ) ), tmax = glm::min( tmax, glm::max( tz1, tz2 ) );
-        if (tmax >= tmin && tmin < ray.m_Record.m_T && tmax > 0) return tmin; else return 1e30f;
+    bool BVH::GetBounds(AABB &outbox) const {
+        outbox = AABB(bvhNode[0].aabbMin, bvhNode[0].aabbMax);
+        return true;
     }
 } // LumenRender

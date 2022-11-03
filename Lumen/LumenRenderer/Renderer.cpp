@@ -36,13 +36,11 @@ namespace LumenRender {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
 
-        const uint32_t depth = 10;
 
 #if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
-
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
                                       glm::vec4 color = PerPixel(x, y);
@@ -62,33 +60,6 @@ namespace LumenRender {
         }
 
 #endif
-        m_Image->SetData(m_ImageData);
-    }
-
-
-    void Renderer::Accumulate(const Camera &camera, const Scene &scene) {
-        m_ActiveCamera = &camera;
-        m_ActiveScene = &scene;
-
-        const uint32_t spp = 1;
-
-        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
-                          [&](const tbb::blocked_range2d<uint32_t> &range) {
-
-                              for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
-                                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
-                                      glm::vec4 color{ 0, 0, 0, 0 };
-                                      for (uint32_t s = 0; s < spp; s++) {
-
-                                          color += glm::clamp(PerPixel(x, y), 0.0f, 1.0f);
-
-                                      }
-                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA_SPP(color, spp);
-                                  }
-                              }
-                          });
-
-
         m_Image->SetData(m_ImageData);
     }
 
@@ -132,6 +103,7 @@ namespace LumenRender {
 
         TraceRay(ray);
 
+        // if we miss the scene, return the background color
         if (ray.m_Record.m_T < 0.0f) {
             auto t = 0.5f*(ray.Direction.y + 1.0f);
             color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);

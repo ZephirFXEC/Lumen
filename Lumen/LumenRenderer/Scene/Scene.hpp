@@ -13,43 +13,35 @@
 
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 
 namespace LumenRender {
 
     class Scene : public Object {
+
     public:
+
         Scene() = default;
+        Scene(Scene &other) = delete;
 
-        void AddObject(Object *object) {
-            m_Objects.insert({ m_Index, object });
-            m_Index++;
-        }
+        static Scene *GetInstance();
 
-        void AddObject(Mesh *mesh) {
-            m_Objects.insert({ m_Index, mesh });
-            m_Index++;
-        }
-
-        void Clear() {
-            m_Objects.clear();
-        }
-
-
-        std::unordered_map<uint32_t, Object *> &GetObjects() {
-            return m_Objects;
-        }
-
+        void AddObject(Object *object);
+        void Clear() { m_Objects.clear(); }
 
         bool Hit(Ray &ray, float t_max) const override;
-
         bool GetBounds(AABB &outbox) const override;
-
         [[nodiscard]] ObjectType GetType() const override { return ObjectType::SCENE; }
 
     public:
         std::unordered_map<uint32_t, Object *> m_Objects;
         uint32_t m_Index = 0;
+
+    private:
+        static Scene *m_Instance;
+        static std::mutex m_Mutex;
     };
+
 
 } // LumenRender
 

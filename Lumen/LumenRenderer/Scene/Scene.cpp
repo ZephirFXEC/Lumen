@@ -6,6 +6,24 @@
 
 namespace LumenRender {
 
+
+    Scene *Scene::m_Instance{ nullptr };
+    std::mutex Scene::m_Mutex;
+
+    Scene *Scene::GetInstance() {
+
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if (m_Instance == nullptr) {
+            m_Instance = new Scene();
+        }
+        return m_Instance;
+    }
+
+    void Scene::AddObject(Object *object) {
+        m_Objects.insert({ m_Index, object });
+        m_Index++;
+    }
+
     bool Scene::Hit(Ray &ray, float t_max) const {
         Ray temp = ray;
         bool hit_anything = false;
@@ -36,5 +54,6 @@ namespace LumenRender {
 
         return true;
     }
+
 
 } // LumenRender

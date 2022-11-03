@@ -15,15 +15,15 @@ namespace LumenRender {
         AABB() {
             float minNum = std::numeric_limits<float>::lowest();
             float maxNum = std::numeric_limits<float>::max();
-            pMin = glm::vec3(maxNum, maxNum, maxNum);
-            pMax = glm::vec3(minNum, minNum, minNum);
+            pMin = {maxNum, maxNum, maxNum};
+            pMax = {minNum, minNum, minNum};
         }
 
         explicit AABB(const glm::vec3 &p) : pMin(p), pMax(p) {}
 
         AABB(const glm::vec3 &p1, const glm::vec3 &p2) {
-            pMin = glm::vec3(glm::min(p1.x, p2.x), glm::min(p1.y, p2.y), glm::min(p1.z, p2.z));
-            pMax = glm::vec3(glm::max(p1.x, p2.x), glm::max(p1.y, p2.y), glm::max(p1.z, p2.z));
+            pMin = {glm::min(p1.x, p2.x), glm::min(p1.y, p2.y), glm::min(p1.z, p2.z)};
+            pMax = {glm::max(p1.x, p2.x), glm::max(p1.y, p2.y), glm::max(p1.z, p2.z)};
         }
 
         const glm::vec3 &operator[](int i) const;
@@ -53,6 +53,13 @@ namespace LumenRender {
             return ret;
         }
 
+         static AABB Union(const glm::vec3 &p, const glm::vec3 &p2) {
+            AABB ret;
+            ret.pMin = { glm::min(p.x, p2.x), glm::min(p.y, p2.y), glm::min(p.z, p2.z) };
+            ret.pMax = { glm::max(p.x, p2.x), glm::max(p.y, p2.y), glm::max(p.z, p2.z) };
+            return ret;
+         }
+
         [[nodiscard]] glm::vec3 Diagonal() const {
             return pMax - pMin;
         }
@@ -64,6 +71,8 @@ namespace LumenRender {
 
 
         [[nodiscard]] bool Hit(const LumenRender::Ray &ray, float t_min, float t_max) const;
+
+
 
         glm::vec3 pMin{};
         glm::vec3 pMax{};
