@@ -28,7 +28,6 @@ namespace LumenRender {
         Ray temp = ray;
         bool hit_anything = false;
         float closest_so_far = t_max;
-
         for (const auto &[index, object]: m_Objects) {
             if (object->Hit(temp, t_max) && temp.m_Record.m_T < closest_so_far) {
                 hit_anything = true;

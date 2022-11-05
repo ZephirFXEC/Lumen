@@ -14,23 +14,20 @@ namespace LumenRender {
 
 
     struct BVHNode {
-        union { struct { glm::vec3 aabbMin; uint32_t leftFirst; }; __m128 aabbMin4; };
-        union { struct { glm::vec3 aabbMax; uint32_t triCount; }; __m128 aabbMax4; };
 
-        [[nodiscard]] bool isLeaf() const { return triCount > 0; } // empty BVH leaves do not exist
-        [[nodiscard]] float CalculateNodeCost() const {
-            glm::vec3 e = aabbMax - aabbMin; // extent of the node
-            return (e.x * e.y + e.y * e.z + e.z * e.x) * (float) triCount;
+        AABB m_Bounds;
+        uint32_t m_TriCount{};
+
+        bool isLeaf() const { return m_TriCount > 0; } // empty BVH leaves do not exist
+        float CalculateNodeCost() const {
+            glm::vec3 e = m_Bounds.pMax - m_Bounds.pMin; // extent of the node
+            return 2.0f * (e.x * e.y + e.x * e.z + e.y * e.z); // surface area of the node
         }
     };
 
 
-    __declspec(align(64)) class BVH : public Object {
+    class BVH : public Object {
 
-        struct BuildJob {
-            uint32_t nodeIdx;
-            AABB bounds;
-        };
 
     public:
         BVH() = default;
@@ -38,7 +35,7 @@ namespace LumenRender {
 
         void Build();
 
-        void Refit();
+        void Traversal();
 
         bool Hit(Ray &ray, float t_max) const override;
 
@@ -46,24 +43,6 @@ namespace LumenRender {
 
         [[nodiscard]] ObjectType GetType() const override { return ObjectType::BVH; }
 
-    private:
-        void Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, AABB &bounds);
-
-        void UpdateNodeBounds(uint32_t nodeIdx, AABB &bounds);
-
-        float FindBestSplitPlane(BVHNode &node, int &axis, int &splitPos, AABB &bounds);
-
-        static float IntersectAABB(Ray &ray, glm::vec3 vec1, glm::vec3 vec2);
-
-        class Mesh *mesh = nullptr;
-
-    public:
-        uint32_t *triIdx = nullptr;
-        uint32_t nodesUsed{};
-        BVHNode *bvhNode = nullptr;
-        bool subdivToOnePrim = false; // for TLAS experiment
-        BuildJob buildStack[64];
-        int buildStackPtr{};
 
     };
 

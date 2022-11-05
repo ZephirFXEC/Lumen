@@ -9,17 +9,11 @@
 #include <cmath>
 #include <random>
 
-inline int RandomInt(int min, int max) {
+template <typename T>
+inline T Random(T min, T max) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(min, max);
-    return dis(gen);
-}
-
-inline float RandomFloat(float min, float max) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> dis(min, max);
+    std::uniform_int_distribution<T> dis(min, max);
     return dis(gen);
 }
 

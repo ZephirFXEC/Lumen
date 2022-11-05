@@ -9,11 +9,17 @@
 namespace LumenRender {
 
     namespace Utils {
+
+        glm::vec3 BackgroundColor(const Ray &ray) {
+            auto t = 0.5f*(ray.Direction.y + 1.0f);
+            return (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
+        }
+
         uint32_t ConvertToRGBA(glm::vec4 color) {
-            auto r = static_cast<uint32_t>(color.r * 255.0f);
-            auto g = static_cast<uint32_t>(color.g * 255.0f);
-            auto b = static_cast<uint32_t>(color.b * 255.0f);
-            auto a = static_cast<uint32_t>(color.a * 255.0f);
+            auto r = static_cast<uint8_t>(color.r * 255.0f);
+            auto g = static_cast<uint8_t>(color.g * 255.0f);
+            auto b = static_cast<uint8_t>(color.b * 255.0f);
+            auto a = static_cast<uint8_t>(color.a * 255.0f);
             return a << 24 | b << 16 | g << 8 | r;
         }
 
@@ -22,10 +28,10 @@ namespace LumenRender {
 
             glm::vec4 scaledColor = color * scale;
 
-            auto r = static_cast<uint32_t>(glm::clamp(scaledColor.r, 0.0f, 0.999f) * 256);
-            auto g = static_cast<uint32_t>(glm::clamp(scaledColor.g, 0.0f, 0.999f) * 256);
-            auto b = static_cast<uint32_t>(glm::clamp(scaledColor.b, 0.0f, 0.999f) * 256);
-            auto a = static_cast<uint32_t>(glm::clamp(scaledColor.a, 0.0f, 0.999f) * 256);
+            auto r = static_cast<uint8_t>(glm::clamp(scaledColor.r, 0.0f, 0.999f) * 256);
+            auto g = static_cast<uint8_t>(glm::clamp(scaledColor.g, 0.0f, 0.999f) * 256);
+            auto b = static_cast<uint8_t>(glm::clamp(scaledColor.b, 0.0f, 0.999f) * 256);
+            auto a = static_cast<uint8_t>(glm::clamp(scaledColor.a, 0.0f, 0.999f) * 256);
 
             return a << 24 | b << 16 | g << 8 | r;
         }
@@ -43,12 +49,39 @@ namespace LumenRender {
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
-                                      glm::vec4 color = PerPixel(x, y);
-                                      color = glm::clamp(color, 0.0f, 1.0f);
+                                      glm::vec4 color = glm::clamp(PerPixel(x, y), 0.0f, 1.0f);
                                       m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
                                   }
                               }
                           });
+
+
+/*
+#define TILES 8
+
+        const uint32_t tileWidth = m_Image->GetWidth() / TILES;
+        const uint32_t tileHeight = m_Image->GetHeight() / TILES;
+        const uint32_t numTile = tileWidth * tileHeight;
+
+        // render tiles
+        tbb::parallel_for(tbb::blocked_range3d<uint32_t>(0, TILES, 0, TILES, 0, numTile),
+                          [&](const tbb::blocked_range3d<uint32_t> &range) {
+                              for (uint32_t y = range.pages().begin(); y != range.pages().end(); y++) {
+                                  for (uint32_t x = range.rows().begin(); x != range.rows().end(); x++) {
+                                      for (uint32_t i = range.cols().begin(); i != range.cols().end(); i++) {
+
+                                          uint32_t tileX = i % tileWidth;
+                                          uint32_t tileY = i / tileWidth;
+
+                                          glm::vec4 color = PerPixel(x * tileWidth + tileX, y * tileHeight + tileY);
+                                          color = glm::clamp(color, 0.0f, 1.0f);
+                                          m_ImageData[m_Image->GetWidth() * (y * tileHeight + tileY) + (x * tileWidth + tileX)] = Utils::ConvertToRGBA(color);
+                                      }
+                                  }
+                              }
+                          });
+        */
+
 
 
 #else
@@ -81,17 +114,14 @@ namespace LumenRender {
     }
 
     HitRecords Renderer::TraceRay(LumenRender::Ray &ray) {
-        HitRecords hitRecords{};
 
         float tmax = std::numeric_limits<float>::max();
 
-        if (m_ActiveScene->Hit(ray, tmax)) {
-            hitRecords = ray.m_Record;
-        } else {
-            hitRecords = Miss(ray);
+        if(!m_ActiveScene->Hit(ray, tmax)) {
+            return Miss(ray);
         }
 
-        return hitRecords;
+        return ray.m_Record;
     }
 
     glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y) {
@@ -105,8 +135,7 @@ namespace LumenRender {
 
         // if we miss the scene, return the background color
         if (ray.m_Record.m_T < 0.0f) {
-            auto t = 0.5f*(ray.Direction.y + 1.0f);
-            color = (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
+            color = Utils::BackgroundColor(ray);
         }
 
         glm::vec3 lightDir = glm::normalize(glm::vec3(-1));
@@ -120,10 +149,8 @@ namespace LumenRender {
 
 
     HitRecords Renderer::Miss(Ray &ray) {
-        HitRecords hitRecords{};
         ray.m_Record.m_T = -1.0f;
-        hitRecords = ray.m_Record;
-        return hitRecords;
+        return ray.m_Record;
     }
 
 } // LumenRender

@@ -30,8 +30,6 @@ namespace LumenRender {
         std::vector<LumenRender::Triangle *> m_Triangles{};
         std::vector<LumenRender::TriData *> m_TriData{};
         uint32_t m_TriCount = 0;
-        glm::vec3 *P = nullptr, *N = nullptr;
-
 
     };
 

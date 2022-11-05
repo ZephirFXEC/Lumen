@@ -29,6 +29,7 @@ namespace LumenRender {
         ray.m_Record.m_Position = ray.At(t);
         ray.m_Record.m_Normal = glm::normalize(glm::cross(edge1, edge2));
 
+
         return true;
     }
 
