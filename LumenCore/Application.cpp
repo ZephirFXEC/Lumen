@@ -172,20 +172,24 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
 
     // Create Logical Device (with 1 queue)
     {
-        int device_extension_count = 1;
+        uint32_t device_extension_count = 1;
         const char *device_extensions[] = { "VK_KHR_swapchain" };
         const float queue_priority[] = { 1.0f };
+
         VkDeviceQueueCreateInfo queue_info[1] = {};
         queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_info[0].queueFamilyIndex = g_QueueFamily;
         queue_info[0].queueCount = 1;
         queue_info[0].pQueuePriorities = queue_priority;
-        VkDeviceCreateInfo create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        create_info.queueCreateInfoCount = sizeof(queue_info) / sizeof(queue_info[0]);
-        create_info.pQueueCreateInfos = queue_info;
-        create_info.enabledExtensionCount = device_extension_count;
-        create_info.ppEnabledExtensionNames = device_extensions;
+
+        VkDeviceCreateInfo create_info = {
+                .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+                .queueCreateInfoCount = sizeof(queue_info) / sizeof(queue_info[0]),
+                .pQueueCreateInfos = queue_info,
+                .enabledExtensionCount = device_extension_count,
+                .ppEnabledExtensionNames = device_extensions
+        };
+
         err = vkCreateDevice(g_PhysicalDevice, &create_info, g_Allocator, &g_Device);
         check_vk_result(err);
         vkGetDeviceQueue(g_Device, g_QueueFamily, 0, &g_Queue);
@@ -207,12 +211,14 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
                         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
                         { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       1000 }
                 };
-        VkDescriptorPoolCreateInfo pool_info = {};
-        pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-        pool_info.poolSizeCount = (uint32_t) IM_ARRAYSIZE(pool_sizes);
-        pool_info.pPoolSizes = pool_sizes;
+        VkDescriptorPoolCreateInfo pool_info = {
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+                .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+                .maxSets = 1000 * IM_ARRAYSIZE(pool_sizes),
+                .poolSizeCount = (uint32_t) IM_ARRAYSIZE(pool_sizes),
+                .pPoolSizes = pool_sizes
+        };
+
         err = vkCreateDescriptorPool(g_Device, &pool_info, g_Allocator, &g_DescriptorPool);
         check_vk_result(err);
     }
@@ -322,14 +328,16 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
         check_vk_result(err);
     }
     {
-        VkRenderPassBeginInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        info.renderPass = wd->RenderPass;
-        info.framebuffer = fd->Framebuffer;
-        info.renderArea.extent.width = wd->Width;
-        info.renderArea.extent.height = wd->Height;
-        info.clearValueCount = 1;
-        info.pClearValues = &wd->ClearValue;
+        VkRenderPassBeginInfo info = {
+                .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                .renderPass = wd->RenderPass,
+                .framebuffer = fd->Framebuffer,
+                .renderArea = {{0, 0}, {static_cast<uint32_t>(wd->Width),
+                                        static_cast<uint32_t>(wd->Height)}},
+                .clearValueCount = 1,
+                .pClearValues = &wd->ClearValue
+        };
+
         vkCmdBeginRenderPass(fd->CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
@@ -340,15 +348,17 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
     vkCmdEndRenderPass(fd->CommandBuffer);
     {
         VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        VkSubmitInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        info.waitSemaphoreCount = 1;
-        info.pWaitSemaphores = &image_acquired_semaphore;
-        info.pWaitDstStageMask = &wait_stage;
-        info.commandBufferCount = 1;
-        info.pCommandBuffers = &fd->CommandBuffer;
-        info.signalSemaphoreCount = 1;
-        info.pSignalSemaphores = &render_complete_semaphore;
+        VkSubmitInfo info = {
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .waitSemaphoreCount = 1,
+                .pWaitSemaphores = &image_acquired_semaphore,
+                .pWaitDstStageMask = &wait_stage,
+                .commandBufferCount = 1,
+                .pCommandBuffers = &fd->CommandBuffer,
+                .signalSemaphoreCount = 1,
+                .pSignalSemaphores = &render_complete_semaphore
+        };
+
 
         err = vkEndCommandBuffer(fd->CommandBuffer);
         check_vk_result(err);
@@ -361,13 +371,15 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
     if (g_SwapChainRebuild)
         return;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-    VkPresentInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    info.waitSemaphoreCount = 1;
-    info.pWaitSemaphores = &render_complete_semaphore;
-    info.swapchainCount = 1;
-    info.pSwapchains = &wd->Swapchain;
-    info.pImageIndices = &wd->FrameIndex;
+    VkPresentInfoKHR info = {
+            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &render_complete_semaphore,
+            .swapchainCount = 1,
+            .pSwapchains = &wd->Swapchain,
+            .pImageIndices = &wd->FrameIndex
+    };
+
     VkResult err = vkQueuePresentKHR(g_Queue, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
         g_SwapChainRebuild = true;
@@ -461,20 +473,22 @@ namespace Lumen {
 
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForVulkan(m_WindowHandle, true);
-        ImGui_ImplVulkan_InitInfo init_info = {};
-        init_info.Instance = g_Instance;
-        init_info.PhysicalDevice = g_PhysicalDevice;
-        init_info.Device = g_Device;
-        init_info.QueueFamily = g_QueueFamily;
-        init_info.Queue = g_Queue;
-        init_info.PipelineCache = g_PipelineCache;
-        init_info.DescriptorPool = g_DescriptorPool;
-        init_info.Subpass = 0;
-        init_info.MinImageCount = g_MinImageCount;
-        init_info.ImageCount = wd->ImageCount;
-        init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-        init_info.Allocator = g_Allocator;
-        init_info.CheckVkResultFn = check_vk_result;
+        ImGui_ImplVulkan_InitInfo init_info = {
+                .Instance = g_Instance,
+                .PhysicalDevice = g_PhysicalDevice,
+                .Device = g_Device,
+                .QueueFamily = g_QueueFamily,
+                .Queue = g_Queue,
+                .PipelineCache = g_PipelineCache,
+                .DescriptorPool = g_DescriptorPool,
+                .Subpass = 0,
+                .MinImageCount = static_cast<uint32_t>(g_MinImageCount),
+                .ImageCount = wd->ImageCount,
+                .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
+                .Allocator = g_Allocator,
+                .CheckVkResultFn = check_vk_result
+        };
+
         ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
 
         // Load default font
@@ -500,10 +514,13 @@ namespace Lumen {
 
             ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
-            VkSubmitInfo end_info = {};
-            end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            end_info.commandBufferCount = 1;
-            end_info.pCommandBuffers = &command_buffer;
+            VkSubmitInfo end_info = {
+                    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    .commandBufferCount = 1,
+                    .pCommandBuffers = &command_buffer
+            };
+
+
             err = vkEndCommandBuffer(command_buffer);
             check_vk_result(err);
             err = vkQueueSubmit(g_Queue, 1, &end_info, VK_NULL_HANDLE);
@@ -698,11 +715,13 @@ namespace Lumen {
         // Use any command queue
         VkCommandPool command_pool = wd->Frames[wd->FrameIndex].CommandPool;
 
-        VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
-        cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmdBufAllocateInfo.commandPool = command_pool;
-        cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cmdBufAllocateInfo.commandBufferCount = 1;
+        VkCommandBufferAllocateInfo cmdBufAllocateInfo = {
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                .commandPool = command_pool,
+                .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                .commandBufferCount = 1
+        };
+
 
         VkCommandBuffer &command_buffer = s_AllocatedCommandBuffers[wd->FrameIndex].emplace_back();
         auto err = vkAllocateCommandBuffers(g_Device, &cmdBufAllocateInfo, &command_buffer);
@@ -719,10 +738,12 @@ namespace Lumen {
     void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer) {
         const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-        VkSubmitInfo end_info = {};
-        end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        end_info.commandBufferCount = 1;
-        end_info.pCommandBuffers = &commandBuffer;
+        VkSubmitInfo end_info = {
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .commandBufferCount = 1,
+                .pCommandBuffers = &commandBuffer
+        };
+
         auto err = vkEndCommandBuffer(commandBuffer);
         check_vk_result(err);
 
