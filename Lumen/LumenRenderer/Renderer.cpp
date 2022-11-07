@@ -16,10 +16,13 @@ namespace LumenRender {
         }
 
         uint32_t ConvertToRGBA(glm::vec4 color) {
-            auto r = static_cast<uint8_t>(color.r * 255.0f);
-            auto g = static_cast<uint8_t>(color.g * 255.0f);
-            auto b = static_cast<uint8_t>(color.b * 255.0f);
-            auto a = static_cast<uint8_t>(color.a * 255.0f);
+
+            color = glm::clamp(color, 0.0f, 1.0f);
+
+            auto r = static_cast<uint8_t>(color.r * 255);
+            auto g = static_cast<uint8_t>(color.g * 255);
+            auto b = static_cast<uint8_t>(color.b * 255);
+            auto a = static_cast<uint8_t>(color.a * 255);
             return a << 24 | b << 16 | g << 8 | r;
         }
 
@@ -42,14 +45,13 @@ namespace LumenRender {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
 
-
 #if 1
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
-                                      glm::vec4 color = glm::clamp(PerPixel(x, y), 0.0f, 1.0f);
+                                      glm::vec4 color = PerPixel(x, y);
                                       m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
                                   }
                               }
@@ -74,7 +76,6 @@ namespace LumenRender {
                                           uint32_t tileY = i / tileWidth;
 
                                           glm::vec4 color = PerPixel(x * tileWidth + tileX, y * tileHeight + tileY);
-                                          color = glm::clamp(color, 0.0f, 1.0f);
                                           m_ImageData[m_Image->GetWidth() * (y * tileHeight + tileY) + (x * tileWidth + tileX)] = Utils::ConvertToRGBA(color);
                                       }
                                   }
@@ -88,7 +89,7 @@ namespace LumenRender {
 
         for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
             for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
-                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(glm::clamp(PerPixel(x, y), 0.0f, 1.0f));
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y)));
             }
         }
 
@@ -144,7 +145,7 @@ namespace LumenRender {
         sphereColor *= lightIntensity;
         color += sphereColor;
 
-        return { color, 1.0f };
+        return { color , 1.0f };
     }
 
 

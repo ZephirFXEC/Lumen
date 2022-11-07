@@ -22,8 +22,8 @@ namespace LumenRender {
         explicit AABB(const glm::vec3 &p) : pMin(p), pMax(p) {}
 
         AABB(const glm::vec3 &p1, const glm::vec3 &p2) {
-            pMin = {glm::min(p1.x, p2.x), glm::min(p1.y, p2.y), glm::min(p1.z, p2.z)};
-            pMax = {glm::max(p1.x, p2.x), glm::max(p1.y, p2.y), glm::max(p1.z, p2.z)};
+            pMin = {std::min(p1.x, p2.x), std::min(p1.y, p2.y), std::min(p1.z, p2.z)};
+            pMax = {std::max(p1.x, p2.x), std::max(p1.y, p2.y), std::max(p1.z, p2.z)};
         }
 
         const glm::vec3 &operator[](int i) const;
@@ -60,6 +60,7 @@ namespace LumenRender {
             return ret;
          }
 
+
         [[nodiscard]] glm::vec3 Diagonal() const {
             return pMax - pMin;
         }
@@ -70,7 +71,7 @@ namespace LumenRender {
         }
 
 
-        [[nodiscard]] bool Hit(const LumenRender::Ray &ray, float t_min, float t_max) const;
+        [[nodiscard]] static bool IntersectAABB(const LumenRender::Ray &ray, const AABB& bounds);
 
 
 

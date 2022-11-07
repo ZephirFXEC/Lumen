@@ -18,12 +18,12 @@ public:
         //m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         auto *mesh = new LumenRender::Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
         auto *plane = new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        //auto *sphere = new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1);
+        auto *bvh = new LumenRender::BVH(mesh);
 
         for (int i = 0; i < 30; i++) {
             auto *sphere = new LumenRender::Sphere(glm::vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), 0.4);
-            m_Scene.AddObject(sphere);
         }
+        m_Scene.AddObject(mesh);
 
 
     }

@@ -24,13 +24,14 @@ namespace LumenRender {
 
         [[nodiscard]] ObjectType GetType() const override { return ObjectType::MESH; }
 
-    public:
+    private:
         std::vector<tinyobj::shape_t> m_shapes;
         std::vector<tinyobj::material_t> m_materials;
+
+    public:
         std::vector<LumenRender::Triangle *> m_Triangles{};
         std::vector<LumenRender::TriData *> m_TriData{};
-        uint32_t m_TriCount = 0;
-
+        uint32_t m_TriCount{};
     };
 
 } // LumenRender

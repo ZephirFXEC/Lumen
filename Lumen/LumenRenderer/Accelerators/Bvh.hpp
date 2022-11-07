@@ -13,29 +13,32 @@
 namespace LumenRender {
 
 
-    struct BVHNode {
+    __declspec(align(32)) struct BVHNode {
 
         AABB m_Bounds;
         uint32_t m_TriCount{};
+        uint32_t m_LeftFirst{};
 
         bool isLeaf() const { return m_TriCount > 0; } // empty BVH leaves do not exist
         float CalculateNodeCost() const {
-            glm::vec3 e = m_Bounds.pMax - m_Bounds.pMin; // extent of the node
-            return 2.0f * (e.x * e.y + e.x * e.z + e.y * e.z); // surface area of the node
+            return m_Bounds.SurfaceArea();
         }
     };
 
 
     class BVH : public Object {
-
-
     public:
         BVH() = default;
-        explicit BVH(Mesh *tri_mesh);
+
+        explicit BVH(class Mesh *tri_mesh);
 
         void Build();
 
-        void Traversal();
+        void Subdivide(uint32_t nodeIdx);
+
+        void UpdateNodeBounds(uint32_t nodeIdx) const;
+
+        bool Traversal(Ray& ray, uint32_t nodeIdx, float t_max) const;
 
         bool Hit(Ray &ray, float t_max) const override;
 
@@ -43,7 +46,10 @@ namespace LumenRender {
 
         [[nodiscard]] ObjectType GetType() const override { return ObjectType::BVH; }
 
-
+    public:
+        Mesh *m_mesh{};
+        BVHNode *m_bvhNode{};
+        uint32_t *m_triIdx{}, m_rootNodeIdx{}, m_nodeCount{};
     };
 
 
