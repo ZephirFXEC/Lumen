@@ -12,17 +12,18 @@
 namespace LumenRender {
 
 
-    struct TriData {
-        std::array<glm::vec3, 3> N;
-        std::array<glm::vec3, 3> UVW;
+    struct alignas(32) TriData {
+        glm::vec3 N{};
+        glm::vec2 UV{};
+        glm::vec3 Centroid{};
     };
 
 
-    __declspec(align(64)) class Triangle {
+    class alignas(64) Triangle {
     public:
         Triangle() = default;
         Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2) :
-                vertex0(v0), vertex1(v1), vertex2(v2), centroid((v0+v1+v2)/3.0f) {}
+                vertex0(v0), vertex1(v1), vertex2(v2), _e1(v1 - v0), _e2(v2 - v0) {}
 
 
         bool TriangleIntersect(Ray &ray, float t_max) const;
@@ -35,7 +36,9 @@ namespace LumenRender {
         glm::vec3 vertex0{};
         glm::vec3 vertex1{};
         glm::vec3 vertex2{};
-        glm::vec3 centroid{};
+
+    private:
+        glm::vec3 _e1{}, _e2{};
     };
 
 

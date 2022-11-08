@@ -26,24 +26,26 @@ namespace LumenRender {
         }
 
         m_TriCount = 0;
-        for (const auto &shape: m_shapes) {
-            m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size());
+        for (const auto &shape : m_shapes) {
+            m_TriCount += (uint32_t) shape.mesh.num_face_vertices.size();
         }
 
         m_Triangles.reserve(m_TriCount);
         m_TriData.reserve(m_TriCount);
-
         uint32_t triIndex = 0;
+
         for (auto & shape : m_shapes) {
+
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
                 auto fv = size_t(shape.mesh.num_face_vertices.at(f));
-                TriData triData{};
-                std::vector<glm::vec3> pos, norm;
-                std::vector<glm::vec3> uv;
+
+                std::vector<TriData> triData{};
+                std::vector<glm::vec3> pos{}, norm{};
+                std::vector<glm::vec2> uv{};
+
                 for(size_t v = 0; v < fv; v++) {
                     tinyobj::index_t idx = shape.mesh.indices[triIndex * fv + v];
 
-                    pos.reserve(3); norm.reserve(3); uv.reserve(3);
                     pos.emplace_back(attrib.vertices[3 * idx.vertex_index + 0],
                                      attrib.vertices[3 * idx.vertex_index + 1],
                                      attrib.vertices[3 * idx.vertex_index + 2]);
@@ -53,24 +55,13 @@ namespace LumenRender {
                                       attrib.normals[3 * idx.normal_index + 2]);
 
                     uv.emplace_back(attrib.texcoords[2 * idx.texcoord_index + 0],
-                                    attrib.texcoords[2 * idx.texcoord_index + 1],
-                                    0.0f);
-
-                    uv[v].z = 1.0f - (uv[v].x + uv[v].y);
-
-                    //TODO: Fix this
-                    triData.N[0] = norm[0];
-                    triData.N[1] = norm[1];
-                    triData.N[2] = norm[2];
-                    triData.UVW[0] = uv[0];
-                    triData.UVW[1] = uv[1];
-                    triData.UVW[2] = uv[2];
+                                    attrib.texcoords[2 * idx.texcoord_index + 1]);
 
                 }
-                pos.clear(); norm.clear(); uv.clear();
+                pos.clear(); norm.clear(); uv.clear(); triData.clear();
 
-                m_Triangles.push_back(new Triangle(pos[0], pos[1], pos[2]));
-                m_TriData.push_back(new TriData(triData));
+                m_Triangles.emplace_back(new Triangle(pos[0], pos[1], pos[2]));
+                m_TriData.emplace_back(new TriData(TriData{.N = norm[0], .UV = uv[0]}));
                 triIndex++;
             }
         }
@@ -83,11 +74,12 @@ namespace LumenRender {
         float closest = t_max;
 #if 1
         for (uint32_t i = 0; i < m_TriCount; i++) {
-            if (m_Triangles.at(i)->Hit(temp, t_max) && temp.m_Record.m_T < closest) {
+            if (m_Triangles.at(i)->TriangleIntersect(temp, t_max) && temp.m_Record.m_T < closest) {
                 hit_tri = true;
                 closest = temp.m_Record.m_T;
+                temp.m_Record.m_Normal = m_TriData.at(i)->N;
+                temp.m_Record.m_UV = m_TriData.at(i)->UV;
                 ray = temp;
-                //TODO: read data from m_TriData
             }
         }
 #else
