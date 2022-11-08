@@ -5,7 +5,7 @@
 #include "Triangle.hpp"
 
 namespace LumenRender {
-    bool Triangle::Hit(Ray &ray, float t_max) const {
+    bool Triangle::TriangleIntersect(Ray &ray, float t_max) const {
         const glm::vec3 edge1 = vertex1 - vertex0;
         const glm::vec3 edge2 = vertex2 - vertex0;
         const glm::vec3 pvec = glm::cross(ray.Direction, edge2);
@@ -27,8 +27,12 @@ namespace LumenRender {
 
         ray.m_Record.m_T = t;
         ray.m_Record.m_Position = ray.At(t);
-        ray.m_Record.m_Normal = glm::normalize(glm::cross(edge1, edge2));
-        ray.m_Record.m_UVW = GetBarycentricCoordinates(ray.m_Record.m_Position);
+
+        if(false) // TODO: if mesh doesn't have normals
+            ray.m_Record.m_Normal = glm::normalize(glm::cross(edge1, edge2));
+
+        if(false) // TODO: If mesh doesn't have UVs
+            ray.m_Record.m_UVW = GetBarycentricCoordinates(ray.m_Record.m_Position);
 
 
         return true;
@@ -47,9 +51,7 @@ namespace LumenRender {
 
 
     bool Triangle::GetBounds(AABB &outbox) const {
-        AABB one = AABB(vertex0, vertex1);
-        AABB two = AABB(vertex1, vertex2);
-        outbox = AABB::Union(one, two);
+        outbox = AABB(vertex0, vertex1, vertex2);
         return true;
     }
 
