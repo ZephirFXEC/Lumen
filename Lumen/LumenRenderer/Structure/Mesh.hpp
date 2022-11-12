@@ -11,10 +11,13 @@
 #include <iostream>
 #include <vector>
 
+
 namespace LumenRender {
 
     class Mesh : public Object {
     public:
+
+        explicit Mesh(const uint32_t& triCount);
 
         explicit Mesh(const char *file_path);
 
@@ -32,6 +35,7 @@ namespace LumenRender {
         std::vector<LumenRender::Triangle *> m_Triangles{};
         std::vector<LumenRender::TriData *> m_TriData{};
         uint32_t m_TriCount{};
+        class BVH *m_BVH{};
     };
 
 } // LumenRender

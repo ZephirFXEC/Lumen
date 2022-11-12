@@ -5,33 +5,28 @@
 #include "Triangle.hpp"
 
 namespace LumenRender {
-    bool Triangle::TriangleIntersect(Ray &ray, float t_max) const {
-        const glm::vec3 pvec = glm::cross(ray.Direction, _e2);
-        const float det = glm::dot(_e1, pvec);
+    bool Triangle::TriangleIntersect(Ray &ray, Triangle* tri, const uint32_t& primidx) {
+        const glm::vec3 pvec = glm::cross(ray.Direction, tri->_e2);
+        const float det = glm::dot(tri->_e1, pvec);
 
         if (det < 0.0001f) return false;
 
         const float inv_det = 1.0f / det;
-        glm::vec3 tvec = ray.Origin - vertex0;
+        glm::vec3 tvec = ray.Origin - tri->vertex0;
         const float u = glm::dot(tvec, pvec) * inv_det;
         if (u < 0.0f || u > 1.0f) return false;
 
-        glm::vec3 qvec = glm::cross(tvec, _e1);
+        glm::vec3 qvec = glm::cross(tvec, tri->_e1);
         const float v = glm::dot(ray.Direction, qvec) * inv_det;
         if (v < 0.0f || u + v > 1.0f) return false;
 
-        const float t = glm::dot(_e2, qvec) * inv_det;
-        if (t < 0.0f || t > t_max) return false;
+        const float t = glm::dot(tri->_e2, qvec) * inv_det;
+        if (t < 0.0f || t > std::numeric_limits<float>::max()) return false;
 
         ray.m_Record.m_T = t;
         ray.m_Record.m_Position = ray.At(t);
-
-        if(false) // TODO: if mesh doesn't have normals
-            ray.m_Record.m_Normal = glm::normalize(glm::cross(_e1, _e2));
-
-        if(false) // TODO: If mesh doesn't have UVs
-            ray.m_Record.m_UV = GetBarycentricCoordinates(ray.m_Record.m_Position);
-
+        ray.m_Record.m_UV = glm::vec2(u, v);
+        ray.m_Record.m_PrimIndex = primidx;
 
         return true;
     }

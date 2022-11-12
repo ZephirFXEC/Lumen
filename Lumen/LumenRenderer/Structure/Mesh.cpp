@@ -4,9 +4,15 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include "Mesh.hpp"
-
+#include "../Accelerators/Bvh.hpp"
 
 namespace LumenRender {
+
+    Mesh::Mesh(const uint32_t& triCount) {
+        m_TriCount = triCount;
+        m_Triangles.reserve(triCount);
+        m_TriData.reserve(triCount);
+    }
 
 
     Mesh::Mesh(const char *file_path) {
@@ -72,23 +78,15 @@ namespace LumenRender {
         Ray temp = ray;
         bool hit_tri = false;
         float closest = t_max;
-#if 1
+
         for (uint32_t i = 0; i < m_TriCount; i++) {
-            if (m_Triangles.at(i)->TriangleIntersect(temp, t_max) && temp.m_Record.m_T < closest) {
+            if (Triangle::TriangleIntersect(temp, m_Triangles.at(i), i) && temp.m_Record.m_T < closest) {
                 hit_tri = true;
                 closest = temp.m_Record.m_T;
                 temp.m_Record.m_Normal = m_TriData.at(i)->N;
-                temp.m_Record.m_UV = m_TriData.at(i)->UV;
                 ray = temp;
             }
         }
-#else
-        if(m_BVH->Hit(temp, t_max) && temp.m_Record.m_T < closest) {
-            hit_tri = true;
-            closest = temp.m_Record.m_T;
-            ray = temp;
-        }
-#endif
 
         return hit_tri;
     }
@@ -101,6 +99,8 @@ namespace LumenRender {
         }
         return true;
     }
+
+
 
 
 } // LumenRender

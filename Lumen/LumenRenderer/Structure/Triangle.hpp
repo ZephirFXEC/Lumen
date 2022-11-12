@@ -12,25 +12,25 @@
 namespace LumenRender {
 
 
-    struct alignas(32) TriData {
+    struct TriData {
         glm::vec3 N{};
         glm::vec2 UV{};
         glm::vec3 Centroid{};
     };
 
 
-    class alignas(64) Triangle {
+    class Triangle {
     public:
         Triangle() = default;
         Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2) :
                 vertex0(v0), vertex1(v1), vertex2(v2), _e1(v1 - v0), _e2(v2 - v0) {}
 
 
-        bool TriangleIntersect(Ray &ray, float t_max) const;
+        static bool TriangleIntersect(Ray &ray, Triangle* tri, const uint32_t& primidx);
 
         bool GetBounds(AABB &outbox) const;
 
-        glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
+        [[nodiscard]] glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
 
     public:
         glm::vec3 vertex0{};
