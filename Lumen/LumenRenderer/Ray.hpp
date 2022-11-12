@@ -12,7 +12,8 @@ namespace LumenRender {
     struct HitRecords {
         glm::vec3 m_Position;
         glm::vec3 m_Normal;
-        glm::vec3 m_UVW;
+        glm::vec2 m_UV;
+        uint32_t m_PrimIndex;
         float m_T = 1e30;
     };
 
