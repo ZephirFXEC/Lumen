@@ -6,20 +6,7 @@
 
 namespace LumenRender {
 
-
-    Scene *Scene::m_Instance{ nullptr };
-    std::mutex Scene::m_Mutex;
-
-    Scene *Scene::GetInstance() {
-
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        if (m_Instance == nullptr) {
-            m_Instance = new Scene();
-        }
-        return m_Instance;
-    }
-
-    void Scene::AddObject(Object *object) {
+    void Scene::AddObject(IHittable* object) {
         m_Objects.insert({ m_Index, object });
         m_Index++;
     }
@@ -28,6 +15,7 @@ namespace LumenRender {
         Ray temp = ray;
         bool hit_anything = false;
         float closest_so_far = t_max;
+
         for (const auto &[index, object]: m_Objects) {
             if (object->Hit(temp, t_max) && temp.m_Record.m_T < closest_so_far) {
                 hit_anything = true;
@@ -52,6 +40,14 @@ namespace LumenRender {
         }
 
         return true;
+    }
+
+    std::shared_ptr<IHittable> Scene::DeepCopy() const {
+        std::shared_ptr<Scene> copy = std::make_shared<Scene>();
+        for (const auto &[index, object]: m_Objects) {
+            copy->AddObject(object->DeepCopy().get()); //TODO: object DeepCopy
+        }
+        return copy;
     }
 
 

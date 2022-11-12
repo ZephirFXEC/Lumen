@@ -5,7 +5,7 @@
 #ifndef LUMEN_MESH_HPP
 #define LUMEN_MESH_HPP
 
-#include "../Scene/Object.hpp"
+#include "../Interfaces/IHittable.hpp"
 #include "Triangle.hpp"
 #include "../../Externals/tiny_obj_loader.h"
 #include <iostream>
@@ -14,7 +14,7 @@
 
 namespace LumenRender {
 
-    class Mesh : public Object {
+    class Mesh : public IHittable {
     public:
 
         explicit Mesh(const uint32_t& triCount);
@@ -25,7 +25,7 @@ namespace LumenRender {
 
         bool GetBounds(AABB &outbox) const override;
 
-        [[nodiscard]] ObjectType GetType() const override { return ObjectType::MESH; }
+        [[nodiscard]] std::shared_ptr<IHittable> DeepCopy() const override;
 
     private:
         std::vector<tinyobj::shape_t> m_shapes;
@@ -35,7 +35,6 @@ namespace LumenRender {
         std::vector<LumenRender::Triangle *> m_Triangles{};
         std::vector<LumenRender::TriData *> m_TriData{};
         uint32_t m_TriCount{};
-        class BVH *m_BVH{};
     };
 
 } // LumenRender

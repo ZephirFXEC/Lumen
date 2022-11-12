@@ -5,7 +5,7 @@
 #ifndef LUMEN_SCENE_HPP
 #define LUMEN_SCENE_HPP
 
-#include "Object.hpp"
+#include "../Interfaces/IHittable.hpp"
 #include "../Accelerators/Aabb.hpp"
 #include "../Structure/Triangle.hpp"
 #include "../Structure/Mesh.hpp"
@@ -17,29 +17,26 @@
 
 namespace LumenRender {
 
-    class Scene : public Object {
+    class Scene : public IHittable {
 
     public:
 
         Scene() = default;
-        Scene(Scene &other) = delete;
 
-        static Scene *GetInstance();
+        [[nodiscard]] std::shared_ptr<IHittable> DeepCopy() const override;
 
-        void AddObject(Object *object);
+
+        void AddObject(IHittable* object);
         void Clear() { m_Objects.clear(); }
+
+        auto &GetObjects() const { return m_Objects; }
 
         bool Hit(Ray &ray, float t_max) const override;
         bool GetBounds(AABB &outbox) const override;
-        [[nodiscard]] ObjectType GetType() const override { return ObjectType::SCENE; }
-
-    public:
-        std::unordered_map<uint32_t, Object *> m_Objects;
-        uint32_t m_Index = 0;
 
     private:
-        static Scene *m_Instance;
-        static std::mutex m_Mutex;
+        std::unordered_map<uint32_t, IHittable*> m_Objects;
+        uint32_t m_Index = 0;
     };
 
 

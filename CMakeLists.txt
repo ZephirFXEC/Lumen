@@ -8,13 +8,14 @@ if(WIN32)
     set(CMAKE_TOOLCHAIN_FILE "F:/repos/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
     file(GLOB_RECURSE SOURCES "Lumen/*.cpp" "LumenCore/*.cpp")
-    file(GLOB_RECURSE HEADERS "Lumen/*.h" "LumenCore/*.h")
+    file(GLOB_RECURSE HEADERS "Lumen/*.hpp" "LumenCore/*.hpp")
 
     add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Vulkan REQUIRED)
     find_package(imgui CONFIG REQUIRED)
+    #TODO: Migrate to embree instead of GLM
     find_package(glm CONFIG REQUIRED)
     find_package(tbb CONFIG REQUIRED)
 

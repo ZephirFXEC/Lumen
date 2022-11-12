@@ -46,8 +46,9 @@ namespace LumenRender {
                 auto fv = size_t(shape.mesh.num_face_vertices.at(f));
 
                 std::vector<TriData> triData{};
-                std::vector<glm::vec3> pos{}, norm{};
-                std::vector<glm::vec2> uv{};
+                std::vector<glm::vec3> pos{};
+                glm::vec3 norm{};
+                glm::vec2 uv{};
 
                 for(size_t v = 0; v < fv; v++) {
                     tinyobj::index_t idx = shape.mesh.indices[triIndex * fv + v];
@@ -56,18 +57,18 @@ namespace LumenRender {
                                      attrib.vertices[3 * idx.vertex_index + 1],
                                      attrib.vertices[3 * idx.vertex_index + 2]);
 
-                    norm.emplace_back(attrib.normals[3 * idx.normal_index + 0],
-                                      attrib.normals[3 * idx.normal_index + 1],
-                                      attrib.normals[3 * idx.normal_index + 2]);
+                    norm = {attrib.normals[3 * idx.normal_index + 0],
+                            attrib.normals[3 * idx.normal_index + 1],
+                            attrib.normals[3 * idx.normal_index + 2]};
 
-                    uv.emplace_back(attrib.texcoords[2 * idx.texcoord_index + 0],
-                                    attrib.texcoords[2 * idx.texcoord_index + 1]);
+                    uv = {attrib.texcoords[2 * idx.texcoord_index + 0],
+                          attrib.texcoords[2 * idx.texcoord_index + 1]};
 
                 }
-                pos.clear(); norm.clear(); uv.clear(); triData.clear();
+                pos.clear(); triData.clear();
 
                 m_Triangles.emplace_back(new Triangle(pos[0], pos[1], pos[2]));
-                m_TriData.emplace_back(new TriData(TriData{.N = norm[0], .UV = uv[0]}));
+                m_TriData.emplace_back(new TriData(TriData{.N = norm, .UV = uv}));
                 triIndex++;
             }
         }
@@ -100,7 +101,10 @@ namespace LumenRender {
         return true;
     }
 
-
+    std::shared_ptr<IHittable> Mesh::DeepCopy() const {
+        //TODO: Implement
+        return {};
+    }
 
 
 } // LumenRender
