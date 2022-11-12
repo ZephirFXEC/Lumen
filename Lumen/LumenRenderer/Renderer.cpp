@@ -11,14 +11,11 @@ namespace LumenRender {
     namespace Utils {
 
         glm::vec3 BackgroundColor(const Ray &ray) {
-            auto t = 0.5f*(ray.Direction.y + 1.0f);
-            return (1.0f-t)*glm::vec3(1.0, 1.0, 1.0) + t*glm::vec3(0.5, 0.7, 1.0);
+            auto t = 0.5f * (ray.Direction.y + 1.0f);
+            return (1.0f - t) * glm::vec3(1.0, 1.0, 1.0) + t * glm::vec3(0.5, 0.7, 1.0);
         }
 
         uint32_t ConvertToRGBA(glm::vec4 color) {
-
-            color = glm::clamp(color, 0.0f, 1.0f);
-
             auto r = static_cast<uint8_t>(color.r * 255);
             auto g = static_cast<uint8_t>(color.g * 255);
             auto b = static_cast<uint8_t>(color.b * 255);
@@ -27,7 +24,7 @@ namespace LumenRender {
         }
 
         uint32_t ConvertToRGBA_SPP(glm::vec4 color, uint32_t spp) {
-            auto scale = 1.0f / (float)spp;
+            auto scale = 1.0f / (float) spp;
 
             glm::vec4 scaledColor = color * scale;
 
@@ -41,61 +38,47 @@ namespace LumenRender {
 
     }
 
+    //TODO: Accumulator to let the image converge
+
     void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene) {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
 
-#if 1
+        if (m_FrameSample == 1)
+            memset(m_AccumulationBuffer, 0, m_Image->GetWidth() * m_Image->GetHeight() * sizeof(glm::vec4));
 
         tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
                               for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
                                   for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
+
                                       glm::vec4 color = PerPixel(x, y);
-                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                                      m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+
+                                      glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() +
+                                                                                        x];
+                                      accumulatedColor /= (float) m_FrameSample;
+
+                                      accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0f),
+                                                                    glm::vec4(1.0f));
+                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(
+                                              accumulatedColor);
+
                                   }
                               }
                           });
 
 
-/*
-#define TILES 8
-
-        const uint32_t tileWidth = m_Image->GetWidth() / TILES;
-        const uint32_t tileHeight = m_Image->GetHeight() / TILES;
-        const uint32_t numTile = tileWidth * tileHeight;
-
-        // render tiles
-        tbb::parallel_for(tbb::blocked_range3d<uint32_t>(0, TILES, 0, TILES, 0, numTile),
-                          [&](const tbb::blocked_range3d<uint32_t> &range) {
-                              for (uint32_t y = range.pages().begin(); y != range.pages().end(); y++) {
-                                  for (uint32_t x = range.rows().begin(); x != range.rows().end(); x++) {
-                                      for (uint32_t i = range.cols().begin(); i != range.cols().end(); i++) {
-
-                                          uint32_t tileX = i % tileWidth;
-                                          uint32_t tileY = i / tileWidth;
-
-                                          glm::vec4 color = PerPixel(x * tileWidth + tileX, y * tileHeight + tileY);
-                                          m_ImageData[m_Image->GetWidth() * (y * tileHeight + tileY) + (x * tileWidth + tileX)] = Utils::ConvertToRGBA(color);
-                                      }
-                                  }
-                              }
-                          });
-        */
-
-
-
-#else
-
-        for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
-            for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
-                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y)));
-            }
-        }
-
-#endif
         m_Image->SetData(m_ImageData);
+
+
+        if (m_Settings.Accumulate) {
+            m_FrameSample++;
+        } else {
+            m_FrameSample = 1;
+        }
     }
+
 
 
     void Renderer::OnResize(uint32_t width, uint32_t height) {
@@ -111,14 +94,17 @@ namespace LumenRender {
         }
 
         delete[] m_ImageData;
+        delete[] m_AccumulationBuffer;
+
         m_ImageData = new uint32_t[width * height];
+        m_AccumulationBuffer = new glm::vec4[width * height];
     }
 
     HitRecords Renderer::TraceRay(LumenRender::Ray &ray) {
 
         float tmax = std::numeric_limits<float>::max();
 
-        if(!m_ActiveScene->Hit(ray, tmax)) {
+        if (!m_ActiveScene->Hit(ray, tmax)) {
             return Miss(ray);
         }
 
@@ -145,7 +131,7 @@ namespace LumenRender {
         sphereColor *= lightIntensity;
         color += sphereColor;
 
-        return { color , 1.0f };
+        return { color, 1.0f };
     }
 
 
@@ -153,5 +139,6 @@ namespace LumenRender {
         ray.m_Record.m_T = -1.0f;
         return ray.m_Record;
     }
+
 
 } // LumenRender
