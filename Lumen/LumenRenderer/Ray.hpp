@@ -9,22 +9,24 @@
 
 namespace LumenRender {
 
+    const float MAX = std::numeric_limits<float>::max();
+
     struct HitRecords {
         glm::vec3 m_Position;
         glm::vec3 m_Normal;
         glm::vec2 m_UV;
         uint32_t m_PrimIndex;
-        float m_T = 1e30;
+        float m_T = MAX;
     };
 
-    __declspec(align(64)) struct Ray { // Ray descriptor organized like this for better memory alignment
+    struct Ray { // Ray descriptor organized like this for better memory alignment
 
         Ray() = default;
 
         Ray(const glm::vec3 &origin, const glm::vec3 &direction) :
                 Origin(origin), Direction(direction) {}
 
-        [[nodiscard]] glm::vec3 At(float t) const { return Origin + t * Direction; }
+        [[nodiscard]] auto At(float t) const -> glm::vec3 { return Origin + t * Direction; }
 
 
         glm::vec3 Origin{};

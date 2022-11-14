@@ -8,8 +8,7 @@
 
 namespace LumenRender {
 
-    Mesh::Mesh(const uint32_t& triCount) {
-        m_TriCount = triCount;
+    Mesh::Mesh(const uint32_t& triCount) : m_TriCount(triCount) {
         m_Triangles.reserve(triCount);
         m_TriData.reserve(triCount);
     }
@@ -33,7 +32,7 @@ namespace LumenRender {
 
         m_TriCount = 0;
         for (const auto &shape : m_shapes) {
-            m_TriCount += (uint32_t) shape.mesh.num_face_vertices.size();
+            m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size());
         }
 
         m_Triangles.reserve(m_TriCount);
@@ -43,7 +42,7 @@ namespace LumenRender {
         for (auto & shape : m_shapes) {
 
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-                auto fv = size_t(shape.mesh.num_face_vertices.at(f));
+                auto fv = static_cast<size_t>(shape.mesh.num_face_vertices.at(f));
 
                 std::vector<TriData> triData{};
                 std::vector<glm::vec3> pos{};
@@ -75,7 +74,7 @@ namespace LumenRender {
 
     }
 
-    bool Mesh::Hit(Ray &ray, float t_max) const {
+    auto Mesh::Hit(Ray &ray, float t_max) const -> bool {
         Ray temp = ray;
         bool hit_tri = false;
         float closest = t_max;
@@ -92,7 +91,7 @@ namespace LumenRender {
         return hit_tri;
     }
 
-    bool Mesh::GetBounds(AABB &outbox) const {
+    auto Mesh::GetBounds(AABB &outbox) const -> bool {
         AABB tri_box;
         for (uint32_t i = 0; i < m_TriCount; i++) {
             m_Triangles.at(i)->GetBounds(tri_box);
@@ -101,7 +100,7 @@ namespace LumenRender {
         return true;
     }
 
-    std::shared_ptr<IHittable> Mesh::DeepCopy() const {
+    auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> {
         //TODO: Implement
         return {};
     }

@@ -22,7 +22,6 @@ namespace LumenRender {
 
     struct Settings {
         bool Accumulate = true;
-        uint32_t MaxSample = 100;
     };
 
     class Renderer {
@@ -33,20 +32,20 @@ namespace LumenRender {
 
         void OnResize(uint32_t width, uint32_t height);
 
-        std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
+        [[nodiscard]] auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
-        Settings &GetSettings() { return m_Settings; }
+        auto GetSettings() -> Settings & { return m_Settings; }
 
         void ResetFrame() { m_FrameSample = 1; }
 
     private:
-        HitRecords TraceRay(LumenRender::Ray &ray);
+        auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
 
-        static HitRecords Miss(LumenRender::Ray &ray);
+        static auto Miss(LumenRender::Ray &ray) -> HitRecords;
 
-        glm::vec4 PerPixel(uint32_t x, uint32_t y);
+        auto PerPixel(uint32_t x, uint32_t y) -> glm::vec4;
 
-    private:
+
         std::shared_ptr<Lumen::Image> m_Image;
         Settings m_Settings;
 

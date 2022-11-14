@@ -9,27 +9,25 @@
 #include "LumenRenderer/Structure/Mesh.hpp"
 #include "LumenRenderer/Scene/Scene.hpp"
 
+using namespace LumenRender;
+
 class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
-    : m_Camera(45.0f, 0.01f, 1000.0f) {
+    : m_Camera(45.0F, 0.01F, 1000.0F) {
 
-        //m_Scene.AddObject(new LumenRender::Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
-        //m_Scene.AddObject(new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-        auto *mesh = new LumenRender::Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
-        auto *plane = new LumenRender::Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        auto *bvh = new LumenRender::BVH(mesh);
+        //m_Scene.AddObject(new Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
+        //m_Scene.AddObject(new Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        Mesh *mesh = new Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        BVH *bvh = new BVH(mesh);
 
-        for (int i = 0; i < 30; i++) {
-            auto *sphere = new LumenRender::Sphere(glm::vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), 0.4);
-        }
         m_Scene.AddObject(mesh);
-
-
     }
 
     void OnUpdate(float ts) override {
-        m_Camera.OnUpdate(ts);
+        if(m_Camera.OnUpdate(ts)) {
+            m_Renderer.ResetFrame();
+        }
     }
 
     void OnUIRender() override {
@@ -37,37 +35,36 @@ public:
         embraceTheDarkness();
 
         ImGui::Begin("Property");
-        ImGui::Checkbox("Accumulate", &m_toggleRender);
+        ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
 
-        if (ImGui::Button("Render")) {
-            Render();
+
+        if (ImGui::Button("Reset")) {
+            m_Renderer.ResetFrame();
         }
 
         ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Scene.m_Objects.size());
+        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
 
-        m_ViewportWidth = (int) ImGui::GetContentRegionAvail().x;
-        m_ViewPortHeight = (int) ImGui::GetContentRegionAvail().y;
+        m_ViewportWidth = static_cast<int>(ImGui::GetContentRegionAvail().x);
+        m_ViewPortHeight = static_cast<int>(ImGui::GetContentRegionAvail().y);
 
         auto image = m_Renderer.GetFinalImage();
 
         if (image) {
-            ImGui::Image(image->GetDescriptorSet(), { (float) image->GetWidth(), (float) image->GetHeight() }, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(image->GetDescriptorSet(), { static_cast<float>(image->GetWidth()),
+                                                      static_cast<float>(image->GetHeight()) }, ImVec2(0, 1), ImVec2(1, 0));
         }
         ImGui::End();
         ImGui::PopStyleVar();
 
-        //toggle a button to pause the render
-        if (m_toggleRender) {
-            Render();
-        }
+        Render();
     }
 
     static void embraceTheDarkness() {
@@ -170,10 +167,9 @@ private:
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};
-    bool m_toggleRender{};
 };
 
-Lumen::Application *Lumen::CreateApplication(int argc, char **argv) {
+auto Lumen::CreateApplication(int, char **) -> Lumen::Application * {
     Lumen::ApplicationSpecification spec;
     spec.Name = "Lumen";
 

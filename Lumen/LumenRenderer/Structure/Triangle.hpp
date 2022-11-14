@@ -26,13 +26,13 @@ namespace LumenRender {
                 vertex0(v0), vertex1(v1), vertex2(v2), _e1(v1 - v0), _e2(v2 - v0) {}
 
 
-        static bool TriangleIntersect(Ray &ray, Triangle* tri, const uint32_t& primidx);
+        static auto TriangleIntersect(Ray &ray, Triangle* tri, const uint32_t& primidx) -> bool;
 
-        bool GetBounds(AABB &outbox) const;
+        auto GetBounds(AABB &outbox) const -> bool;
 
-        [[nodiscard]] glm::vec3 GetBarycentricCoordinates(const glm::vec3 &p) const;
+        [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
 
-    public:
+
         glm::vec3 vertex0{};
         glm::vec3 vertex1{};
         glm::vec3 vertex2{};

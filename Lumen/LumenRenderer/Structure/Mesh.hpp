@@ -21,11 +21,11 @@ namespace LumenRender {
 
         explicit Mesh(const char *file_path);
 
-        bool Hit(Ray &ray, float t_max) const override;
+        auto Hit(Ray &ray, float t_max) const -> bool override;
 
-        bool GetBounds(AABB &outbox) const override;
+        auto GetBounds(AABB &outbox) const -> bool override;
 
-        [[nodiscard]] std::shared_ptr<IHittable> DeepCopy() const override;
+        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable> override;
 
     private:
         std::vector<tinyobj::shape_t> m_shapes;
