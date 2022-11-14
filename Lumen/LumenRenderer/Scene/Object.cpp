@@ -3,12 +3,14 @@
 //
 
 #include "Object.hpp"
+
+#include <cmath>
 #include <glm/gtx/intersect.hpp>
 
 namespace LumenRender {
 
-    bool Sphere::Hit(Ray &ray, float t_max) const {
-        float t;
+    auto Sphere::Hit(Ray &ray, float t_max) const -> bool {
+        float t = NAN;
         if (glm::intersectRaySphere(ray.Origin, ray.Direction, m_Center, m_Radius * m_Radius, t)) {
             if (t < t_max) {
                 ray.m_Record.m_T = t;
@@ -20,15 +22,15 @@ namespace LumenRender {
         return false;
     }
 
-    bool Sphere::GetBounds(AABB &outbox) const {
+    auto Sphere::GetBounds(AABB &outbox) const -> bool {
         outbox = { m_Center - glm::vec3(m_Radius), m_Center + glm::vec3(m_Radius) };
         return true;
     }
 
 
-    bool Plane::Hit(Ray &ray, float t_max) const {
-        float t;
-        if (!glm::intersectRayPlane(ray.Origin, ray.Direction, m_Center, m_Normal, t)) {
+    auto Plane::Hit(Ray &ray, float t_max) const -> bool {
+        float t = NAN;
+        if (!glm::intersectRayPlane(ray.Origin, ray.Direction, m_Center, m_Normal, t) || t < t_max) {
             return false;
         }
 
@@ -39,8 +41,8 @@ namespace LumenRender {
         return true;
     }
 
-    bool Plane::GetBounds(AABB &outbox) const {
-        outbox = { m_Center - glm::vec3(0.0001f), m_Center + glm::vec3(0.0001f) };
+    auto Plane::GetBounds(AABB &outbox) const -> bool {
+        outbox = { m_Center - glm::vec3(0.0001F), m_Center + glm::vec3(0.0001F) };
         return true;
     }
 

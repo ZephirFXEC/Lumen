@@ -14,27 +14,30 @@
 namespace Lumen {
 
     void check_vk_result(VkResult err) {
-        if (err == 0)
+        if (err == 0) {
             return;
+}
         fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-        if (err < 0)
+        if (err < 0) {
             abort();
+}
     }
 
     namespace Utils {
 
-        static uint32_t GetVulkanMemoryType(VkMemoryPropertyFlags properties, uint32_t type_bits) {
+        static auto GetVulkanMemoryType(VkMemoryPropertyFlags properties, uint32_t type_bits) -> uint32_t {
             VkPhysicalDeviceMemoryProperties prop;
             vkGetPhysicalDeviceMemoryProperties(Application::GetPhysicalDevice(), &prop);
             for (uint32_t i = 0; i < prop.memoryTypeCount; i++) {
-                if ((prop.memoryTypes[i].propertyFlags & properties) == properties && type_bits & (1 << i))
+                if ((prop.memoryTypes[i].propertyFlags & properties) == properties && ((type_bits & (1 << i)) != 0U)) {
                     return i;
+}
             }
 
             return 0xffffffff;
         }
 
-        static uint32_t BytesPerPixel(ImageFormat format) {
+        static auto BytesPerPixel(ImageFormat format) -> uint32_t {
             switch (format) {
                 case ImageFormat::RGBA:
                     return 4;
@@ -46,7 +49,7 @@ namespace Lumen {
             return 0;
         }
 
-        static VkFormat LumenFormatToVulkanFormat(ImageFormat format) {
+        static auto LumenFormatToVulkanFormat(ImageFormat format) -> VkFormat {
             switch (format) {
                 case ImageFormat::RGBA:
                     return VK_FORMAT_R8G8B8A8_UNORM;
@@ -55,18 +58,20 @@ namespace Lumen {
                 case ImageFormat::None:
                     break;
             }
-            return (VkFormat) 0;
+            return static_cast<VkFormat>(0);
         }
 
     }
 
     Image::Image(std::string_view path)
             : m_Filepath(path) {
-        int width, height, channels;
-        uint8_t *data;
+        int width = 0;
+        int height = 0;
+        int channels = 0;
+        uint8_t *data = nullptr;
 
-        if (stbi_is_hdr(m_Filepath.c_str())) {
-            data = (uint8_t *) stbi_loadf(m_Filepath.c_str(), &width, &height, &channels, 4);
+        if (stbi_is_hdr(m_Filepath.c_str()) != 0) {
+            data = reinterpret_cast<uint8_t *>(stbi_loadf(m_Filepath.c_str(), &width, &height, &channels, 4));
             m_Format = ImageFormat::RGBA32F;
         } else {
             data = stbi_load(m_Filepath.c_str(), &width, &height, &channels, 4);
@@ -84,8 +89,9 @@ namespace Lumen {
     Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void *data)
             : m_Width(width), m_Height(height), m_Format(format) {
         AllocateMemory();
-        if (data)
+        if (data != nullptr) {
             SetData(data);
+}
     }
 
     Image::~Image() {
@@ -158,23 +164,23 @@ namespace Lumen {
                     .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
                     .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
                     .addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-                    .mipLodBias = 0.0f,
+                    .mipLodBias = 0.0F,
                     .anisotropyEnable = VK_TRUE,
-                    .maxAnisotropy = 1.0f,
+                    .maxAnisotropy = 1.0F,
                     .compareEnable = VK_FALSE,
                     .compareOp = VK_COMPARE_OP_ALWAYS,
-                    .minLod = -1000.0f,
-                    .maxLod = 1000.0f,
+                    .minLod = -1000.0F,
+                    .maxLod = 1000.0F,
                     .borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
                     .unnormalizedCoordinates = VK_FALSE
             };
 
-            VkResult err = vkCreateSampler(device, &info, nullptr, &m_Sampler);
+            err= vkCreateSampler(device, &info, nullptr, &m_Sampler);
             check_vk_result(err);
         }
 
         // Create the Descriptor Set:
-        m_DescriptorSet = (VkDescriptorSet) ImGui_ImplVulkan_AddTexture(m_Sampler, m_ImageView,
+        m_DescriptorSet = ImGui_ImplVulkan_AddTexture(m_Sampler, m_ImageView,
                                                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
@@ -206,7 +212,7 @@ namespace Lumen {
 
         VkResult err;
 
-        if (!m_StagingBuffer) {
+        if (m_StagingBuffer == nullptr) {
             // Create the Upload Buffer
             {
                 VkBufferCreateInfo buffer_info = {
@@ -239,7 +245,7 @@ namespace Lumen {
         // Upload to Buffer
         {
             char *map = nullptr;
-            err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, (void **) (&map));
+            err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, reinterpret_cast<void **>(&map));
             check_vk_result(err);
             memcpy(map, data, upload_size);
             VkMappedMemoryRange range[1] = {};
@@ -310,8 +316,9 @@ namespace Lumen {
     }
 
     void Image::Resize(uint32_t width, uint32_t height) {
-        if (m_Image && m_Width == width && m_Height == height)
+        if ((m_Image != nullptr) && m_Width == width && m_Height == height) {
             return;
+}
 
         // TODO: max size?
 

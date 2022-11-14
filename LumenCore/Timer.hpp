@@ -22,20 +22,20 @@ namespace Lumen {
             m_Start = std::chrono::high_resolution_clock::now();
         }
 
-        float Elapsed() {
+        auto Elapsed() -> float {
             return std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001f * 0.001f * 0.001f;
+                    std::chrono::high_resolution_clock::now() - m_Start).count() * 0.001F * 0.001F * 0.001F;
         }
 
-        float ElapsedMillis() {
-            return Elapsed() * 1000.0f;
+        auto ElapsedMillis() -> float {
+            return Elapsed() * 1000.0F;
         }
 
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
     };
 
-    class ScopedTimer {
+    class [[maybe_unused]] ScopedTimer {
     public:
         explicit ScopedTimer(std::string name)
                 : m_Name(std::move(name)) {}

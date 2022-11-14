@@ -13,25 +13,25 @@ namespace LumenRender {
     public:
         Camera(float verticalFOV, float nearClip, float farClip);
 
-        bool OnUpdate(float ts);
+        auto OnUpdate(float ts) -> bool;
 
         void OnResize(uint32_t width, uint32_t height);
 
-        [[nodiscard]] const glm::mat4 &GetProjection() const { return m_Projection; }
+        [[nodiscard]] auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
 
-        [[nodiscard]] const glm::mat4 &GetInverseProjection() const { return m_InverseProjection; }
+        [[nodiscard]] auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
 
-        [[nodiscard]] const glm::mat4 &GetView() const { return m_View; }
+        [[nodiscard]] auto GetView() const -> const glm::mat4 & { return m_View; }
 
-        [[nodiscard]] const glm::mat4 &GetInverseView() const { return m_InverseView; }
+        [[nodiscard]] auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
 
-        [[nodiscard]] const glm::vec3 &GetPosition() const { return m_Position; }
+        [[nodiscard]] auto GetPosition() const -> const glm::vec3 & { return m_Position; }
 
-        [[nodiscard]] const glm::vec3 &GetDirection() const { return m_ForwardDirection; }
+        [[nodiscard]] auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
 
-        [[nodiscard]] const std::vector<glm::vec3> &GetRayDirections() const { return m_RayDirections; }
+        [[nodiscard]] auto GetRayDirections() const -> const std::vector<glm::vec3> & { return m_RayDirections; }
 
-        static float GetRotationSpeed();
+        static auto GetRotationSpeed() -> float;
 
     private:
         void RecalculateProjection();
@@ -40,23 +40,23 @@ namespace LumenRender {
 
         void RecalculateRayDirections();
 
-    private:
-        glm::mat4 m_Projection{ 1.0f };
-        glm::mat4 m_View{ 1.0f };
-        glm::mat4 m_InverseProjection{ 1.0f };
-        glm::mat4 m_InverseView{ 1.0f };
 
-        float m_VerticalFOV = 45.0f;
-        float m_NearClip = 0.1f;
-        float m_FarClip = 100.0f;
+        glm::mat4 m_Projection{ 1.0F };
+        glm::mat4 m_View{ 1.0F };
+        glm::mat4 m_InverseProjection{ 1.0F };
+        glm::mat4 m_InverseView{ 1.0F };
 
-        glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
-        glm::vec3 m_ForwardDirection{ 0.0f, 0.0f, 0.0f };
+        float m_VerticalFOV = 45.0F;
+        float m_NearClip = 0.1F;
+        float m_FarClip = 100.0F;
+
+        glm::vec3 m_Position{ 0.0F, 0.0F, 0.0F };
+        glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };
 
         // Cached ray directions
         std::vector<glm::vec3> m_RayDirections;
 
-        glm::vec2 m_LastMousePosition{ 0.0f, 0.0f };
+        glm::vec2 m_LastMousePosition{ 0.0F, 0.0F };
 
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
     };

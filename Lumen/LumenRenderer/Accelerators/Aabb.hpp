@@ -26,58 +26,64 @@ namespace LumenRender {
             pMax = {std::max(p1.x, p2.x), std::max(p1.y, p2.y), std::max(p1.z, p2.z)};
         }
 
-        const glm::vec3 &operator[](int i) const;
+        // Constructor for Triangle AABBs
+        AABB(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3) {
+            pMin = {std::min(p1.x, std::min(p2.x, p3.x)), std::min(p1.y, std::min(p2.y, p3.y)), std::min(p1.z, std::min(p2.z, p3.z))};
+            pMax = {std::max(p1.x, std::max(p2.x, p3.x)), std::max(p1.y, std::max(p2.y, p3.y)), std::max(p1.z, std::max(p2.z, p3.z))};
+        }
 
-        glm::vec3 &operator[](int i);
 
-        bool operator==(const AABB &b) const {
+        auto operator[](int i) const -> const glm::vec3 &;
+
+        auto operator[](int i) -> glm::vec3 &;
+
+        auto operator==(const AABB &b) const -> bool {
             return b.pMin == pMin && b.pMax == pMax;
         }
 
-        bool operator!=(const AABB &b) const {
+        auto operator!=(const AABB &b) const -> bool {
             return b.pMin != pMin || b.pMax != pMax;
         }
 
 
-        static AABB Union(const AABB &a, const AABB &b) {
+        static auto Union(const AABB &a, const AABB &b) -> AABB {
             AABB ret;
-            ret.pMin = { glm::min(a.pMin.x, b.pMin.x), glm::min(a.pMin.y, b.pMin.y), glm::min(a.pMin.z, b.pMin.z) };
-            ret.pMax = { glm::max(a.pMax.x, b.pMax.x), glm::max(a.pMax.y, b.pMax.y), glm::max(a.pMax.z, b.pMax.z) };
+            ret.pMin = { std::min(a.pMin.x, b.pMin.x), std::min(a.pMin.y, b.pMin.y), std::min(a.pMin.z, b.pMin.z) };
+            ret.pMax = { std::max(a.pMax.x, b.pMax.x), std::max(a.pMax.y, b.pMax.y), std::max(a.pMax.z, b.pMax.z) };
             return ret;
         }
 
-        static AABB Union(const AABB &a, const glm::vec3 &p) {
+        static auto Union(const AABB &a, const glm::vec3 &p) -> AABB {
             AABB ret;
-            ret.pMin = { glm::min(a.pMin.x, p.x), glm::min(a.pMin.y, p.y), glm::min(a.pMin.z, p.z) };
-            ret.pMax = { glm::max(a.pMax.x, p.x), glm::max(a.pMax.y, p.y), glm::max(a.pMax.z, p.z) };
+            ret.pMin = { std::min(a.pMin.x, p.x), std::min(a.pMin.y, p.y), std::min(a.pMin.z, p.z) };
+            ret.pMax = { std::max(a.pMax.x, p.x), std::max(a.pMax.y, p.y), std::max(a.pMax.z, p.z) };
             return ret;
         }
 
-         static AABB Union(const glm::vec3 &p, const glm::vec3 &p2) {
+         static auto Union(const glm::vec3 &p, const glm::vec3 &p2) -> AABB {
             AABB ret;
-            ret.pMin = { glm::min(p.x, p2.x), glm::min(p.y, p2.y), glm::min(p.z, p2.z) };
-            ret.pMax = { glm::max(p.x, p2.x), glm::max(p.y, p2.y), glm::max(p.z, p2.z) };
+            ret.pMin = { std::min(p.x, p2.x), std::min(p.y, p2.y), std::min(p.z, p2.z) };
+            ret.pMax = { std::max(p.x, p2.x), std::max(p.y, p2.y), std::max(p.z, p2.z) };
             return ret;
          }
 
 
-        [[nodiscard]] glm::vec3 Diagonal() const {
+        [[nodiscard]] auto Diagonal() const -> glm::vec3 {
             return pMax - pMin;
         }
 
-        [[nodiscard]] float SurfaceArea() const {
+        [[nodiscard]] auto SurfaceArea() const -> float {
             glm::vec3 d = pMax - pMin;
             return 2 * (d.x * d.y + d.x * d.z + d.y * d.z);
         }
 
 
-        [[nodiscard]] static bool IntersectAABB(const LumenRender::Ray &ray, const AABB& bounds);
+        [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const AABB& bounds) -> bool;
 
 
 
         glm::vec3 pMin{};
         glm::vec3 pMax{};
-
     };
 
 } // LumenRender

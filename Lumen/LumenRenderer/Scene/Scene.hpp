@@ -23,16 +23,16 @@ namespace LumenRender {
 
         Scene() = default;
 
-        [[nodiscard]] std::shared_ptr<IHittable> DeepCopy() const override;
+        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable> override;
 
 
         void AddObject(IHittable* object);
         void Clear() { m_Objects.clear(); }
 
-        auto &GetObjects() const { return m_Objects; }
+        [[nodiscard]] auto GetObjects() const -> auto & { return m_Objects; }
 
-        bool Hit(Ray &ray, float t_max) const override;
-        bool GetBounds(AABB &outbox) const override;
+        auto Hit(Ray &ray, float t_max) const -> bool override;
+        auto GetBounds(AABB &outbox) const -> bool override;
 
     private:
         std::unordered_map<uint32_t, IHittable*> m_Objects;

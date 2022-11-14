@@ -5,13 +5,13 @@
 #ifndef LUMEN_ENTRYPOINT_HPP
 #define LUMEN_ENTRYPOINT_HPP
 
-extern Lumen::Application *Lumen::CreateApplication(int argc, char **argv);
+
 
 bool g_ApplicationRunning = true;
 
 namespace Lumen {
 
-    int Main(int argc, char **argv) {
+    auto Main(int argc, char **argv) -> int {
         while (g_ApplicationRunning) {
             Lumen::Application *app = Lumen::CreateApplication(argc, argv);
             app->Run();
@@ -33,7 +33,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmd
 
 #else
 
-int main(int argc, char **argv) {
+auto main(int argc, char **argv) -> int {
     return Lumen::Main(argc, argv);
 }
 

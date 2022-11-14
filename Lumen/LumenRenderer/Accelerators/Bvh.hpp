@@ -11,16 +11,14 @@
 
 
 namespace LumenRender {
-
-
-    __declspec(align(32)) struct BVHNode {
+    struct BVHNode {
 
         AABB m_Bounds;
         uint32_t m_TriCount{};
         uint32_t m_LeftFirst{};
 
-        bool isLeaf() const { return m_TriCount > 0; } // empty BVH leaves do not exist
-        float CalculateNodeCost() const {
+        [[nodiscard]] auto isLeaf() const -> bool { return m_TriCount > 0; } // empty BVH leaves do not exist
+        [[nodiscard]] auto CalculateNodeCost() const -> float {
             return m_Bounds.SurfaceArea();
         }
     };
@@ -30,7 +28,7 @@ namespace LumenRender {
     public:
         BVH() = default;
 
-        explicit BVH(class Mesh *tri_mesh);
+        explicit BVH(class Mesh* tri_mesh);
 
         void Build();
 
@@ -38,16 +36,14 @@ namespace LumenRender {
 
         void UpdateNodeBounds(uint32_t nodeIdx) const;
 
-        bool Traversal(Ray& ray, uint32_t nodeIdx, float t_max) const;
+        auto Traversal(Ray& ray, uint32_t nodeIdx, float t_max) const -> bool;
 
-        bool Hit(Ray &ray, float t_max) const override;
+        auto Hit(Ray &ray, float t_max) const -> bool override;
 
-        bool GetBounds(AABB &outbox) const override;
+        auto GetBounds(AABB &outbox) const -> bool override;
 
-        [[nodiscard]] ObjectType GetType() const override { return ObjectType::BVH; }
 
-    public:
-        Mesh *m_mesh{};
+        Mesh* m_mesh{};
         BVHNode *m_bvhNode{};
         uint32_t *m_triIdx{}, m_rootNodeIdx{}, m_nodeCount{};
     };

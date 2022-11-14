@@ -14,6 +14,8 @@
 
 #include <imgui.h>
 #include <vulkan/vulkan.h>
+#include <embree3/rtcore.h>
+
 
 struct GLFWwindow;
 
@@ -31,7 +33,7 @@ namespace Lumen {
 
         ~Application();
 
-        static Application &Get();
+        static auto Get() -> Application &;
 
         void Run();
 
@@ -39,9 +41,9 @@ namespace Lumen {
 
         void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
 
-        static float GetTime();
+        static auto GetTime() -> float;
 
-        [[nodiscard]] GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
+        [[nodiscard]] auto GetWindowHandle() const -> GLFWwindow * { return m_WindowHandle; }
 
 
         template <typename T>
@@ -56,13 +58,13 @@ namespace Lumen {
         }
 
 
-        static VkInstance GetInstance();
+        static auto GetInstance() -> VkInstance;
 
-        static VkPhysicalDevice GetPhysicalDevice();
+        static auto GetPhysicalDevice() -> VkPhysicalDevice;
 
-        static VkDevice GetDevice();
+        static auto GetDevice() -> VkDevice;
 
-        static VkCommandBuffer GetCommandBuffer(bool begin);
+        static auto GetCommandBuffer(bool begin) -> VkCommandBuffer;
 
         static void FlushCommandBuffer(VkCommandBuffer commandBuffer);
 
@@ -73,21 +75,22 @@ namespace Lumen {
 
         void Shutdown();
 
-    private:
+
         ApplicationSpecification m_Specification;
         GLFWwindow *m_WindowHandle = nullptr;
+        RTCDevice m_Device = nullptr;
         bool m_Running = false;
 
-        float m_TimeStep = 0.0f;
-        float m_FrameTime = 0.0f;
-        float m_LastFrameTime = 0.0f;
+        float m_TimeStep = 0.0F;
+        float m_FrameTime = 0.0F;
+        float m_LastFrameTime = 0.0F;
 
         std::vector<std::shared_ptr<Layer>> m_LayerStack;
         std::function<void()> m_MenubarCallback;
     };
 
     // Implemented by CLIENT
-    Application *CreateApplication(int argc, char **argv);
+    auto CreateApplication(int argc, char **argv) -> Application *;
 
 } // Lumen
 

@@ -413,9 +413,9 @@ struct attrib_t {
   //
   // For pybind11
   //
-  const std::vector<real_t> &GetVertices() const { return vertices; }
+  auto GetVertices() const -> const std::vector<real_t> & { return vertices; }
 
-  const std::vector<real_t> &GetVertexWeights() const { return vertex_weights; }
+  auto GetVertexWeights() const -> const std::vector<real_t> & { return vertex_weights; }
 };
 
 struct callback_t {
@@ -458,10 +458,10 @@ class MaterialReader {
   MaterialReader() {}
   virtual ~MaterialReader();
 
-  virtual bool operator()(const std::string &matId,
+  virtual auto operator()(const std::string &matId,
                           std::vector<material_t> *materials,
                           std::map<std::string, int> *matMap, std::string *warn,
-                          std::string *err) = 0;
+                          std::string *err) -> bool = 0;
 };
 
 ///
@@ -473,10 +473,10 @@ class MaterialFileReader : public MaterialReader {
   explicit MaterialFileReader(const std::string &mtl_basedir)
       : m_mtlBaseDir(mtl_basedir) {}
   virtual ~MaterialFileReader() TINYOBJ_OVERRIDE {}
-  virtual bool operator()(const std::string &matId,
+  virtual auto operator()(const std::string &matId,
                           std::vector<material_t> *materials,
                           std::map<std::string, int> *matMap, std::string *warn,
-                          std::string *err) TINYOBJ_OVERRIDE;
+                          std::string *err) -> bool TINYOBJ_OVERRIDE;
 
  private:
   std::string m_mtlBaseDir;
@@ -490,10 +490,10 @@ class MaterialStreamReader : public MaterialReader {
   explicit MaterialStreamReader(std::istream &inStream)
       : m_inStream(inStream) {}
   virtual ~MaterialStreamReader() TINYOBJ_OVERRIDE {}
-  virtual bool operator()(const std::string &matId,
+  virtual auto operator()(const std::string &matId,
                           std::vector<material_t> *materials,
                           std::map<std::string, int> *matMap, std::string *warn,
-                          std::string *err) TINYOBJ_OVERRIDE;
+                          std::string *err) -> bool TINYOBJ_OVERRIDE;
 
  private:
   std::istream &m_inStream;
@@ -538,8 +538,8 @@ class ObjReader {
   /// @param[in] filename wavefront .obj filename
   /// @param[in] config Reader configuration
   ///
-  bool ParseFromFile(const std::string &filename,
-                     const ObjReaderConfig &config = ObjReaderConfig());
+  auto ParseFromFile(const std::string &filename,
+                     const ObjReaderConfig &config = ObjReaderConfig()) -> bool;
 
   ///
   /// Parse .obj from a text string.
@@ -550,29 +550,29 @@ class ObjReader {
   /// @param[in] mtl_text wavefront .mtl filename
   /// @param[in] config Reader configuration
   ///
-  bool ParseFromString(const std::string &obj_text, const std::string &mtl_text,
-                       const ObjReaderConfig &config = ObjReaderConfig());
+  auto ParseFromString(const std::string &obj_text, const std::string &mtl_text,
+                       const ObjReaderConfig &config = ObjReaderConfig()) -> bool;
 
   ///
   /// .obj was loaded or parsed correctly.
   ///
-  bool Valid() const { return valid_; }
+  auto Valid() const -> bool { return valid_; }
 
-  const attrib_t &GetAttrib() const { return attrib_; }
+  auto GetAttrib() const -> const attrib_t & { return attrib_; }
 
-  const std::vector<shape_t> &GetShapes() const { return shapes_; }
+  auto GetShapes() const -> const std::vector<shape_t> & { return shapes_; }
 
-  const std::vector<material_t> &GetMaterials() const { return materials_; }
+  auto GetMaterials() const -> const std::vector<material_t> & { return materials_; }
 
   ///
   /// Warning message(may be filled after `Load` or `Parse`)
   ///
-  const std::string &Warning() const { return warning_; }
+  auto Warning() const -> const std::string & { return warning_; }
 
   ///
   /// Error message(filled when `Load` or `Parse` failed)
   ///
-  const std::string &Error() const { return error_; }
+  auto Error() const -> const std::string & { return error_; }
 
  private:
   bool valid_;
@@ -599,11 +599,11 @@ class ObjReader {
 /// or not.
 /// Option 'default_vcols_fallback' specifies whether vertex colors should
 /// always be defined, even if no colors are given (fallback to white).
-bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
+auto LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
              std::vector<material_t> *materials, std::string *warn,
              std::string *err, const char *filename,
              const char *mtl_basedir = NULL, bool triangulate = true,
-             bool default_vcols_fallback = true);
+             bool default_vcols_fallback = true) -> bool;
 
 /// Loads .obj from a file with custom user callback.
 /// .mtl is loaded as usual and parsed material_t data will be passed to
@@ -611,20 +611,20 @@ bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
 /// Returns true when loading .obj/.mtl become success.
 /// Returns warning message into `warn`, and error message into `err`
 /// See `examples/callback_api/` for how to use this function.
-bool LoadObjWithCallback(std::istream &inStream, const callback_t &callback,
+auto LoadObjWithCallback(std::istream &inStream, const callback_t &callback,
                          void *user_data = NULL,
                          MaterialReader *readMatFn = NULL,
-                         std::string *warn = NULL, std::string *err = NULL);
+                         std::string *warn = NULL, std::string *err = NULL) -> bool;
 
 /// Loads object from a std::istream, uses `readMatFn` to retrieve
 /// std::istream for materials.
 /// Returns true when loading .obj become success.
 /// Returns warning and error message into `err`
-bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
+auto LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
              std::vector<material_t> *materials, std::string *warn,
              std::string *err, std::istream *inStream,
              MaterialReader *readMatFn = NULL, bool triangulate = true,
-             bool default_vcols_fallback = true);
+             bool default_vcols_fallback = true) -> bool;
 
 /// Loads materials into std::map
 void LoadMtl(std::map<std::string, int> *material_map,
@@ -639,8 +639,8 @@ void LoadMtl(std::map<std::string, int> *material_map,
 /// @param[out] texopt Parsed texopt
 /// @param[in] linebuf Input string
 ///
-bool ParseTextureNameAndOption(std::string *texname, texture_option_t *texopt,
-                               const char *linebuf);
+auto ParseTextureNameAndOption(std::string *texname, texture_option_t *texopt,
+                               const char *linebuf) -> bool;
 
 /// =<<========== Legacy v1 API =============================================
 

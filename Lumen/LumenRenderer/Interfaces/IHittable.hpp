@@ -11,9 +11,9 @@
 class IHittable : public IDeepInstance<IHittable> {
 public:
     ~IHittable() noexcept override = default;
-    [[nodiscard]] std::shared_ptr<IHittable> DeepCopy() const override = 0;
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable> override = 0;
 
-    virtual bool Hit(LumenRender::Ray &ray, float t_max) const = 0;
-    virtual bool GetBounds(LumenRender::AABB &outbox) const = 0;
+    virtual auto Hit(LumenRender::Ray &ray, float t_max) const -> bool = 0;
+    virtual auto GetBounds(LumenRender::AABB &outbox) const -> bool = 0;
 };
 #endif //LUMEN_IHITTABLE_HPP

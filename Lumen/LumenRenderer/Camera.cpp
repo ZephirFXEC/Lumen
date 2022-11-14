@@ -16,9 +16,9 @@ namespace LumenRender {
         m_Position = glm::vec3(0, 0, 3);
     }
 
-    bool Camera::OnUpdate(float ts) {
+    auto Camera::OnUpdate(float ts) -> bool {
         glm::vec2 mousePos = Lumen::Input::GetMousePosition();
-        glm::vec2 delta = (mousePos - m_LastMousePosition) * 0.002f;
+        glm::vec2 delta = (mousePos - m_LastMousePosition) * 0.002F;
         m_LastMousePosition = mousePos;
 
         if (!Lumen::Input::IsMouseButtonDown(Lumen::MouseButton::Right)) {
@@ -30,10 +30,10 @@ namespace LumenRender {
 
         bool moved = false;
 
-        constexpr glm::vec3 upDirection(0.0f, 1.0f, 0.0f);
+        constexpr glm::vec3 upDirection(0.0F, 1.0F, 0.0F);
         glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
 
-        float speed = 5.0f;
+        float speed = 5.0F;
 
         // Movement
         if (Lumen::Input::IsKeyDown(Lumen::KeyCode::W)) {
@@ -59,12 +59,12 @@ namespace LumenRender {
         }
 
         // Rotation
-        if (delta.x != 0.0f || delta.y != 0.0f) {
+        if (delta.x != 0.0F || delta.y != 0.0F) {
             float pitchDelta = delta.y * GetRotationSpeed();
             float yawDelta = delta.x * GetRotationSpeed();
 
             glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
-                                                    glm::angleAxis(-yawDelta, glm::vec3(0.f, 1.0f, 0.0f))));
+                                                    glm::angleAxis(-yawDelta, glm::vec3(0.F, 1.0F, 0.0F))));
             m_ForwardDirection = glm::rotate(q, m_ForwardDirection);
 
             moved = true;
@@ -79,8 +79,9 @@ namespace LumenRender {
     }
 
     void Camera::OnResize(uint32_t width, uint32_t height) {
-        if (width == m_ViewportWidth && height == m_ViewportHeight)
+        if (width == m_ViewportWidth && height == m_ViewportHeight) {
             return;
+        }
 
         m_ViewportWidth = width;
         m_ViewportHeight = height;
@@ -89,13 +90,13 @@ namespace LumenRender {
         RecalculateRayDirections();
     }
 
-    float Camera::GetRotationSpeed() {
-        return 0.3f;
+    auto Camera::GetRotationSpeed() -> float {
+        return 0.3F;
     }
 
     void Camera::RecalculateProjection() {
-        m_Projection = glm::perspectiveFov(glm::radians(m_VerticalFOV), (float) m_ViewportWidth,
-                                           (float) m_ViewportHeight, m_NearClip, m_FarClip);
+        m_Projection = glm::perspectiveFov(glm::radians(m_VerticalFOV), static_cast<float>(m_ViewportWidth),
+                                           static_cast<float>(m_ViewportHeight), m_NearClip, m_FarClip);
         m_InverseProjection = glm::inverse(m_Projection);
     }
 
@@ -106,14 +107,14 @@ namespace LumenRender {
 
     void Camera::RecalculateRayDirections() {
 
-        m_RayDirections.resize(m_ViewportWidth * m_ViewportHeight);
+        m_RayDirections.resize(static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight));
 
         for (uint32_t y = 0; y < m_ViewportHeight; y++) {
             for (uint32_t x = 0; x < m_ViewportWidth; x++) {
 
-                glm::vec2 coord = { (float) x / (float) m_ViewportWidth,
-                                    (float) y / (float) m_ViewportHeight };
-                coord = coord * 2.0f - 1.0f; // -1 -> 1
+                glm::vec2 coord = { static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
+                                    static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
+                coord = coord * 2.0F - 1.0F; // -1 -> 1
 
                 glm::vec4 target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
                 glm::vec3 rayDirection = glm::vec3(

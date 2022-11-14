@@ -43,7 +43,7 @@ static VkAllocationCallbacks *g_Allocator = nullptr;
 static VkInstance g_Instance = VK_NULL_HANDLE;
 static VkPhysicalDevice g_PhysicalDevice = VK_NULL_HANDLE;
 static VkDevice g_Device = VK_NULL_HANDLE;
-static uint32_t g_QueueFamily = (uint32_t) -1;
+static uint32_t g_QueueFamily = static_cast<uint32_t>(-1);
 static VkQueue g_Queue = VK_NULL_HANDLE;
 static VkDebugReportCallbackEXT g_DebugReport = VK_NULL_HANDLE;
 static VkPipelineCache g_PipelineCache = VK_NULL_HANDLE;
@@ -64,11 +64,28 @@ static uint32_t s_CurrentFrameIndex = 0;
 static Lumen::Application *s_Instance = nullptr;
 
 void check_vk_result(VkResult err) {
-    if (err == 0)
+    if (err == 0) {
         return;
+    }
     fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-    if (err < 0)
+    if (err < 0) {
         abort();
+    }
+}
+
+void errorFunction(void *  /*userPtr*/, enum RTCError error, const char *str) {
+    printf("error %d: %s\n", error, str);
+}
+
+auto initializeDevice(RTCDevice device) -> RTCDevice {
+    device = rtcNewDevice(nullptr);
+
+    if (device == nullptr) {
+        printf("error %d: cannot create device\n", rtcGetDeviceError(nullptr));
+    }
+
+    rtcSetDeviceErrorFunction(device, errorFunction, nullptr);
+    return device;
 }
 
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
@@ -81,7 +98,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, 
 #endif // IMGUI_VULKAN_DEBUG_REPORT
 
 static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
-    VkResult err;
+    VkResult err{};
 
     // Create Vulkan Instance
     {
@@ -129,12 +146,12 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
 
     // Select GPU
     {
-        uint32_t gpu_count;
+        uint32_t gpu_count = 0;
         err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, nullptr);
         check_vk_result(err);
         IM_ASSERT(gpu_count > 0);
 
-        auto *gpus = (VkPhysicalDevice *) malloc(sizeof(VkPhysicalDevice) * gpu_count);
+        auto *gpus = static_cast<VkPhysicalDevice *>(malloc(sizeof(VkPhysicalDevice) * gpu_count));
         err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, gpus);
         check_vk_result(err);
 
@@ -142,7 +159,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
         // most common cases (multi-gpu/integrated+dedicated graphics). Handling more complicated setups (multiple
         // dedicated GPUs) is out of scope of this sample.
         int use_gpu = 0;
-        for (int i = 0; i < (int) gpu_count; i++) {
+        for (int i = 0; i < static_cast<int>(gpu_count); i++) {
             VkPhysicalDeviceProperties properties;
             vkGetPhysicalDeviceProperties(gpus[i], &properties);
             if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -157,15 +174,16 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
 
     // Select graphics queue family
     {
-        uint32_t count;
+        uint32_t count = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, nullptr);
-        auto *queues = (VkQueueFamilyProperties *) malloc(sizeof(VkQueueFamilyProperties) * count);
+        auto *queues = static_cast<VkQueueFamilyProperties *>(malloc(sizeof(VkQueueFamilyProperties) * count));
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, queues);
-        for (uint32_t i = 0; i < count; i++)
-            if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        for (uint32_t i = 0; i < count; i++) {
+            if ((queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0u) {
                 g_QueueFamily = i;
                 break;
             }
+        }
         free(queues);
         IM_ASSERT(g_QueueFamily != (uint32_t) -1);
     }
@@ -174,7 +192,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
     {
         uint32_t device_extension_count = 1;
         const char *device_extensions[] = { "VK_KHR_swapchain" };
-        const float queue_priority[] = { 1.0f };
+        const float queue_priority[] = { 1.0F };
 
         VkDeviceQueueCreateInfo queue_info[1] = {};
         queue_info[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -215,7 +233,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                 .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
                 .maxSets = 1000 * IM_ARRAYSIZE(pool_sizes),
-                .poolSizeCount = (uint32_t) IM_ARRAYSIZE(pool_sizes),
+                .poolSizeCount = static_cast<uint32_t>IM_ARRAYSIZE(pool_sizes),
                 .pPoolSizes = pool_sizes
         };
 
@@ -230,7 +248,7 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface
     wd->Surface = surface;
 
     // Check for WSI support
-    VkBool32 res;
+    VkBool32 res = 0;
     vkGetPhysicalDeviceSurfaceSupportKHR(g_PhysicalDevice, g_QueueFamily, wd->Surface, &res);
     if (res != VK_TRUE) {
         fprintf(stderr, "Error no WSI support on physical device 0\n");
@@ -242,7 +260,7 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface
                                                    VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
     const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
     wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(g_PhysicalDevice, wd->Surface, requestSurfaceImageFormat,
-                                                              (size_t) IM_ARRAYSIZE(requestSurfaceImageFormat),
+                                                              static_cast<size_t>IM_ARRAYSIZE(requestSurfaceImageFormat),
                                                               requestSurfaceColorSpace);
 
     // Select Present Mode
@@ -279,7 +297,7 @@ static void CleanupVulkanWindow() {
 }
 
 static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
-    VkResult err;
+    VkResult err{};
 
     VkSemaphore image_acquired_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
@@ -305,8 +323,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
 
     {
         // Free resources in queue
-        for (auto &func: s_ResourceFreeQueue[s_CurrentFrameIndex])
+        for (auto &func: s_ResourceFreeQueue[s_CurrentFrameIndex]) {
             func();
+        }
         s_ResourceFreeQueue[s_CurrentFrameIndex].clear();
     }
     {
@@ -314,7 +333,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
         // These use g_MainWindowData.FrameIndex and not s_CurrentFrameIndex because they're tied to the swapchain image index
         auto &allocatedCommandBuffers = s_AllocatedCommandBuffers[wd->FrameIndex];
         if (!allocatedCommandBuffers.empty()) {
-            vkFreeCommandBuffers(g_Device, fd->CommandPool, (uint32_t) allocatedCommandBuffers.size(),
+            vkFreeCommandBuffers(g_Device, fd->CommandPool, static_cast<uint32_t>(allocatedCommandBuffers.size()),
                                  allocatedCommandBuffers.data());
             allocatedCommandBuffers.clear();
         }
@@ -332,8 +351,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                 .renderPass = wd->RenderPass,
                 .framebuffer = fd->Framebuffer,
-                .renderArea = {{0, 0}, {static_cast<uint32_t>(wd->Width),
-                                        static_cast<uint32_t>(wd->Height)}},
+                .renderArea = {{ 0, 0 },
+                               { static_cast<uint32_t>(wd->Width),
+                                    static_cast<uint32_t>(wd->Height) }},
                 .clearValueCount = 1,
                 .pClearValues = &wd->ClearValue
         };
@@ -368,8 +388,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
 }
 
 static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
-    if (g_SwapChainRebuild)
+    if (g_SwapChainRebuild) {
         return;
+    }
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
     VkPresentInfoKHR info = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -409,24 +430,26 @@ namespace Lumen {
         s_Instance = nullptr;
     }
 
-    Application &Application::Get() {
+    auto Application::Get() -> Application & {
         return *s_Instance;
     }
 
     void Application::Init() {
         // Setup GLFW window
         glfwSetErrorCallback(glfw_error_callback);
-        if (!glfwInit()) {
+        if (glfwInit() == 0) {
             std::cerr << "Could not initalize GLFW!\n";
             return;
         }
+
+        m_Device = initializeDevice(m_Device); // Initialize Embree TODO: Move this to a better place
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_WindowHandle = glfwCreateWindow(m_Specification.Width, m_Specification.Height, m_Specification.Name.c_str(),
                                           nullptr, nullptr);
 
         // Setup Vulkan
-        if (!glfwVulkanSupported()) {
+        if (glfwVulkanSupported() == 0) {
             std::cerr << "GLFW: Vulkan not supported!\n";
             return;
         }
@@ -435,12 +458,13 @@ namespace Lumen {
         SetupVulkan(extensions, extensions_count);
 
         // Create Window Surface
-        VkSurfaceKHR surface;
+        VkSurfaceKHR surface = nullptr;
         VkResult err = glfwCreateWindowSurface(g_Instance, m_WindowHandle, g_Allocator, &surface);
         check_vk_result(err);
 
         // Create Framebuffers
-        int w, h;
+        int w = 0;
+        int h = 0;
         glfwGetFramebufferSize(m_WindowHandle, &w, &h);
         ImGui_ImplVulkanH_Window *wd = &g_MainWindowData;
         SetupVulkanWindow(wd, surface, w, h);
@@ -466,9 +490,9 @@ namespace Lumen {
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
         ImGuiStyle &style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            style.WindowRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
+            style.WindowRounding = 0.0F;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0F;
         }
 
         // Setup Platform/Renderer backends
@@ -494,7 +518,7 @@ namespace Lumen {
         // Load default font
         ImFontConfig fontConfig;
         fontConfig.FontDataOwnedByAtlas = false;
-        ImFont *robotoFont = io.Fonts->AddFontFromMemoryTTF((void *) g_RobotoRegular, sizeof(g_RobotoRegular), 20.0f,
+        ImFont *robotoFont = io.Fonts->AddFontFromMemoryTTF((void *) g_RobotoRegular, sizeof(g_RobotoRegular), 20.0F,
                                                             &fontConfig);
         io.FontDefault = robotoFont;
 
@@ -533,8 +557,9 @@ namespace Lumen {
     }
 
     void Application::Shutdown() {
-        for (auto &layer: m_LayerStack)
+        for (auto &layer: m_LayerStack) {
             layer->OnDetach();
+        }
 
         m_LayerStack.clear();
 
@@ -544,8 +569,9 @@ namespace Lumen {
 
         // Free resources in queue
         for (auto &queue: s_ResourceFreeQueue) {
-            for (auto &func: queue)
+            for (auto &func: queue) {
                 func();
+            }
         }
         s_ResourceFreeQueue.clear();
 
@@ -559,6 +585,8 @@ namespace Lumen {
         glfwDestroyWindow(m_WindowHandle);
         glfwTerminate();
 
+        rtcReleaseDevice(m_Device);
+
         g_ApplicationRunning = false;
     }
 
@@ -566,11 +594,11 @@ namespace Lumen {
         m_Running = true;
 
         ImGui_ImplVulkanH_Window *wd = &g_MainWindowData;
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        ImVec4 clear_color = ImVec4(0.0F, 0.0F, 0.0F, 1.00F);
         ImGuiIO &io = ImGui::GetIO();
 
         // Main loop
-        while (!glfwWindowShouldClose(m_WindowHandle) && m_Running) {
+        while ((glfwWindowShouldClose(m_WindowHandle) == 0) && m_Running) {
             // Poll and handle events (inputs, window resize, etc.)
             // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
             // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
@@ -578,12 +606,14 @@ namespace Lumen {
             // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
             glfwPollEvents();
 
-            for (auto &layer: m_LayerStack)
+            for (auto &layer: m_LayerStack) {
                 layer->OnUpdate(m_TimeStep);
+            }
 
             // Resize swap chain?
             if (g_SwapChainRebuild) {
-                int width, height;
+                int width = 0;
+                int height = 0;
                 glfwGetFramebufferSize(m_WindowHandle, &width, &height);
                 if (width > 0 && height > 0) {
                     ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
@@ -610,30 +640,32 @@ namespace Lumen {
                 // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
                 // because it would be confusing to have two docking targets within each others.
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-                if (m_MenubarCallback)
+                if (m_MenubarCallback) {
                     window_flags |= ImGuiWindowFlags_MenuBar;
+                }
 
                 const ImGuiViewport *viewport = ImGui::GetMainViewport();
                 ImGui::SetNextWindowPos(viewport->WorkPos);
                 ImGui::SetNextWindowSize(viewport->WorkSize);
                 ImGui::SetNextWindowViewport(viewport->ID);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0F);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0F);
                 window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
                                 ImGuiWindowFlags_NoMove;
                 window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
                 // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
                 // and handle the pass-thru hole, so we ask Begin() to not render a background.
-                if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+                if ((dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0) {
                     window_flags |= ImGuiWindowFlags_NoBackground;
+                }
 
                 // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
                 // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
                 // all active windows docked into it will lose their parent and become undocked.
                 // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
                 // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0F, 0.0F));
                 ImGui::Begin("DockSpace Demo", nullptr, window_flags);
                 ImGui::PopStyleVar();
 
@@ -641,9 +673,9 @@ namespace Lumen {
 
                 // Submit the DockSpace
                 ImGuiIO &io = ImGui::GetIO();
-                if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+                if ((io.ConfigFlags & ImGuiConfigFlags_DockingEnable) != 0) {
                     ImGuiID dockspace_id = ImGui::GetID("VulkanAppDockspace");
-                    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+                    ImGui::DockSpace(dockspace_id, ImVec2(0.0F, 0.0F), dockspace_flags);
                 }
 
                 if (m_MenubarCallback) {
@@ -653,8 +685,9 @@ namespace Lumen {
                     }
                 }
 
-                for (auto &layer: m_LayerStack)
+                for (auto &layer: m_LayerStack) {
                     layer->OnUIRender();
+                }
 
                 ImGui::End();
             }
@@ -662,28 +695,30 @@ namespace Lumen {
             // Rendering
             ImGui::Render();
             ImDrawData *main_draw_data = ImGui::GetDrawData();
-            const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f ||
-                                            main_draw_data->DisplaySize.y <= 0.0f);
+            const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0F ||
+                                            main_draw_data->DisplaySize.y <= 0.0F);
             wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
             wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
             wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
             wd->ClearValue.color.float32[3] = clear_color.w;
-            if (!main_is_minimized)
+            if (!main_is_minimized) {
                 FrameRender(wd, main_draw_data);
+            }
 
             // Update and Render additional Platform Windows
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
                 ImGui::UpdatePlatformWindows();
                 ImGui::RenderPlatformWindowsDefault();
             }
 
             // Present Main Platform Window
-            if (!main_is_minimized)
+            if (!main_is_minimized) {
                 FramePresent(wd);
+            }
 
             float time = GetTime();
             m_FrameTime = time - m_LastFrameTime;
-            m_TimeStep = glm::min<float>(m_FrameTime, 0.0333f);
+            m_TimeStep = glm::min<float>(m_FrameTime, 0.0333F);
             m_LastFrameTime = time;
         }
 
@@ -693,23 +728,23 @@ namespace Lumen {
         m_Running = false;
     }
 
-    float Application::GetTime() {
-        return (float) glfwGetTime();
+    auto Application::GetTime() -> float {
+        return static_cast<float>(glfwGetTime());
     }
 
-    VkInstance Application::GetInstance() {
+    auto Application::GetInstance() -> VkInstance {
         return g_Instance;
     }
 
-    VkPhysicalDevice Application::GetPhysicalDevice() {
+    auto Application::GetPhysicalDevice() -> VkPhysicalDevice {
         return g_PhysicalDevice;
     }
 
-    VkDevice Application::GetDevice() {
+    auto Application::GetDevice() -> VkDevice {
         return g_Device;
     }
 
-    VkCommandBuffer Application::GetCommandBuffer(bool begin) {
+    auto Application::GetCommandBuffer(bool  /*begin*/) -> VkCommandBuffer {
         ImGui_ImplVulkanH_Window *wd = &g_MainWindowData;
 
         // Use any command queue
@@ -751,7 +786,7 @@ namespace Lumen {
         VkFenceCreateInfo fenceCreateInfo = {};
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = 0;
-        VkFence fence;
+        VkFence fence = nullptr;
         err = vkCreateFence(g_Device, &fenceCreateInfo, nullptr, &fence);
         check_vk_result(err);
 
