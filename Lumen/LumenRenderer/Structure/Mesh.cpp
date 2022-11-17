@@ -19,7 +19,7 @@ namespace LumenRender {
         std::string warn;
         tinyobj::attrib_t attrib;
 
-        bool ret = tinyobj::LoadObj(&attrib, &m_shapes, &m_materials, &warn, &err, file_path);
+        bool const ret = tinyobj::LoadObj(&attrib, &m_shapes, &m_materials, &warn, &err, file_path);
         if (!warn.empty()) {
             std::cout << warn << std::endl;
         }
@@ -52,16 +52,16 @@ namespace LumenRender {
                 for(size_t v = 0; v < fv; v++) {
                     tinyobj::index_t idx = shape.mesh.indices[triIndex * fv + v];
 
-                    pos.emplace_back(attrib.vertices[3 * idx.vertex_index + 0],
-                                     attrib.vertices[3 * idx.vertex_index + 1],
-                                     attrib.vertices[3 * idx.vertex_index + 2]);
+                    pos.emplace_back(attrib.vertices[static_cast<uint64_t>(3 * idx.vertex_index + 0)],
+                                     attrib.vertices[static_cast<uint64_t>(3 * idx.vertex_index + 1)],
+                                     attrib.vertices[static_cast<uint64_t>(3 * idx.vertex_index + 2)]);
 
-                    norm = {attrib.normals[3 * idx.normal_index + 0],
-                            attrib.normals[3 * idx.normal_index + 1],
-                            attrib.normals[3 * idx.normal_index + 2]};
+                    norm = {attrib.normals[static_cast<uint64_t>(3 * idx.normal_index + 0)],
+                            attrib.normals[static_cast<uint64_t>(3 * idx.normal_index + 1)],
+                            attrib.normals[static_cast<uint64_t>(3 * idx.normal_index + 2)]};
 
-                    uv = {attrib.texcoords[2 * idx.texcoord_index + 0],
-                          attrib.texcoords[2 * idx.texcoord_index + 1]};
+                    uv = {attrib.texcoords[static_cast<uint64_t>(2 * idx.texcoord_index + 0)],
+                          attrib.texcoords[static_cast<uint64_t>(2 * idx.texcoord_index + 1)]};
 
                 }
                 pos.clear(); triData.clear();
@@ -101,8 +101,10 @@ namespace LumenRender {
     }
 
     auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> {
-        //TODO: Implement
-        return {};
+        auto mesh = std::make_shared<Mesh>(m_TriCount);
+        mesh->m_Triangles = m_Triangles;
+        mesh->m_TriData = m_TriData;
+        return mesh;
     }
 
 

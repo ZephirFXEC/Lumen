@@ -2,7 +2,6 @@
 // Created by enzoc on 16/10/2022.
 //
 
-#include <cstddef>
 #include <execution>
 #include "Bvh.hpp"
 #include "../Utility/Utility.hpp"
@@ -63,7 +62,7 @@ namespace LumenRender {
 }
         }
 
-        float splitPos = node.m_Bounds.pMin[axis] + extent[axis] * 0.5F;
+        float const splitPos = node.m_Bounds.pMin[axis] + extent[axis] * 0.5F;
 
         uint32_t i = node.m_LeftFirst;
         uint32_t j = i + node.m_TriCount - 1;
@@ -77,14 +76,14 @@ namespace LumenRender {
             }
         }
 
-        uint32_t leftCount = i - node.m_LeftFirst;
+        uint32_t const leftCount = i - node.m_LeftFirst;
         if (leftCount == 0 || leftCount == node.m_TriCount) { {
             return;
 }
         }
 
-        uint32_t leftChildIdx = m_nodeCount++;
-        uint32_t rightChildIdx = m_nodeCount++;
+        uint32_t const leftChildIdx = m_nodeCount++;
+        uint32_t const rightChildIdx = m_nodeCount++;
 
         m_bvhNode[leftChildIdx].m_LeftFirst = node.m_LeftFirst;
         m_bvhNode[leftChildIdx].m_TriCount = leftCount;
@@ -104,10 +103,10 @@ namespace LumenRender {
 
     void BVH::UpdateNodeBounds(uint32_t nodeIdx) const {
         BVHNode &node = m_bvhNode[nodeIdx];
-        node.m_Bounds = AABB(glm::vec3(1e30), glm::vec3(-1e30));
+        node.m_Bounds = AABB(glm::vec3(1e30F), glm::vec3(-1e30F));
 
         for (uint32_t first = node.m_LeftFirst, i = 0; i < node.m_TriCount; i++) {
-            uint32_t leafTriIdx = m_triIdx[first + i];
+            uint32_t const leafTriIdx = m_triIdx[first + i];
             auto *leafTri = m_mesh->m_Triangles.at(leafTriIdx);
             node.m_Bounds.pMin = glm::min(node.m_Bounds.pMin, leafTri->vertex0);
             node.m_Bounds.pMin = glm::min(node.m_Bounds.pMin, leafTri->vertex1);
@@ -121,7 +120,7 @@ namespace LumenRender {
 
     auto BVH::Traversal(Ray &ray, uint32_t nodeIdx, float t_max) const -> bool {
 
-        BVHNode &node = m_bvhNode[nodeIdx];
+        BVHNode  const&node = m_bvhNode[nodeIdx];
         float closest = t_max;
         bool hit = false;
 
@@ -135,6 +134,7 @@ namespace LumenRender {
                 auto *leafTri = m_mesh->m_Triangles.at(m_triIdx[first + i]);
                 if (LumenRender::Triangle::TriangleIntersect(ray, leafTri, m_triIdx[first + i])) {
                     hit = true;
+                    closest = ray.m_Record.m_T;
                 }
             }
             return hit;
@@ -164,6 +164,10 @@ namespace LumenRender {
     auto BVH::GetBounds(AABB &outbox) const -> bool {
         outbox = m_bvhNode[m_rootNodeIdx].m_Bounds;
         return true;
+    }
+
+    auto BVH::DeepCopy() const -> std::shared_ptr<IHittable> {
+        return std::make_shared<BVH>(*this);
     }
 
 

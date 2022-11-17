@@ -14,18 +14,18 @@
 
 namespace LumenRender {
 
-    class Mesh : public IHittable {
+    class Mesh : public IHittable<Mesh> {
     public:
 
         explicit Mesh(const uint32_t& triCount);
 
         explicit Mesh(const char *file_path);
 
-        auto Hit(Ray &ray, float t_max) const -> bool override;
+        auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool override;
+        auto GetBounds(AABB &outbox) const -> bool;
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable> override;
+        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
     private:
         std::vector<tinyobj::shape_t> m_shapes;

@@ -24,7 +24,7 @@ namespace LumenRender {
     };
 
 
-    class BVH : public Object {
+    class BVH : public IHittable<BVH> {
     public:
         BVH() = default;
 
@@ -38,9 +38,11 @@ namespace LumenRender {
 
         auto Traversal(Ray& ray, uint32_t nodeIdx, float t_max) const -> bool;
 
-        auto Hit(Ray &ray, float t_max) const -> bool override;
+        auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool override;
+        auto GetBounds(AABB &outbox) const -> bool;
+
+        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
 
         Mesh* m_mesh{};

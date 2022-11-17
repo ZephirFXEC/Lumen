@@ -12,7 +12,9 @@ class IDeepInstance {
 public:
     virtual ~IDeepInstance() = default;
 
-    [[maybe_unused]] virtual auto DeepCopy() const -> std::shared_ptr<T> = 0;
+    [[maybe_unused]] auto DeepCopy() const -> std::shared_ptr<T> {
+        return std::make_shared<T>(static_cast<const T &>(*this));
+    }
 };
 
 #endif //LUMEN_IDEEPINSTANCE_HPP

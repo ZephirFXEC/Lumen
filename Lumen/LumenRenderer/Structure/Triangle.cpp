@@ -14,13 +14,13 @@ namespace LumenRender {
         }
 
         const float inv_det = 1.0F / det;
-        glm::vec3 tvec = ray.Origin - tri->vertex0;
+        glm::vec3 const tvec = ray.Origin - tri->vertex0;
         const float u = glm::dot(tvec, pvec) * inv_det;
         if (u < 0.0F || u > 1.0F) {
             return false;
         }
 
-        glm::vec3 qvec = glm::cross(tvec, tri->_e1);
+        glm::vec3 const qvec = glm::cross(tvec, tri->_e1);
         const float v = glm::dot(ray.Direction, qvec) * inv_det;
         if (v < 0.0F || u + v > 1.0F) {
             return false;
@@ -41,11 +41,11 @@ namespace LumenRender {
 
     auto Triangle::GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3 {
 
-        glm::vec3 v2 = p - vertex0;
-        float den = _e1.x * _e2.y - _e2.x * _e1.y;
-        float v = (v2.x * _e2.y - _e2.x * v2.y) / den;
-        float w = (_e1.x * v2.y - v2.x * _e1.y) / den;
-        float u = 1.0F - v - w;
+        glm::vec3 const v2 = p - vertex0;
+        float const den = _e1.x * _e2.y - _e2.x * _e1.y;
+        float const v = (v2.x * _e2.y - _e2.x * v2.y) / den;
+        float const w = (_e1.x * v2.y - v2.x * _e1.y) / den;
+        float const u = 1.0F - v - w;
 
         return { u, v, w };
     }

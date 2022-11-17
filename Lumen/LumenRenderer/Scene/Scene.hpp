@@ -5,7 +5,6 @@
 #ifndef LUMEN_SCENE_HPP
 #define LUMEN_SCENE_HPP
 
-#include "../Interfaces/IHittable.hpp"
 #include "../Accelerators/Aabb.hpp"
 #include "../Structure/Triangle.hpp"
 #include "../Structure/Mesh.hpp"
@@ -14,29 +13,34 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <variant>
 
 namespace LumenRender {
 
-    class Scene : public IHittable {
+    using Types = std::variant<Mesh*, Sphere*>;
 
+    class Scene : public IHittable<Scene> {
     public:
 
         Scene() = default;
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable> override;
+        auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
+        auto AddObject(Types object) -> void {
+            m_Objects.insert({ m_Index, object});
+            m_Index++;
+        };
 
-        void AddObject(IHittable* object);
-        void Clear() { m_Objects.clear(); }
+        auto Hit(LumenRender::Ray &ray, float t_max) const -> bool;
 
-        [[nodiscard]] auto GetObjects() const -> auto & { return m_Objects; }
+        auto GetBounds(LumenRender::AABB &outbox) const -> bool;
 
-        auto Hit(Ray &ray, float t_max) const -> bool override;
-        auto GetBounds(AABB &outbox) const -> bool override;
 
     private:
-        std::unordered_map<uint32_t, IHittable*> m_Objects;
+
+        std::unordered_map<uint32_t, Types> m_Objects{};
         uint32_t m_Index = 0;
+
     };
 
 

@@ -8,24 +8,28 @@
 #include "LumenRenderer/Camera.hpp"
 #include "LumenRenderer/Structure/Mesh.hpp"
 #include "LumenRenderer/Scene/Scene.hpp"
+#include "LumenRenderer/Accelerators/Bvh.hpp"
 
 using namespace LumenRender;
 
 class ExampleLayer : public Lumen::Layer {
 public:
     ExampleLayer()
-    : m_Camera(45.0F, 0.01F, 1000.0F) {
+            : m_Camera(45.0F, 0.01F, 1000.0F) {
 
         //m_Scene.AddObject(new Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
         //m_Scene.AddObject(new Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-        Mesh *mesh = new Mesh(R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
-        BVH *bvh = new BVH(mesh);
+        Mesh *mesh = new Mesh(
+                R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        Sphere *sphere = new Sphere(glm::vec3(0.0F, 0.0F, -1.0F), 1);
+        //BVH *bvh = new BVH(mesh);
 
+        m_Scene.AddObject(sphere);
         m_Scene.AddObject(mesh);
     }
 
     void OnUpdate(float ts) override {
-        if(m_Camera.OnUpdate(ts)) {
+        if (m_Camera.OnUpdate(ts)) {
             m_Renderer.ResetFrame();
         }
     }
@@ -42,14 +46,14 @@ public:
             m_Renderer.ResetFrame();
         }
 
-        ImGui::Text("Last Render : %.3fms", m_ElapsedTime);
+        ImGui::Text("Last Render : %.5fms", m_ElapsedTime);
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
+        ImGui::Text("Objects : %llu", 1);
 
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::Begin("Viewport");
 
         m_ViewportWidth = static_cast<int>(ImGui::GetContentRegionAvail().x);
@@ -59,7 +63,8 @@ public:
 
         if (image) {
             ImGui::Image(image->GetDescriptorSet(), { static_cast<float>(image->GetWidth()),
-                                                      static_cast<float>(image->GetHeight()) }, ImVec2(0, 1), ImVec2(1, 0));
+                                                      static_cast<float>(image->GetHeight()) }, ImVec2(0, 1),
+                         ImVec2(1, 0));
         }
         ImGui::End();
         ImGui::PopStyleVar();
@@ -68,7 +73,7 @@ public:
     }
 
     static void embraceTheDarkness() {
-        ImVec4* colors = ImGui::GetStyle().Colors;
+        ImVec4 *colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text] = ImVec4(1.00F, 1.00F, 1.00F, 1.00F);
         colors[ImGuiCol_TextDisabled] = ImVec4(0.50F, 0.50F, 0.50F, 1.00F);
         colors[ImGuiCol_WindowBg] = ImVec4(0.10F, 0.10F, 0.10F, 1.00F);
@@ -124,7 +129,7 @@ public:
         colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00F, 0.00F, 0.00F, 0.70F);
         colors[ImGuiCol_NavWindowingDimBg] = ImVec4(1.00F, 0.00F, 0.00F, 0.20F);
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00F, 0.00F, 0.00F, 0.35F);
-        ImGuiStyle& style = ImGui::GetStyle();
+        ImGuiStyle &style = ImGui::GetStyle();
         style.WindowPadding = ImVec2(8.00F, 8.00F);
         style.FramePadding = ImVec2(5.00F, 2.00F);
         style.CellPadding = ImVec2(6.00F, 6.00F);
@@ -150,12 +155,13 @@ public:
     }
 
     void Render() {
-        Lumen::Timer timer;
 
         m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
         m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
 
+        Lumen::Timer timer;
         m_Renderer.Render(m_Camera, m_Scene);
+        m_Elapsed = timer.Elapsed();
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
@@ -166,7 +172,7 @@ private:
     LumenRender::Scene m_Scene;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
-    float m_ElapsedTime{};
+    float m_ElapsedTime{}, m_Elapsed{};
 };
 
 auto Lumen::CreateApplication(int /*unused*/, char ** /*unused*/) -> Lumen::Application * {

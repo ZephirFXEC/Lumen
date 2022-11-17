@@ -6,10 +6,6 @@
 
 namespace LumenRender {
 
-    void Scene::AddObject(IHittable *object) {
-        m_Objects.insert({ m_Index, object });
-        m_Index++;
-    }
 
     auto Scene::Hit(Ray &ray, float t_max) const -> bool {
         Ray temp = ray;
@@ -17,7 +13,12 @@ namespace LumenRender {
         float closest_so_far = t_max;
 
         for (const auto &[index, object]: m_Objects) {
-            if (object->Hit(temp, t_max) && temp.m_Record.m_T < closest_so_far) {
+
+            auto hit = std::visit([&](auto&& arg) -> bool {
+                return arg->Hit(temp, closest_so_far) && temp.m_Record.m_T < closest_so_far;
+            }, object);
+
+            if (hit) {
                 hit_anything = true;
                 closest_so_far = temp.m_Record.m_T;
                 ray = temp;
@@ -36,9 +37,12 @@ namespace LumenRender {
         bool first_box = true;
 
         for (const auto &[index, object]: m_Objects) {
-            if (!object->GetBounds(temp_box)) {
+            if (!std::visit([&](auto&& arg) -> bool {
+                return arg->GetBounds(temp_box);
+            }, object)) {
                 return false;
             }
+
             outbox = first_box ? temp_box : AABB::Union(outbox, temp_box);
             first_box = false;
         }
@@ -47,9 +51,11 @@ namespace LumenRender {
     }
 
     auto Scene::DeepCopy() const -> std::shared_ptr<IHittable> {
-        std::shared_ptr<Scene> copy = std::make_shared<Scene>();
+        std::shared_ptr<Scene> const copy = std::make_shared<Scene>();
         for (const auto &[index, object]: m_Objects) {
-            copy->AddObject(object->DeepCopy().get()); //TODO: object DeepCopy
+            std::visit([&](auto&& arg) -> void {
+                //copy->AddObject(arg->DeepCopy());
+            }, object);
         }
         return copy;
     }
