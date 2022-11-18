@@ -73,8 +73,8 @@ namespace LumenRender {
         }
 
 
-        [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const AABB& bounds) -> float;
-
+        [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const glm::vec3& min, const glm::vec3 max) -> float;
+        [[nodiscard]] static auto IntersectAABB_SEE(const LumenRender::Ray &ray, const __m128& min4, const __m128& max4) -> float;
 
 
         glm::vec3 pMin{};

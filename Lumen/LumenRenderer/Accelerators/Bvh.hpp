@@ -13,14 +13,10 @@
 namespace LumenRender {
     struct BVHNode {
 
-        AABB m_Bounds;
-        uint32_t m_TriCount{};
-        uint32_t m_LeftFirst{};
+        union { struct { glm::vec3 m_Bounds_min; uint32_t m_LeftFirst; }; __m128 m_Bounds_min_m128; };
+        union { struct { glm::vec3 m_Bounds_max; uint32_t m_TriCount;  }; __m128 m_Bounds_max_m128; };
 
         [[nodiscard]] auto isLeaf() const -> bool { return m_TriCount > 0; } // empty BVH leaves do not exist
-        [[nodiscard]] auto CalculateNodeCost() const -> float {
-            return m_Bounds.SurfaceArea();
-        }
     };
 
 

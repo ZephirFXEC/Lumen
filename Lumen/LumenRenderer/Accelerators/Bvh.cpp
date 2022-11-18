@@ -96,7 +96,8 @@ namespace LumenRender {
 
         int const axis = bestAxis;
         float const splitPos = bestPos;
-        float const parentArea = node.m_Bounds.SurfaceArea();
+        glm::vec3 e = node.m_Bounds_max - node.m_Bounds_min; // extent of parent
+        float parentArea = e.x * e.y + e.y * e.z + e.z * e.x;
         float const parentCost = node.m_TriCount * parentArea;
         if (bestCost >= parentCost) {
             return;
@@ -147,14 +148,20 @@ namespace LumenRender {
 
     void BVH::UpdateNodeBounds(uint32_t nodeIdx) const {
         BVHNode &node = m_bvhNode[nodeIdx];
-        node.m_Bounds = AABB();
+        node.m_Bounds_min = glm::vec3(0.0F);
+        node.m_Bounds_max = glm::vec3(0.0F);
 
         for (uint32_t i = 0; i < node.m_TriCount; i++) {
             uint32_t const leafTriIdx = m_triIdx[node.m_LeftFirst + i];
             auto leafTri = m_mesh->m_Triangles[leafTriIdx];
-                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[0]);
-                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[1]);
-                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[2]);
+
+            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[0] );
+            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[1] );
+            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[2] );
+
+            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[0] );
+            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[1] );
+            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[2] );
         }
     }
 
@@ -162,7 +169,7 @@ namespace LumenRender {
     auto BVH::Traversal(Ray &ray, uint32_t nodeIdx, float t_max) const -> bool {
         Ray temp = ray;
         BVHNode *node = &m_bvhNode[m_rootNodeIdx];
-        std::array<BVHNode*, 64> stack;
+        std::array<BVHNode*, 64> stack{};
         uint32_t stackPtr = 0;
 
         bool hit = false;
@@ -192,9 +199,13 @@ namespace LumenRender {
             BVHNode *left = &m_bvhNode[node->m_LeftFirst];
             BVHNode *right = &m_bvhNode[node->m_LeftFirst + 1];
 
-            float t0 = LumenRender::AABB::IntersectAABB(temp, left->m_Bounds);
-            float t1 = LumenRender::AABB::IntersectAABB(temp, right->m_Bounds);
-
+#if 1
+            float t0 = LumenRender::AABB::IntersectAABB(temp, left->m_Bounds_min, left->m_Bounds_max);
+            float t1 = LumenRender::AABB::IntersectAABB(temp, right->m_Bounds_min, right->m_Bounds_max);
+#else
+            float t0 = LumenRender::AABB::IntersectAABB_SEE(temp, left->m_Bounds_min_m128, left->m_Bounds_max_m128);
+            float t1 = LumenRender::AABB::IntersectAABB_SEE(temp, right->m_Bounds_min_m128, right->m_Bounds_max_m128);
+#endif
             if (t0 > t1) {
                 std::swap(t0, t1);
                 std::swap(left, right);
@@ -215,7 +226,8 @@ namespace LumenRender {
     }
 
     auto BVH::GetBounds(AABB &outbox) const -> AABB {
-        outbox = m_bvhNode[m_rootNodeIdx].m_Bounds;
+        outbox = AABB::Union(m_bvhNode[m_rootNodeIdx].m_Bounds_min,
+                             m_bvhNode[m_rootNodeIdx].m_Bounds_max);
         return outbox;
     }
 
