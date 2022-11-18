@@ -28,7 +28,7 @@ namespace LumenRender {
         return ( tmax >= tmin ) ? tmin : 1e30F;
     }
 
-    auto AABB::IntersectAABB_SEE(const Ray &ray, const __m128 &min4, const __m128 &max4) -> float {
+    auto AABB::IntersectAABB_SSE(const Ray &ray, const __m128 &min4, const __m128 &max4) -> float {
 
         glm::vec3 const inv_Direction = 1.0F / ray.Direction;
         __m128 const inv_Direction4 = _mm_set_ps(inv_Direction.z, inv_Direction.y, inv_Direction.x, 0.0F);

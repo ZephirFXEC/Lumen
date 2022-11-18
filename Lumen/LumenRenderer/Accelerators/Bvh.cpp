@@ -203,8 +203,8 @@ namespace LumenRender {
             float t0 = LumenRender::AABB::IntersectAABB(temp, left->m_Bounds_min, left->m_Bounds_max);
             float t1 = LumenRender::AABB::IntersectAABB(temp, right->m_Bounds_min, right->m_Bounds_max);
 #else
-            float t0 = LumenRender::AABB::IntersectAABB_SEE(temp, left->m_Bounds_min_m128, left->m_Bounds_max_m128);
-            float t1 = LumenRender::AABB::IntersectAABB_SEE(temp, right->m_Bounds_min_m128, right->m_Bounds_max_m128);
+            float t0 = LumenRender::AABB::IntersectAABB_SSE(temp, left->m_Bounds_min_m128, left->m_Bounds_max_m128);
+            float t1 = LumenRender::AABB::IntersectAABB_SSE(temp, right->m_Bounds_min_m128, right->m_Bounds_max_m128);
 #endif
             if (t0 > t1) {
                 std::swap(t0, t1);
