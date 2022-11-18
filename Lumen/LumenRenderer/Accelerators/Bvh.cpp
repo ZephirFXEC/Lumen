@@ -9,8 +9,8 @@
 
 namespace LumenRender {
 
-    BVH::BVH(class Mesh *tri_mesh) :
-            m_mesh(tri_mesh),
+    BVH::BVH(class IHittable<Mesh>* tri_mesh) :
+            m_mesh(dynamic_cast<Mesh*>(tri_mesh)),
             m_bvhNode(new BVHNode[static_cast<uint64_t>(m_mesh->m_TriCount * 2)]),
             m_triIdx(new uint32_t[m_mesh->m_TriCount]),
             m_nodeCount(1) {
@@ -21,17 +21,16 @@ namespace LumenRender {
     void BVH::Build() {
 
         //Populate Triangle indexes
-        for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) { {
-            m_triIdx[i] = i;
-}
+        for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) {
+                m_triIdx[i] = i;
         }
 
         //Compute centroids
         for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) {
-            m_mesh->m_TriData[i]->Centroid = (
-                                                     m_mesh->m_Triangles[i]->vertex0 +
-                                                     m_mesh->m_Triangles[i]->vertex1 +
-                                                     m_mesh->m_Triangles[i]->vertex2) / 3.0F;
+            m_mesh->m_TriData[i].Centroid = (
+                    m_mesh->m_Triangles[i].vertex[0] +
+                    m_mesh->m_Triangles[i].vertex[1] +
+                    m_mesh->m_Triangles[i].vertex[2]) / 3.0F;
         }
 
         BVHNode &root = m_bvhNode[m_rootNodeIdx];
@@ -45,21 +44,24 @@ namespace LumenRender {
     void BVH::Subdivide(uint32_t nodeIdx) {
 
         BVHNode &node = m_bvhNode[nodeIdx];
-        if (node.m_TriCount <= 2) { {
-            return;
-}
+        if (node.m_TriCount <= 2) {
+            {
+                return;
+            }
         }
 
         glm::vec3 extent = node.m_Bounds.pMax - node.m_Bounds.pMin;
 
         uint8_t axis = 0;
-        if (extent.y > extent.x) { {
-            axis = 1;
-}
+        if (extent.y > extent.x) {
+            {
+                axis = 1;
+            }
         }
-        if (extent.z > extent[axis]) { {
-            axis = 2;
-}
+        if (extent.z > extent[axis]) {
+            {
+                axis = 2;
+            }
         }
 
         float const splitPos = node.m_Bounds.pMin[axis] + extent[axis] * 0.5F;
@@ -68,18 +70,22 @@ namespace LumenRender {
         uint32_t j = i + node.m_TriCount - 1;
 
         while (i <= j) {
-            if (m_mesh->m_TriData.at(m_triIdx[i])->Centroid[axis] < splitPos) { {
-                i++;
-            } } else { {
-                std::swap(m_triIdx[i], m_triIdx[j--]);
-}
+            if (m_mesh->m_TriData.at(m_triIdx[i]).Centroid[axis] < splitPos) {
+                {
+                    i++;
+                }
+            } else {
+                {
+                    std::swap(m_triIdx[i], m_triIdx[j--]);
+                }
             }
         }
 
         uint32_t const leftCount = i - node.m_LeftFirst;
-        if (leftCount == 0 || leftCount == node.m_TriCount) { {
-            return;
-}
+        if (leftCount == 0 || leftCount == node.m_TriCount) {
+            {
+                return;
+            }
         }
 
         uint32_t const leftChildIdx = m_nodeCount++;
@@ -103,62 +109,56 @@ namespace LumenRender {
 
     void BVH::UpdateNodeBounds(uint32_t nodeIdx) const {
         BVHNode &node = m_bvhNode[nodeIdx];
-        node.m_Bounds = AABB(glm::vec3(1e30F), glm::vec3(-1e30F));
+        node.m_Bounds = AABB();
 
-        for (uint32_t first = node.m_LeftFirst, i = 0; i < node.m_TriCount; i++) {
-            uint32_t const leafTriIdx = m_triIdx[first + i];
-            auto *leafTri = m_mesh->m_Triangles.at(leafTriIdx);
-            node.m_Bounds.pMin = glm::min(node.m_Bounds.pMin, leafTri->vertex0);
-            node.m_Bounds.pMin = glm::min(node.m_Bounds.pMin, leafTri->vertex1);
-            node.m_Bounds.pMin = glm::min(node.m_Bounds.pMin, leafTri->vertex2);
-            node.m_Bounds.pMax = glm::max(node.m_Bounds.pMax, leafTri->vertex0);
-            node.m_Bounds.pMax = glm::max(node.m_Bounds.pMax, leafTri->vertex1);
-            node.m_Bounds.pMax = glm::max(node.m_Bounds.pMax, leafTri->vertex2);
+        for (uint32_t i = 0; i < node.m_TriCount; i++) {
+            uint32_t const leafTriIdx = m_triIdx[node.m_LeftFirst + i];
+            auto leafTri = m_mesh->m_Triangles.at(leafTriIdx);
+                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[0]);
+                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[1]);
+                node.m_Bounds = AABB::Union(node.m_Bounds, leafTri.vertex[2]);
         }
     }
 
 
     auto BVH::Traversal(Ray &ray, uint32_t nodeIdx, float t_max) const -> bool {
-
-        BVHNode  const&node = m_bvhNode[nodeIdx];
-        float closest = t_max;
+        Ray temp = ray;
+        BVHNode const &node = m_bvhNode[nodeIdx];
         bool hit = false;
+        float closest = t_max;
 
-        if (!AABB::IntersectAABB(ray, node.m_Bounds)) { {
-            return hit;
-}
+        if (!AABB::IntersectAABB(ray, node.m_Bounds)) {
+            {
+                return false;
+            }
         }
 
         if (node.isLeaf()) {
-            for (uint32_t first = node.m_LeftFirst, i = 0; i < node.m_TriCount; i++) {
-                auto *leafTri = m_mesh->m_Triangles.at(m_triIdx[first + i]);
-                if (LumenRender::Triangle::TriangleIntersect(ray, leafTri, m_triIdx[first + i])) {
-                    hit = true;
-                    closest = ray.m_Record.m_T;
+            for (uint32_t i = 0; i < node.m_TriCount; i++) {
+
+                uint32_t const idx = m_triIdx[node.m_LeftFirst + i];
+                auto leafTri = m_mesh->m_Triangles.at(idx);
+
+                if (LumenRender::Triangle::TriangleIntersect(temp, leafTri, idx) &&  temp.m_Record.m_T < closest) {
+                    {
+                        hit = true;
+                        closest = temp.m_Record.m_T;
+                        temp.m_Record.m_Normal = m_mesh->m_TriData.at(idx).N;
+                        ray = temp;
+                    }
                 }
             }
             return hit;
         }
 
-        hit |= Traversal(ray, node.m_LeftFirst, closest);
-        hit |= Traversal(ray, node.m_LeftFirst + 1, closest);
+        hit |= Traversal(ray, node.m_LeftFirst, t_max);
+        hit |= Traversal(ray, node.m_LeftFirst + 1, t_max);
         return hit;
     }
 
 
     auto BVH::Hit(Ray &ray, float t_max) const -> bool {
-        Ray temp = ray;
-        bool hit_tri = false;
-        float closest = t_max;
-
-        if (Traversal(temp, m_rootNodeIdx, closest) && temp.m_Record.m_T < closest) {
-            hit_tri = true;
-            closest = temp.m_Record.m_T;
-            temp.m_Record.m_Normal = m_mesh->m_TriData.at(temp.m_Record.m_PrimIndex)->N;
-            ray = temp;
-        }
-
-        return hit_tri;
+        return Traversal(ray, m_rootNodeIdx, t_max);
     }
 
     auto BVH::GetBounds(AABB &outbox) const -> bool {

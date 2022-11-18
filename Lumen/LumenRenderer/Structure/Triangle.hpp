@@ -22,21 +22,18 @@ namespace LumenRender {
     class Triangle {
     public:
         Triangle() = default;
-        Triangle(const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2) :
-                vertex0(v0), vertex1(v1), vertex2(v2), _e1(v1 - v0), _e2(v2 - v0) {}
+        explicit Triangle(const std::array<glm::vec3, 3>& v) :
+        vertex{v}, _e1(v[1] - v[0]), _e2(v[2] - v[0]) {}
 
 
-        static auto TriangleIntersect(Ray &ray, Triangle* tri, const uint32_t& primidx) -> bool;
+        static auto TriangleIntersect(Ray &ray, const Triangle& tri, const uint32_t& primidx) -> bool;
 
         auto GetBounds(AABB &outbox) const -> bool;
 
         [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
 
 
-        glm::vec3 vertex0{};
-        glm::vec3 vertex1{};
-        glm::vec3 vertex2{};
-
+        std::array<glm::vec3, 3> vertex{};
     private:
         glm::vec3 _e1{}, _e2{};
     };

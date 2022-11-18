@@ -17,8 +17,6 @@ namespace LumenRender {
     class Mesh : public IHittable<Mesh> {
     public:
 
-        explicit Mesh(const uint32_t& triCount);
-
         explicit Mesh(const char *file_path);
 
         auto Hit(Ray &ray, float t_max) const -> bool;
@@ -32,9 +30,9 @@ namespace LumenRender {
         std::vector<tinyobj::material_t> m_materials;
 
     public:
-        std::vector<LumenRender::Triangle *> m_Triangles{};
-        std::vector<LumenRender::TriData *> m_TriData{};
-        uint32_t m_TriCount{};
+        std::vector<LumenRender::Triangle> m_Triangles{};
+        std::vector<LumenRender::TriData> m_TriData{};
+        size_t m_TriCount{0};
     };
 
 } // LumenRender

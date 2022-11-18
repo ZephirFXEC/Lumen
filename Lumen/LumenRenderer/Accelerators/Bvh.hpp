@@ -28,7 +28,8 @@ namespace LumenRender {
     public:
         BVH() = default;
 
-        explicit BVH(class Mesh* tri_mesh);
+        explicit BVH(class IHittable<Mesh>* tri_mesh);
+
 
         void Build();
 
