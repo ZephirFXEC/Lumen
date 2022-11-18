@@ -12,10 +12,8 @@
 #include "Ray.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/Object.hpp"
-#include "Accelerators/Bvh.hpp"
 
-#include <memory>
-#include <glm/glm.hpp>
+#include "Utility/Utility.hpp"
 
 
 namespace LumenRender {
@@ -39,6 +37,7 @@ namespace LumenRender {
         void ResetFrame() { m_FrameSample = 1; }
 
     private:
+
         auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
 
         static auto Miss(LumenRender::Ray &ray) -> HitRecords;
@@ -52,8 +51,8 @@ namespace LumenRender {
         const Camera *m_ActiveCamera{};
         const Scene *m_ActiveScene{};
 
-        uint32_t* m_ImageData = nullptr;
-        glm::vec4* m_AccumulationBuffer = nullptr;
+        uint32_t *m_ImageData = nullptr;
+        glm::vec4 *m_AccumulationBuffer = nullptr;
 
         uint32_t m_FrameSample = 1;
     };

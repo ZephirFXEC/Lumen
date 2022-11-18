@@ -30,7 +30,6 @@ namespace LumenRender {
 
         explicit BVH(class IHittable<Mesh>* tri_mesh);
 
-
         void Build();
 
         void Subdivide(uint32_t nodeIdx);
@@ -41,7 +40,9 @@ namespace LumenRender {
 
         auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool;
+        auto GetBounds(AABB &outbox) const -> AABB;
+
+        auto CalculateSAH(BVHNode& node, int axis, float pos) const -> float;
 
         [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
