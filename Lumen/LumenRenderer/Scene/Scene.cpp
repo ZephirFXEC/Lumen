@@ -28,36 +28,30 @@ namespace LumenRender {
         return hit_anything;
     }
 
-    auto Scene::GetBounds(AABB &outbox) const -> bool {
-        if (m_Objects.empty()) {
-            return false;
-        }
-
+    auto Scene::GetBounds(AABB &outbox) const -> AABB {
         AABB temp_box;
         bool first_box = true;
 
         for (const auto &[index, object]: m_Objects) {
-            if (!std::visit([&](auto&& arg) -> bool {
+            auto box = std::visit([&](auto&& arg) -> AABB {
                 return arg->GetBounds(temp_box);
-            }, object)) {
-                return false;
-            }
+            }, object);
 
-            outbox = first_box ? temp_box : AABB::Union(outbox, temp_box);
+            outbox = first_box ? box : AABB::Union(outbox, box);
             first_box = false;
         }
 
-        return true;
+        return outbox;
     }
 
     auto Scene::DeepCopy() const -> std::shared_ptr<IHittable> {
-        std::shared_ptr<Scene> const copy = std::make_shared<Scene>();
+        auto scene = std::make_shared<Scene>();
+
         for (const auto &[index, object]: m_Objects) {
-            std::visit([&](auto&& arg) -> void {
-                //copy->AddObject(arg->DeepCopy());
-            }, object);
+            scene->AddObject(object);
         }
-        return copy;
+
+        return scene;
     }
 
 

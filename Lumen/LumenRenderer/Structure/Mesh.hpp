@@ -21,7 +21,7 @@ namespace LumenRender {
 
         auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool;
+        auto GetBounds(AABB &outbox) const -> AABB;
 
         [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
@@ -30,9 +30,9 @@ namespace LumenRender {
         std::vector<tinyobj::material_t> m_materials;
 
     public:
-        std::vector<LumenRender::Triangle> m_Triangles{};
-        std::vector<LumenRender::TriData> m_TriData{};
-        size_t m_TriCount{0};
+        LumenRender::Triangle* m_Triangles{};
+        LumenRender::TriData* m_TriData{};
+        uint32_t m_TriCount{0};
     };
 
 } // LumenRender

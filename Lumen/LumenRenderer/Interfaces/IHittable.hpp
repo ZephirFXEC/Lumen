@@ -22,7 +22,7 @@ public:
         return static_cast<const T *>(this)->Hit(ray, t_max);
     }
 
-    auto GetBounds(LumenRender::AABB &outbox) const -> bool {
+    auto GetBounds(LumenRender::AABB &outbox) const -> LumenRender::AABB {
         return static_cast<const T *>(this)->GetBounds(outbox);
     }
 };

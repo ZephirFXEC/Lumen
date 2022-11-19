@@ -25,13 +25,12 @@ namespace LumenRender {
         }
 
 
-        m_TriCount = 0;
         for (const auto &shape : m_shapes) {
             m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size());
         }
 
-        m_Triangles.reserve(m_TriCount);
-        m_TriData.reserve(m_TriCount);
+        m_Triangles = new Triangle[m_TriCount];
+        m_TriData = new TriData[m_TriCount];
         uint32_t triIndex = 0;
 
         for (auto & shape : m_shapes) {
@@ -45,7 +44,7 @@ namespace LumenRender {
                 glm::vec2 uv{};
 
                 for(size_t v = 0; v < 3; v++) {
-                    tinyobj::index_t idx = shape.mesh.indices[triIndex * fv + v];
+                    tinyobj::index_t const idx = shape.mesh.indices[triIndex * fv + v];
 
 
 
@@ -64,10 +63,10 @@ namespace LumenRender {
                         uv.y = attrib.texcoords[2 * idx.texcoord_index + 1];
                     }
 
-                    tri[v] = pos;
+                    tri.at(v) = pos;
                 }
-                m_Triangles.emplace_back(Triangle(tri));
-                m_TriData.emplace_back(TriData({.N = norm, .UV = uv}));
+                m_Triangles[triIndex] = Triangle(tri);
+                m_TriData[triIndex] = TriData({.N = norm, .UV = uv});
                 triIndex++;
             }
 
@@ -81,10 +80,10 @@ namespace LumenRender {
         float closest = t_max;
 
         for (uint32_t i = 0; i < m_TriCount; i++) {
-            if (Triangle::TriangleIntersect(temp, m_Triangles.at(i), i) && temp.m_Record.m_T < closest) {
+            if (Triangle::TriangleIntersect(temp, m_Triangles[i], i) && temp.m_Record.m_T < closest) {
                 hit_tri = true;
                 closest = temp.m_Record.m_T;
-                temp.m_Record.m_Normal = m_TriData.at(i).N;
+                temp.m_Record.m_Normal = m_TriData[i].N;
                 ray = temp;
             }
         }
@@ -92,13 +91,13 @@ namespace LumenRender {
         return hit_tri;
     }
 
-    auto Mesh::GetBounds(AABB &outbox) const -> bool {
+    auto Mesh::GetBounds(AABB &outbox) const -> AABB {
         AABB tri_box;
         for (uint32_t i = 0; i < m_TriCount; i++) {
-            m_Triangles.at(i).GetBounds(tri_box);
+            m_Triangles[i].GetBounds(tri_box);
             outbox = AABB::Union(outbox, tri_box);
         }
-        return true;
+        return outbox;
     }
 
     auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> {

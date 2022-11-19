@@ -23,7 +23,7 @@ namespace LumenRender {
 
         auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool;
+        auto GetBounds(AABB &outbox) const -> AABB;
 
         [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
@@ -42,7 +42,7 @@ namespace LumenRender {
 
         auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> bool;
+        auto GetBounds(AABB &outbox) const -> AABB;
 
         [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
