@@ -12,23 +12,24 @@ namespace Lumen {
 
     class Random {
     public:
-        static void Init() {
+        [[maybe_unused]] static void Init() {
             s_RandomEngine.seed(std::random_device()());
         }
 
-        static auto UInt() -> uint32_t {
+        [[maybe_unused]] static auto UInt() -> uint32_t {
             return s_Distribution(s_RandomEngine);
         }
 
-        static auto UInt(uint32_t min, uint32_t max) -> uint32_t {
+        [[maybe_unused]] static auto UInt(uint32_t min, uint32_t max) -> uint32_t {
             return min + (s_Distribution(s_RandomEngine) % (max - min + 1));
         }
 
         static auto Float() -> float {
-            return static_cast<float>(s_Distribution(s_RandomEngine)) / static_cast<float>(std::numeric_limits<uint32_t>::max());
+            return static_cast<float>(s_Distribution(s_RandomEngine)) /
+                   static_cast<float>(std::numeric_limits<uint32_t>::max());
         }
 
-        static auto Vec3() -> glm::vec3 {
+        [[maybe_unused]] static auto Vec3() -> glm::vec3 {
             return { Float(), Float(), Float() };
         }
 
@@ -36,7 +37,7 @@ namespace Lumen {
             return { Float() * (max - min) + min, Float() * (max - min) + min, Float() * (max - min) + min };
         }
 
-        static auto InUnitSphere() -> glm::vec3 {
+        [[maybe_unused]] static auto InUnitSphere() -> glm::vec3 {
             return glm::normalize(Vec3(-1.0F, 1.0F));
         }
 

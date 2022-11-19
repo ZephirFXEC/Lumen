@@ -37,7 +37,7 @@ namespace Lumen {
 
     class [[maybe_unused]] ScopedTimer {
     public:
-        explicit ScopedTimer(std::string name)
+        [[maybe_unused]] explicit ScopedTimer(std::string name)
                 : m_Name(std::move(name)) {}
 
         ~ScopedTimer() {

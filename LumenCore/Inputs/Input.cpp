@@ -10,13 +10,13 @@
 namespace Lumen {
     auto Input::IsKeyDown(KeyCode keycode) -> bool {
         GLFWwindow *windowHandle = Application::Get().GetWindowHandle();
-        int state = glfwGetKey(windowHandle, static_cast<int>(keycode));
+        int const state = glfwGetKey(windowHandle, static_cast<int>(keycode));
         return state == GLFW_PRESS || state == GLFW_REPEAT;
     }
 
     auto Input::IsMouseButtonDown(MouseButton button) -> bool {
         GLFWwindow *windowHandle = Application::Get().GetWindowHandle();
-        int state = glfwGetMouseButton(windowHandle, static_cast<int>(button));
+        int const state = glfwGetMouseButton(windowHandle, static_cast<int>(button));
         return state == GLFW_PRESS;
     }
 

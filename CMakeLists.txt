@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(Lumen)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 if(WIN32)
 

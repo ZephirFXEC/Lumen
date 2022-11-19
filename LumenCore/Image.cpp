@@ -16,11 +16,11 @@ namespace Lumen {
     void check_vk_result(VkResult err) {
         if (err == 0) {
             return;
-}
+        }
         fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
         if (err < 0) {
             abort();
-}
+        }
     }
 
     namespace Utils {
@@ -31,7 +31,7 @@ namespace Lumen {
             for (uint32_t i = 0; i < prop.memoryTypeCount; i++) {
                 if ((prop.memoryTypes[i].propertyFlags & properties) == properties && ((type_bits & (1 << i)) != 0U)) {
                     return i;
-}
+                }
             }
 
             return 0xffffffff;
@@ -91,7 +91,7 @@ namespace Lumen {
         AllocateMemory();
         if (data != nullptr) {
             SetData(data);
-}
+        }
     }
 
     Image::~Image() {
@@ -103,15 +103,15 @@ namespace Lumen {
 
         VkResult err;
 
-        VkFormat vulkanFormat = Utils::LumenFormatToVulkanFormat(m_Format);
+        VkFormat const vulkanFormat = Utils::LumenFormatToVulkanFormat(m_Format);
 
         // Create the Image
         {
-            VkImageCreateInfo info = {
+            VkImageCreateInfo const info = {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
                     .imageType = VK_IMAGE_TYPE_2D,
                     .format = vulkanFormat,
-                    .extent = {m_Width, m_Height, 1},
+                    .extent = { m_Width, m_Height, 1 },
                     .mipLevels = 1,
                     .arrayLayers = 1,
                     .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -126,10 +126,11 @@ namespace Lumen {
             VkMemoryRequirements req;
             vkGetImageMemoryRequirements(device, m_Image, &req);
 
-            VkMemoryAllocateInfo alloc_info = {
+            VkMemoryAllocateInfo const alloc_info = {
                     .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                     .allocationSize = req.size,
-                    .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req.memoryTypeBits)
+                    .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                                                  req.memoryTypeBits)
             };
 
             err = vkAllocateMemory(device, &alloc_info, nullptr, &m_Memory);
@@ -140,14 +141,14 @@ namespace Lumen {
 
         // Create the Image View:
         {
-            VkImageViewCreateInfo info = {
+            VkImageViewCreateInfo const info = {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                     .image = m_Image,
                     .viewType = VK_IMAGE_VIEW_TYPE_2D,
                     .format = vulkanFormat,
-                    .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                         .levelCount = 1,
-                                         .layerCount = 1}
+                    .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                            .levelCount = 1,
+                            .layerCount = 1 }
             };
 
             err = vkCreateImageView(device, &info, nullptr, &m_ImageView);
@@ -156,7 +157,7 @@ namespace Lumen {
 
         // Create sampler:
         {
-            VkSamplerCreateInfo info = {
+            VkSamplerCreateInfo const info = {
                     .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
                     .magFilter = VK_FILTER_LINEAR,
                     .minFilter = VK_FILTER_LINEAR,
@@ -175,13 +176,13 @@ namespace Lumen {
                     .unnormalizedCoordinates = VK_FALSE
             };
 
-            err= vkCreateSampler(device, &info, nullptr, &m_Sampler);
+            err = vkCreateSampler(device, &info, nullptr, &m_Sampler);
             check_vk_result(err);
         }
 
         // Create the Descriptor Set:
         m_DescriptorSet = ImGui_ImplVulkan_AddTexture(m_Sampler, m_ImageView,
-                                                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     void Image::Release() {
@@ -208,14 +209,14 @@ namespace Lumen {
     void Image::SetData(const void *data) {
         VkDevice device = Application::GetDevice();
 
-        size_t upload_size = m_Width * m_Height * Utils::BytesPerPixel(m_Format);
+        size_t const upload_size = m_Width * m_Height * Utils::BytesPerPixel(m_Format);
 
         VkResult err;
 
         if (m_StagingBuffer == nullptr) {
             // Create the Upload Buffer
             {
-                VkBufferCreateInfo buffer_info = {
+                VkBufferCreateInfo const buffer_info = {
                         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                         .size = upload_size,
                         .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -228,10 +229,11 @@ namespace Lumen {
                 vkGetBufferMemoryRequirements(device, m_StagingBuffer, &req);
                 m_AlignedSize = req.size;
 
-                VkMemoryAllocateInfo alloc_info = {
+                VkMemoryAllocateInfo const alloc_info = {
                         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                         .allocationSize = req.size,
-                        .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req.memoryTypeBits)
+                        .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                                                                      req.memoryTypeBits)
                 };
 
                 err = vkAllocateMemory(device, &alloc_info, nullptr, &m_StagingBufferMemory);
@@ -262,7 +264,7 @@ namespace Lumen {
         {
             VkCommandBuffer command_buffer = Application::GetCommandBuffer(true);
 
-            VkImageMemoryBarrier copy_barrier = {
+            VkImageMemoryBarrier const copy_barrier = {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .srcAccessMask = 0,
                     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
@@ -271,30 +273,31 @@ namespace Lumen {
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .image = m_Image,
-                    .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                         .levelCount = 1,
-                                         .layerCount = 1}
+                    .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                            .levelCount = 1,
+                            .layerCount = 1 }
             };
 
-            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr,
+            vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                                 nullptr,
                                  0, nullptr, 1, &copy_barrier);
 
-            VkBufferImageCopy region = {
+            VkBufferImageCopy const region = {
                     .bufferOffset = 0,
                     .bufferRowLength = 0,
                     .bufferImageHeight = 0,
-                    .imageSubresource = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                         .mipLevel = 0,
-                                         .baseArrayLayer = 0,
-                                         .layerCount = 1},
-                                         .imageOffset = {0, 0, 0},
-                                         .imageExtent = {m_Width, m_Height, 1}
+                    .imageSubresource = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                            .mipLevel = 0,
+                            .baseArrayLayer = 0,
+                            .layerCount = 1 },
+                    .imageOffset = { 0, 0, 0 },
+                    .imageExtent = { m_Width, m_Height, 1 }
             };
 
             vkCmdCopyBufferToImage(command_buffer, m_StagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
                                    &region);
 
-            VkImageMemoryBarrier use_barrier = {
+            VkImageMemoryBarrier const use_barrier = {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
                     .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
@@ -303,9 +306,9 @@ namespace Lumen {
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .image = m_Image,
-                    .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                         .levelCount = 1,
-                                         .layerCount = 1}
+                    .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                            .levelCount = 1,
+                            .layerCount = 1 }
             };
 
             vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -318,7 +321,7 @@ namespace Lumen {
     void Image::Resize(uint32_t width, uint32_t height) {
         if ((m_Image != nullptr) && m_Width == width && m_Height == height) {
             return;
-}
+        }
 
         // TODO: max size?
 

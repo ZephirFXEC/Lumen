@@ -6,7 +6,6 @@
 #define LUMEN_ENTRYPOINT_HPP
 
 
-
 bool g_ApplicationRunning = true;
 
 namespace Lumen {

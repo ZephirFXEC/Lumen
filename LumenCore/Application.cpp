@@ -28,7 +28,7 @@
 extern bool g_ApplicationRunning;
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
+// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do use this pragma.
 // Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
@@ -57,13 +57,13 @@ static bool g_SwapChainRebuild = false;
 static std::vector<std::vector<VkCommandBuffer>> s_AllocatedCommandBuffers;
 static std::vector<std::vector<std::function<void()>>> s_ResourceFreeQueue;
 
-// Unlike g_MainWindowData.FrameIndex, this is not the the swapchain image index
+// Unlike g_MainWindowData.FrameIndex, this is not the swapchain image index
 // and is always guaranteed to increase (eg. 0, 1, 2, 0, 1, 2)
 static uint32_t s_CurrentFrameIndex = 0;
 
 static Lumen::Application *s_Instance = nullptr;
 
-void check_vk_result(VkResult err) {
+static void check_vk_result(VkResult err) {
     if (err == 0) {
         return;
     }
@@ -179,7 +179,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
         auto *queues = static_cast<VkQueueFamilyProperties *>(malloc(sizeof(VkQueueFamilyProperties) * count));
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, queues);
         for (uint32_t i = 0; i < count; i++) {
-            if ((queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0u) {
+            if ((queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0U) {
                 g_QueueFamily = i;
                 break;
             }
@@ -190,7 +190,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
 
     // Create Logical Device (with 1 queue)
     {
-        uint32_t device_extension_count = 1;
+        uint32_t const device_extension_count = 1;
         const char *device_extensions[] = { "VK_KHR_swapchain" };
         const float queue_priority[] = { 1.0F };
 
@@ -200,7 +200,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
         queue_info[0].queueCount = 1;
         queue_info[0].pQueuePriorities = queue_priority;
 
-        VkDeviceCreateInfo create_info = {
+        VkDeviceCreateInfo const create_info = {
                 .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
                 .queueCreateInfoCount = sizeof(queue_info) / sizeof(queue_info[0]),
                 .pQueueCreateInfos = queue_info,
@@ -229,7 +229,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count) {
                         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
                         { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       1000 }
                 };
-        VkDescriptorPoolCreateInfo pool_info = {
+        VkDescriptorPoolCreateInfo const pool_info = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                 .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
                 .maxSets = 1000 * IM_ARRAYSIZE(pool_sizes),
@@ -260,14 +260,15 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface
                                                    VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM };
     const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
     wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(g_PhysicalDevice, wd->Surface, requestSurfaceImageFormat,
-                                                              static_cast<size_t>IM_ARRAYSIZE(requestSurfaceImageFormat),
+                                                              static_cast<size_t>IM_ARRAYSIZE(
+                                                                      requestSurfaceImageFormat),
                                                               requestSurfaceColorSpace);
 
     // Select Present Mode
 #ifdef IMGUI_UNLIMITED_FRAME_RATE
     VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
 #else
-    VkPresentModeKHR present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
+    VkPresentModeKHR const present_modes[] = { VK_PRESENT_MODE_FIFO_KHR };
 #endif
     wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(g_PhysicalDevice, wd->Surface, &present_modes[0],
                                                           IM_ARRAYSIZE(present_modes));
@@ -347,7 +348,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
         check_vk_result(err);
     }
     {
-        VkRenderPassBeginInfo info = {
+        VkRenderPassBeginInfo const info = {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                 .renderPass = wd->RenderPass,
                 .framebuffer = fd->Framebuffer,
@@ -367,8 +368,8 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
     // Submit command buffer
     vkCmdEndRenderPass(fd->CommandBuffer);
     {
-        VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        VkSubmitInfo info = {
+        VkPipelineStageFlags const wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        VkSubmitInfo const info = {
                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                 .waitSemaphoreCount = 1,
                 .pWaitSemaphores = &image_acquired_semaphore,
@@ -392,7 +393,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
         return;
     }
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-    VkPresentInfoKHR info = {
+    VkPresentInfoKHR const info = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
             .pWaitSemaphores = &render_complete_semaphore,
@@ -401,7 +402,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
             .pImageIndices = &wd->FrameIndex
     };
 
-    VkResult err = vkQueuePresentKHR(g_Queue, &info);
+    VkResult const err = vkQueuePresentKHR(g_Queue, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
         g_SwapChainRebuild = true;
         return;
@@ -438,7 +439,7 @@ namespace Lumen {
         // Setup GLFW window
         glfwSetErrorCallback(glfw_error_callback);
         if (glfwInit() == 0) {
-            std::cerr << "Could not initalize GLFW!\n";
+            std::cerr << "Could not initialize GLFW!\n";
             return;
         }
 
@@ -538,7 +539,7 @@ namespace Lumen {
 
             ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
-            VkSubmitInfo end_info = {
+            VkSubmitInfo const end_info = {
                     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                     .commandBufferCount = 1,
                     .pCommandBuffers = &command_buffer
@@ -564,7 +565,7 @@ namespace Lumen {
         m_LayerStack.clear();
 
         // Cleanup
-        VkResult err = vkDeviceWaitIdle(g_Device);
+        VkResult const err = vkDeviceWaitIdle(g_Device);
         check_vk_result(err);
 
         // Free resources in queue
@@ -594,8 +595,8 @@ namespace Lumen {
         m_Running = true;
 
         ImGui_ImplVulkanH_Window *wd = &g_MainWindowData;
-        ImVec4 clear_color = ImVec4(0.0F, 0.0F, 0.0F, 1.00F);
-        ImGuiIO &io = ImGui::GetIO();
+        ImVec4 const clear_color = ImVec4(0.0F, 0.0F, 0.0F, 1.00F);
+        ImGuiIO  const&io = ImGui::GetIO();
 
         // Main loop
         while ((glfwWindowShouldClose(m_WindowHandle) == 0) && m_Running) {
@@ -635,7 +636,7 @@ namespace Lumen {
             ImGui::NewFrame();
 
             {
-                static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+                static ImGuiDockNodeFlags const dockspace_flags = ImGuiDockNodeFlags_None;
 
                 // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
                 // because it would be confusing to have two docking targets within each others.
@@ -672,9 +673,9 @@ namespace Lumen {
                 ImGui::PopStyleVar(2);
 
                 // Submit the DockSpace
-                ImGuiIO &io = ImGui::GetIO();
+                ImGuiIO  const&io = ImGui::GetIO();
                 if ((io.ConfigFlags & ImGuiConfigFlags_DockingEnable) != 0) {
-                    ImGuiID dockspace_id = ImGui::GetID("VulkanAppDockspace");
+                    ImGuiID const dockspace_id = ImGui::GetID("VulkanAppDockspace");
                     ImGui::DockSpace(dockspace_id, ImVec2(0.0F, 0.0F), dockspace_flags);
                 }
 
@@ -716,7 +717,7 @@ namespace Lumen {
                 FramePresent(wd);
             }
 
-            float time = GetTime();
+            float const time = GetTime();
             m_FrameTime = time - m_LastFrameTime;
             m_TimeStep = glm::min<float>(m_FrameTime, 0.0333F);
             m_LastFrameTime = time;
@@ -750,7 +751,7 @@ namespace Lumen {
         // Use any command queue
         VkCommandPool command_pool = wd->Frames[wd->FrameIndex].CommandPool;
 
-        VkCommandBufferAllocateInfo cmdBufAllocateInfo = {
+        VkCommandBufferAllocateInfo const cmdBufAllocateInfo = {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
                 .commandPool = command_pool,
                 .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -773,7 +774,7 @@ namespace Lumen {
     void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer) {
         const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-        VkSubmitInfo end_info = {
+        VkSubmitInfo const end_info = {
                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                 .commandBufferCount = 1,
                 .pCommandBuffers = &commandBuffer
