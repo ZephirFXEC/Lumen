@@ -4,13 +4,18 @@
 
 #include <execution>
 #include "Bvh.hpp"
+
+#include <cmath>
 #include "../Utility/Utility.hpp"
 
 
 namespace LumenRender {
 
-    BVH::BVH(class IHittable<Mesh>* tri_mesh) :
-            m_mesh(dynamic_cast<Mesh*>(tri_mesh)),
+#define BINS 8
+
+
+    BVH::BVH(class IHittable<Mesh> *tri_mesh) :
+            m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
             m_bvhNode(new BVHNode[static_cast<uint64_t>(m_mesh->m_TriCount * 2)]),
             m_triIdx(new uint32_t[m_mesh->m_TriCount]),
             m_nodeCount(1) {
@@ -22,12 +27,12 @@ namespace LumenRender {
 
         //Populate Triangle indexes
         for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) {
-                m_triIdx[i] = i;
+            m_triIdx[i] = i;
         }
 
         //Compute centroids
         for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) {
-            m_mesh->m_TriData[i].Centroid = (
+            m_mesh->m_Triangles[i].Centroid = (
                     m_mesh->m_Triangles[i].vertex[0] +
                     m_mesh->m_Triangles[i].vertex[1] +
                     m_mesh->m_Triangles[i].vertex[2]) / 3.0F;
@@ -42,24 +47,23 @@ namespace LumenRender {
     }
 
 
+    auto BVH::CalculateSAH(BVHNode &node, int &axis, float &pos) const -> float {
 
-    auto BVH::CalculateSAH(BVHNode& node, int axis, float pos) const -> float {
-        AABB leftBox, rightBox = AABB();
-        int leftCount = 0, rightCount = 0;
-        for (uint32_t i = 0; i < node.m_TriCount; i++)
-        {
-            auto& triCentroid = m_mesh->m_TriData[m_triIdx[node.m_LeftFirst + i]];
-            auto& tri = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
-            if (triCentroid.Centroid[axis] < pos)
-            {
+        AABB leftBox = AABB();
+        AABB rightBox = AABB();
+
+        uint32_t leftCount = 0;
+        uint32_t rightCount = 0;
+
+        for (uint32_t i = 0; i < node.m_TriCount; i++) {
+            auto &tri = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
+            if (tri.Centroid[axis] < pos) {
                 leftCount++;
                 leftBox = AABB::Union(leftBox, tri.vertex[0]);
                 leftBox = AABB::Union(leftBox, tri.vertex[1]);
                 leftBox = AABB::Union(leftBox, tri.vertex[2]);
 
-            }
-            else
-            {
+            } else {
                 rightCount++;
                 rightBox = AABB::Union(rightBox, tri.vertex[0]);
                 rightBox = AABB::Union(rightBox, tri.vertex[1]);
@@ -71,35 +75,83 @@ namespace LumenRender {
     }
 
 
+    auto BVH::FindBestPlane(BVHNode &node, int &axis, float &splitPos) const -> float {
+        float bestCost = 1e30F;
+        for (int a = 0; a < 3; a++) {
+            float boundsMin = 0.F;
+            float boundsMax = 0.F;
+            for (uint32_t i = 0; i < node.m_TriCount; i++) {
+                auto &triangle = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
+                boundsMin = std::min(boundsMin, triangle.Centroid[a]);
+                boundsMax = std::max(boundsMax, triangle.Centroid[a]);
+            }
+            if (boundsMin == boundsMax) {
+                continue;
+            }
+
+            // populate the bins
+            std::array<Bin, BINS> bin{};
+            float scale = BINS / (boundsMax - boundsMin);
+            for (uint32_t i = 0; i < node.m_TriCount; i++) {
+
+                auto &triangle = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
+                uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
+                                                 static_cast<uint32_t>((triangle.Centroid[a] - boundsMin) * scale));
+                bin.at(binIdx).m_TriCount++;
+                AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[0]);
+                AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[1]);
+                AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[2]);
+
+
+            }
+            // gather data for the 7 planes between the 8 bins
+            std::array<float, BINS - 1> leftArea{};
+            std::array<float, BINS - 1> rightArea{};
+            std::array<uint32_t, BINS - 1> leftCount{};
+            std::array<uint32_t, BINS - 1> rightCount{};
+
+            AABB leftBox = AABB();
+            AABB rightBox = AABB();
+            uint32_t leftSum = 0;
+            uint32_t rightSum = 0;
+
+            for (uint32_t i = 0; i < BINS - 1; i++) {
+                leftSum += bin.at(i).m_TriCount;
+                leftCount.at(i) = leftSum;
+                leftBox = AABB::Union(leftBox, bin.at(i).m_Bounds);
+                leftArea.at(i) = leftBox.SurfaceArea();
+
+                rightSum += bin.at(BINS - 1 - i).m_TriCount;
+                rightCount.at(BINS - 2 - i) = rightSum;
+                rightBox = AABB::Union(rightBox, bin.at(BINS - 1 - i).m_Bounds);
+                rightArea.at(BINS - 2 - i) = rightBox.SurfaceArea();
+            }
+
+            // calculate SAH cost for the 7 planes
+            scale = (boundsMax - boundsMin) / BINS;
+            for (uint32_t i = 0; i < BINS - 1; i++) {
+                float const planeCost = leftCount.at(i) * leftArea.at(i) + rightCount.at(i) * rightArea.at(i);
+                if (planeCost < bestCost) {
+                    axis = a;
+                    splitPos = boundsMin + scale * (i + 1.F);
+                    bestCost = planeCost;
+                }
+            }
+        }
+        return bestCost;
+    }
+
 
     void BVH::Subdivide(uint32_t nodeIdx) {
 
         BVHNode &node = m_bvhNode[nodeIdx];
 
         // SAH
-        int bestAxis = -1;
-        float bestPos = 0;
-        float bestCost = 1e30F;
-
-        for (int axis = 0; axis < 3; axis++) {
-            for (uint32_t i = 0; i < node.m_TriCount; i++) {
-                auto &triangle = m_mesh->m_TriData[m_triIdx[node.m_LeftFirst + i]];
-                float const candidatePos = triangle.Centroid[axis];
-                float const cost = CalculateSAH(node, axis, candidatePos);
-                if (cost < bestCost) {
-                    bestPos = candidatePos;
-                    bestAxis = axis;
-                    bestCost = cost;
-                }
-            }
-        }
-
-        int const axis = bestAxis;
-        float const splitPos = bestPos;
-        glm::vec3 e = node.m_Bounds_max - node.m_Bounds_min; // extent of parent
-        float parentArea = e.x * e.y + e.y * e.z + e.z * e.x;
-        float const parentCost = node.m_TriCount * parentArea;
-        if (bestCost >= parentCost) {
+        int axis = 0;
+        float splitPos = NAN;
+        float const splitCost = FindBestPlane(node, axis, splitPos);
+        float const nosplitCost = CalculateNodeCost(node);
+        if (splitCost >= nosplitCost) {
             return;
         }
 
@@ -109,7 +161,7 @@ namespace LumenRender {
         uint32_t j = i + node.m_TriCount - 1;
 
         while (i <= j) {
-            if (m_mesh->m_TriData[m_triIdx[i]].Centroid[axis] < splitPos) {
+            if (m_mesh->m_Triangles[m_triIdx[i]].Centroid[axis] < splitPos) {
                 {
                     i++;
                 }
@@ -155,13 +207,13 @@ namespace LumenRender {
             uint32_t const leafTriIdx = m_triIdx[node.m_LeftFirst + i];
             auto leafTri = m_mesh->m_Triangles[leafTriIdx];
 
-            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[0] );
-            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[1] );
-            node.m_Bounds_min = glm::min( node.m_Bounds_min, leafTri.vertex[2] );
+            node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex[0]);
+            node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex[1]);
+            node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex[2]);
 
-            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[0] );
-            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[1] );
-            node.m_Bounds_max = glm::max( node.m_Bounds_max, leafTri.vertex[2] );
+            node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex[0]);
+            node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex[1]);
+            node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex[2]);
         }
     }
 
@@ -169,7 +221,7 @@ namespace LumenRender {
     auto BVH::Traversal(Ray &ray, uint32_t nodeIdx, float t_max) const -> bool {
         Ray temp = ray;
         BVHNode *node = &m_bvhNode[m_rootNodeIdx];
-        std::array<BVHNode*, 64> stack{};
+        std::array<BVHNode *, 64> stack{};
         uint32_t stackPtr = 0;
 
         bool hit = false;
@@ -192,7 +244,7 @@ namespace LumenRender {
                 }
 
                 if (stackPtr == 0) { break; }
-                node = stack[--stackPtr];
+                node = stack.at(--stackPtr);
                 continue;
 
             }
@@ -212,10 +264,10 @@ namespace LumenRender {
             }
             if (t0 == 1e30F) {
                 if (stackPtr == 0) { break; }
-                node = stack[--stackPtr];
+                node = stack.at(--stackPtr);
             } else {
                 node = left;
-                if (t1 != 1e30F) { stack[stackPtr++] = right; }
+                if (t1 != 1e30F) { stack.at(stackPtr++) = right; }
             }
         }
         return hit;
@@ -233,6 +285,12 @@ namespace LumenRender {
 
     auto BVH::DeepCopy() const -> std::shared_ptr<IHittable> {
         return std::make_shared<BVH>(*this);
+    }
+
+    auto BVH::CalculateNodeCost(BVHNode &node) -> float {
+        glm::vec3 const e = node.m_Bounds_max - node.m_Bounds_min; // extent of the node
+        float const surfaceArea = e.x * e.y + e.y * e.z + e.z * e.x;
+        return node.m_TriCount * surfaceArea;
     }
 
 

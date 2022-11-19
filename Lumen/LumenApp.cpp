@@ -17,15 +17,12 @@ public:
     ExampleLayer()
             : m_Camera(45.0F, 0.01F, 1000.0F) {
 
-        //m_Scene.AddObject(new Sphere(glm::vec3(0.0f, 0.0f, -1.0f), 1));
-        //m_Scene.AddObject(new Plane(glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-        Mesh *mesh = new Mesh(
-                R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
-        Sphere *sphere = new Sphere(glm::vec3(0.0F, 0.0F, -1.0F), 1);
-        //BVH *bvh = new BVH(mesh);
 
-        m_Scene.AddObject(sphere);
-        m_Scene.AddObject(mesh);
+        IHittable<Mesh> *mesh = new Mesh(
+                R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\bunny.obj)");
+        IHittable<BVH> *bvh = new BVH(mesh);
+        IHittable<Sphere> *sphere = new Sphere(glm::vec3(0.0F, 0.0F, -1.0F), 1);
+        m_Scene.AddObject(bvh);
     }
 
     void OnUpdate(float ts) override {
@@ -50,7 +47,7 @@ public:
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", 1);
+        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
@@ -161,7 +158,6 @@ public:
 
         Lumen::Timer timer;
         m_Renderer.Render(m_Camera, m_Scene);
-        m_Elapsed = timer.Elapsed();
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
@@ -172,7 +168,7 @@ private:
     LumenRender::Scene m_Scene;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
-    float m_ElapsedTime{}, m_Elapsed{};
+    float m_ElapsedTime{};
 };
 
 auto Lumen::CreateApplication(int /*unused*/, char ** /*unused*/) -> Lumen::Application * {

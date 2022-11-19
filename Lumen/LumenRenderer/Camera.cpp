@@ -13,12 +13,12 @@ namespace LumenRender {
     Camera::Camera(float verticalFOV, float nearClip, float farClip)
             : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip) {
         m_ForwardDirection = glm::vec3(0, 0, -1);
-        m_Position = glm::vec3(0, 0, 3);
+        m_Position = glm::vec3(0, 0, 5);
     }
 
     auto Camera::OnUpdate(float ts) -> bool {
-        glm::vec2 mousePos = Lumen::Input::GetMousePosition();
-        glm::vec2 delta = (mousePos - m_LastMousePosition) * 0.002F;
+        glm::vec2 const mousePos = Lumen::Input::GetMousePosition();
+        glm::vec2 const delta = (mousePos - m_LastMousePosition) * 0.002F;
         m_LastMousePosition = mousePos;
 
         if (!Lumen::Input::IsMouseButtonDown(Lumen::MouseButton::Right)) {
@@ -31,9 +31,9 @@ namespace LumenRender {
         bool moved = false;
 
         constexpr glm::vec3 upDirection(0.0F, 1.0F, 0.0F);
-        glm::vec3 rightDirection = glm::cross(m_ForwardDirection, upDirection);
+        glm::vec3 const rightDirection = glm::cross(m_ForwardDirection, upDirection);
 
-        float speed = 5.0F;
+        float const speed = 5.0F;
 
         // Movement
         if (Lumen::Input::IsKeyDown(Lumen::KeyCode::W)) {
@@ -60,10 +60,10 @@ namespace LumenRender {
 
         // Rotation
         if (delta.x != 0.0F || delta.y != 0.0F) {
-            float pitchDelta = delta.y * GetRotationSpeed();
-            float yawDelta = delta.x * GetRotationSpeed();
+            float const pitchDelta = delta.y * GetRotationSpeed();
+            float const yawDelta = delta.x * GetRotationSpeed();
 
-            glm::quat q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
+            glm::quat const q = glm::normalize(glm::cross(glm::angleAxis(-pitchDelta, rightDirection),
                                                     glm::angleAxis(-yawDelta, glm::vec3(0.F, 1.0F, 0.0F))));
             m_ForwardDirection = glm::rotate(q, m_ForwardDirection);
 
@@ -116,8 +116,8 @@ namespace LumenRender {
                                     static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
                 coord = coord * 2.0F - 1.0F; // -1 -> 1
 
-                glm::vec4 target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
-                glm::vec3 rayDirection = glm::vec3(
+                glm::vec4 const target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
+                glm::vec3 const rayDirection = glm::vec3(
                         m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
                 m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
 

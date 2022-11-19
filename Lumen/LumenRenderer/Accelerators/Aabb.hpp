@@ -62,6 +62,13 @@ namespace LumenRender {
             return ret;
          }
 
+         auto Union(const glm::vec3 &p) const -> AABB {
+            AABB ret;
+            ret.pMin = { std::min(pMin.x, p.x), std::min(pMin.y, p.y), std::min(pMin.z, p.z) };
+            ret.pMax = { std::max(pMax.x, p.x), std::max(pMax.y, p.y), std::max(pMax.z, p.z) };
+            return ret;
+         }
+
 
         [[nodiscard]] auto Diagonal() const -> glm::vec3 {
             return pMax - pMin;
