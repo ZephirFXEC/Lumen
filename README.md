@@ -1,5 +1,5 @@
 # Lumen
-![header] (https://raw.githubusercontent.com/andela-ooranagwa/lumen/master/public/images/lumen.png)
+![header] (https://github.com/ZephirFXEC/Lumen/tree/main/images/Untitled-1.png)
 
 ## About me
 
