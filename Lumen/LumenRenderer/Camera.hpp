@@ -47,9 +47,9 @@ private:
   glm::mat4 m_InverseProjection{ 1.0F };
   glm::mat4 m_InverseView{ 1.0F };
 
-  float m_VerticalFOV = 45.0F;
-  float m_NearClip = 0.1F;
-  float m_FarClip = 100.0F;
+  float m_VerticalFOV{ 45.0F };
+  float m_NearClip{ 0.1F };
+  float m_FarClip{ 100.0F };
 
   glm::vec3 m_Position{ 0.0F, 0.0F, 0.0F };
   glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };

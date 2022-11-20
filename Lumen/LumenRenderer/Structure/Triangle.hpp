@@ -12,17 +12,18 @@
 namespace LumenRender {
 
 
-struct alignas(32) TriData
+struct TriData
 {
   glm::vec3 N{};
   glm::vec2 UV{};
 };
 
 
-class alignas(64) Triangle
+class Triangle
 {
 public:
   Triangle() = default;
+
   explicit Triangle(const std::array<glm::vec3, 3> &v)
     : vertex{ v }, Centroid((v[0] + v[1] + v[2]) / 3.F), _e1(v[1] - v[0]), _e2(v[2] - v[0])
   {}

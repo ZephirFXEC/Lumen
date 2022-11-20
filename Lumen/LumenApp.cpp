@@ -19,7 +19,6 @@ public:
 
     IHittable<Mesh> *mesh = new Mesh(
       R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
-    IHittable<Sphere> *sphere = new Sphere(glm::vec3(0.0F, 0.0F, -1.0F), 1);
     m_Scene.AddObject(mesh);
   }
 

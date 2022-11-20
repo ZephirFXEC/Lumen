@@ -13,18 +13,33 @@
 namespace LumenRender {
 
     struct Bin {
-        AABB m_Bounds{};
-        uint32_t m_TriCount{0};
+      AABB m_Bounds{ AABB() };
+      uint32_t m_TriCount{ 0 };
     };
 
 
-    struct alignas(32) BVHNode {
+    struct BVHNode
+    {
 
-        union { struct { glm::vec3 m_Bounds_min; uint32_t m_LeftFirst; }; __m128 m_Bounds_min_m128; };
-        union { struct { glm::vec3 m_Bounds_max; uint32_t m_TriCount; }; __m128 m_Bounds_max_m128; };
+      union {
+        struct
+        {
+          glm::vec3 m_Bounds_min;
+          uint32_t m_LeftFirst;
+        };
+        __m128 m_Bounds_min_m128;
+      };
+      union {
+        struct
+        {
+          glm::vec3 m_Bounds_max;
+          uint32_t m_TriCount;
+        };
+        __m128 m_Bounds_max_m128;
+      };
 
-        auto isLeaf() const -> bool { return m_TriCount > 0; } // empty BVH leaves do not exist
-        static auto CalculateNodeCost(BVHNode &node) -> float;
+      auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+      static auto CalculateNodeCost(BVHNode &node) -> float;
     };
 
 

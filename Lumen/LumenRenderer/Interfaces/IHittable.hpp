@@ -9,13 +9,15 @@
 #include "IDeepInstance.hpp"
 #include "../Accelerators/Aabb.hpp"
 
-template<class T>
-class IHittable : public IDeepInstance<IHittable<T>> {
+template<class T> class IHittable : public IDeepInstance<IHittable<T>>
+{
 public:
-    ~IHittable() noexcept override = default;
+  IHittable() = default;
+  ~IHittable() noexcept override = default;
 
 
-  auto DeepCopy() const -> std::shared_ptr<IHittable> {
+  auto DeepCopy() const -> std::shared_ptr<IHittable>
+  {
     return std::make_shared<IHittable>(static_cast<const IHittable &>(*this));
   }
 

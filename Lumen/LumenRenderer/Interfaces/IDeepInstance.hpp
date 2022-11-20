@@ -7,14 +7,17 @@
 
 #include <memory>
 
-template<class T>
-class IDeepInstance {
+template<class T> class IDeepInstance
+{
 public:
-    virtual ~IDeepInstance() = default;
+  IDeepInstance() = default;
 
-    [[maybe_unused]] auto DeepCopy() const -> std::shared_ptr<T> {
-        return std::make_shared<T>(static_cast<const T &>(*this));
-    }
+  virtual ~IDeepInstance() = default;
+
+  [[maybe_unused]] auto DeepCopy() const -> std::shared_ptr<T>
+  {
+    return std::make_shared<T>(static_cast<const T &>(*this));
+  }
 };
 
 #endif //LUMEN_IDEEPINSTANCE_HPP

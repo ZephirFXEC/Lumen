@@ -21,7 +21,7 @@ struct HitRecords
   float m_T = MAX;
 };
 
-__declspec(align(64)) struct Ray
+struct Ray
 {// Ray descriptor organized like this for better memory alignment
 
   Ray() { O4 = D4 = inv_D4 = _mm_set1_ps(1); }

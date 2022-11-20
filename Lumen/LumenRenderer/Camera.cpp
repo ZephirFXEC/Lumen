@@ -114,16 +114,18 @@ void Camera::RecalculateRayDirections()
 
   m_RayDirections.resize(static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight));
 
-  for (uint32_t y = 0; y < m_ViewportHeight; y++) {
-    for (uint32_t x = 0; x < m_ViewportWidth; x++) {
+  for (uint32_t y = 0; y < m_ViewportHeight; ++y) {
+    for (uint32_t x = 0; x < m_ViewportWidth; ++x) {
 
       glm::vec2 coord = { static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
         static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
+
       coord = coord * 2.0F - 1.0F;// -1 -> 1
 
       glm::vec4 const target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
       glm::vec3 const rayDirection =
         glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));// World space
+
       m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
     }
   }

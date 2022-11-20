@@ -2,6 +2,7 @@
 // Created by enzoc on 30/09/2022.
 //
 #define NOMINMAX
+
 #include "Renderer.hpp"
 #include <tbb/tbb.h>
 #include <glm/glm.hpp>
@@ -42,19 +43,17 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 #if 1
   tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
                           [&](const tbb::blocked_range2d<uint32_t> &range) {
-                              for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
-                                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
+      for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
+        for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
 
-                                      glm::vec4 const color = PerPixel(x, y);
-                                      m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+          glm::vec4 const color = PerPixel(x, y);
+          m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
 
-                                      glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() +
-                                                                                        x];
-                                      accumulatedColor /= static_cast<float>(m_FrameSample);
+          glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
+          accumulatedColor /= static_cast<float>(m_FrameSample);
 
-                                      accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0F), glm::vec4(1.0F));
-                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(
-                                              accumulatedColor);
+          accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0F), glm::vec4(1.0F));
+          m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
 
                                   }
                               }
