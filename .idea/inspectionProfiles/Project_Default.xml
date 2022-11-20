@@ -23,7 +23,7 @@
     <inspection_tool class="CheckValidXmlInScriptTagBody" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="CheckXmlFileWithXercesValidator" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ClangTidy" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="clangTidyChecks" value="-*,bugprone-*,misc-*,modernize-*,performance-*,cert-err52-cpp,cert-err60-cpp,cert-err34-c,cert-dcl21-cpp,cert-msc50-cpp,cert-env33-c,cert-dcl50-cpp,cert-msc51-cpp,cert-flp30-c,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-pro-type-union-access,google-readability-casting,google-global-names-in-headers,google-runtime-int,google-runtime-operator,google-explicit-constructor,google-build-using-namespace,hicpp-*,-hicpp-vararg,readability-*,-readability-named-parameter,-readability-identifier-length,-readability-magic-numbers" />
+      <option name="clangTidyChecks" value="-*,bugprone-*,misc-*,modernize-*,performance-*,cert-err34-c,cert-pos47-c,cert-mem57-cpp,cert-err61-cpp,cert-dcl21-cpp,cert-msc50-cpp,cert-env33-c,cert-oop58-cpp,cert-dcl59-cpp,cert-msc51-cpp,cert-err58-cpp,cert-flp37-c,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-owning-memory,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-avoid-magic-numbers,google-readability-casting,google-global-names-in-headers,google-runtime-int,google-runtime-operator,google-explicit-constructor,hicpp-*,-hicpp-vararg,readability-*,-readability-named-parameter,-readability-identifier-length,-readability-magic-numbers,-misc-non-private-member-variables-in-classes,-cppcoreguidelines-non-private-member-variables-in-classes,-bugprone-easily-swappable-parameters" />
       <option name="preferClangTidyFilesOverIDESettings" value="false" />
     </inspection_tool>
     <inspection_tool class="ClangdErrorsAndWarnings" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -145,7 +145,7 @@
     <inspection_tool class="FunctionWithMultipleReturnPointsJS" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="GrazieInspection" enabled="true" level="GRAMMAR_ERROR" enabled_by_default="true" />
     <inspection_tool class="HardwiredNamespacePrefix" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="HidingNonVirtualFunction" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="HidingNonVirtualFunction" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="HtmlDeprecatedAttribute" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="HtmlDeprecatedTag" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="HtmlExtraClosingTag" enabled="true" level="WARNING" enabled_by_default="true" />

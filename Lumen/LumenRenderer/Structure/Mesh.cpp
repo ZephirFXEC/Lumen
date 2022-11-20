@@ -14,33 +14,26 @@ namespace LumenRender {
         tinyobj::attrib_t attrib;
 
         bool const ret = tinyobj::LoadObj(&attrib, &m_shapes, &m_materials, &warn, &err, file_path);
-        if (!warn.empty()) {
-            std::cout << warn << std::endl;
-        }
-        if (!err.empty()) {
-            std::cerr << err << std::endl;
-        }
-        if (!ret) {
-            exit(1);
-        }
+        if (!warn.empty()) { std::cout << warn << "\n"; }
+        if (!err.empty()) { std::cerr << err << "\n"; }
+        if (!ret) { std::cerr << "Failed to load " << file_path << "\n"; }
 
 
-        for (const auto &shape : m_shapes) {
-            m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size());
-        }
+        for (const auto &shape : m_shapes) { m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size()); }
 
-        m_Triangles = new Triangle[m_TriCount];
-        m_TriData = new TriData[m_TriCount];
+        m_Triangles = static_cast<Triangle *>(_aligned_malloc(m_TriCount * sizeof(Triangle), 128));
+        m_TriData = static_cast<TriData *>(_aligned_malloc(m_TriCount * sizeof(TriData), 32));
+
         uint32_t triIndex = 0;
 
-        for (auto & shape : m_shapes) {
+        for (auto &shape : m_shapes) {
 
-            for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-                auto fv = static_cast<size_t>(shape.mesh.num_face_vertices.at(f));
+          for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
+            auto fv = static_cast<size_t>(shape.mesh.num_face_vertices.at(f));
 
-                std::array<glm::vec3, 3> tri{};
-                glm::vec3 pos{};
-                glm::vec3 norm{};
+            std::array<glm::vec3, 3> tri{};
+            glm::vec3 pos{};
+            glm::vec3 norm{};
                 glm::vec2 uv{};
 
                 for(size_t v = 0; v < 3; v++) {
@@ -72,37 +65,26 @@ namespace LumenRender {
 
         }
 
+        m_BVH = new BVH(this);
     }
 
-    auto Mesh::Hit(Ray &ray, float t_max) const -> bool {
-        Ray temp = ray;
-        bool hit_tri = false;
-        float closest = t_max;
-
-        for (uint32_t i = 0; i < m_TriCount; i++) {
-            if (Triangle::TriangleIntersect(temp, m_Triangles[i], i) && temp.m_Record.m_T < closest) {
-                hit_tri = true;
-                closest = temp.m_Record.m_T;
-                temp.m_Record.m_Normal = m_TriData[i].N;
-                ray = temp;
-            }
-        }
-
-        return hit_tri;
-    }
+    auto Mesh::Hit(Ray &ray, float t_max) const -> bool { return m_BVH->Hit(ray, t_max); }
 
     auto Mesh::GetBounds(AABB &outbox) const -> AABB {
         AABB tri_box;
-        for (uint32_t i = 0; i < m_TriCount; i++) {
-            m_Triangles[i].GetBounds(tri_box);
-            outbox = AABB::Union(outbox, tri_box);
-        }
-        return outbox;
+      for (uint32_t i = 0; i < m_TriCount; i++) {
+        m_Triangles[i].GetBounds(tri_box);
+        outbox = AABB::Union(outbox, tri_box);
+      }
+      return outbox;
     }
 
-    auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> {
-        return std::make_shared<Mesh>(*this);
+    auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> { return std::make_shared<Mesh>(*this); }
+
+    auto Mesh::Transform(const glm::mat3 &transform) const -> void
+    {
+      for (uint32_t i = 0; i < m_TriCount; i++) { m_Triangles[i].Transform(transform); }
     }
 
 
-} // LumenRender
+    }// namespace LumenRender

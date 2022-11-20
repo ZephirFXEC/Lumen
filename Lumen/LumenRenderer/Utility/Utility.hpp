@@ -8,21 +8,19 @@
 #include <glm/glm.hpp>
 #include <cmath>
 #include <random>
-#include <cassert>
-#include <cstdint>
-#include <iostream>
-#include <malloc.h>
-#include <new>
 
 
-
-template <typename T>
-inline auto Random(T min, T max) -> T {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_int_distribution<T> dis(min, max);
-    return dis(gen);
+template<typename T> inline auto Random(T min, T max) -> T
+{
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+  std::uniform_int_distribution<T> dis(min, max);
+  return dis(gen);
 }
 
+template<typename T> static auto MinComponent(const T &v) -> float { return std::min(v[0], std::min(v[1], v[2])); }
 
-#endif //LUMEN_UTILITY_HPP
+template<typename T> static auto MaxComponent(const T &v) -> float { return std::max(v[0], std::max(v[1], v[2])); }
+
+
+#endif// LUMEN_UTILITY_HPP

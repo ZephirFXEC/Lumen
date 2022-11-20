@@ -7,91 +7,94 @@
 
 #include "Layer.hpp"
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <functional>
 
+#include <embree3/rtcore.h>
 #include <imgui.h>
 #include <vulkan/vulkan.h>
-#include <embree3/rtcore.h>
 
 
 struct GLFWwindow;
 
 namespace Lumen {
 
-    struct ApplicationSpecification {
-        std::string Name = "Lumen Render";
-        uint32_t Width = 1600;
-        uint32_t Height = 900;
-    };
+struct ApplicationSpecification
+{
+  std::string Name = "Lumen Render";
+  int Width = 1600;
+  int Height = 900;
+};
 
-    class Application {
-    public:
-        explicit Application(ApplicationSpecification applicationSpecification = ApplicationSpecification());
+class Application
+{
+public:
+  explicit Application(ApplicationSpecification applicationSpecification = ApplicationSpecification());
 
-        ~Application();
+  ~Application();
 
-        static auto Get() -> Application &;
+  static auto Get() -> Application &;
 
-        void Run();
+  void Run();
 
-        void Close();
+  void Close();
 
-        void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
+  void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
 
-        static auto GetTime() -> float;
+  static auto GetTime() -> float;
 
-        [[nodiscard]] auto GetWindowHandle() const -> GLFWwindow * { return m_WindowHandle; }
-
-
-        template <typename T>
-        void PushLayer() {
-            static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
-            m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
-        }
-
-        void PushLayer(const std::shared_ptr<Layer> &layer) {
-            m_LayerStack.emplace_back(layer);
-            layer->OnAttach();
-        }
+  [[nodiscard]] auto GetWindowHandle() const -> GLFWwindow * { return m_WindowHandle; }
 
 
-        static auto GetInstance() -> VkInstance;
+  template<typename T> void PushLayer()
+  {
+    static_assert(std::is_base_of<Layer, T>::value, "Pushed type is not subclass of Layer!");
+    m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
+  }
 
-        static auto GetPhysicalDevice() -> VkPhysicalDevice;
-
-        static auto GetDevice() -> VkDevice;
-
-        static auto GetCommandBuffer(bool begin) -> VkCommandBuffer;
-
-        static void FlushCommandBuffer(VkCommandBuffer commandBuffer);
-
-        static void SubmitResourceFree(std::function<void()> &&func);
-
-    private:
-        void Init();
-
-        void Shutdown();
+  void PushLayer(const std::shared_ptr<Layer> &layer)
+  {
+    m_LayerStack.emplace_back(layer);
+    layer->OnAttach();
+  }
 
 
-        ApplicationSpecification m_Specification;
-        GLFWwindow *m_WindowHandle = nullptr;
-        RTCDevice m_Device = nullptr;
-        bool m_Running = false;
+  static auto GetInstance() -> VkInstance;
 
-        float m_TimeStep = 0.0F;
-        float m_FrameTime = 0.0F;
-        float m_LastFrameTime = 0.0F;
+  static auto GetPhysicalDevice() -> VkPhysicalDevice;
 
-        std::vector<std::shared_ptr<Layer>> m_LayerStack;
-        std::function<void()> m_MenubarCallback;
-    };
+  static auto GetDevice() -> VkDevice;
 
-    // Implemented by CLIENT
-    auto CreateApplication(int argc, char **argv) -> Application *;
+  static auto GetCommandBuffer(bool begin) -> VkCommandBuffer;
 
-} // Lumen
+  static void FlushCommandBuffer(VkCommandBuffer commandBuffer);
 
-#endif //LUMEN_APPLICATION_HPP
+  static void SubmitResourceFree(std::function<void()> &&func);
+
+private:
+  void Init();
+
+  void Shutdown();
+
+
+  ApplicationSpecification m_Specification;
+  GLFWwindow *m_WindowHandle = nullptr;
+  RTCDevice m_Device = nullptr;
+  bool m_Running = false;
+
+  float m_TimeStep = 0.0F;
+  float m_FrameTime = 0.0F;
+  float m_LastFrameTime = 0.0F;
+
+  std::vector<std::shared_ptr<Layer>> m_LayerStack;
+  std::function<void()> m_MenubarCallback;
+};
+
+// Implemented by CLIENT
+auto CreateApplication(int argc, char **argv) -> Application *;
+
+}// namespace Lumen
+
+#endif// LUMEN_APPLICATION_HPP

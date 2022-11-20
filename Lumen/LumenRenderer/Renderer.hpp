@@ -10,53 +10,54 @@
 
 #include "Camera.hpp"
 #include "Ray.hpp"
-#include "Scene/Scene.hpp"
 #include "Scene/Object.hpp"
+#include "Scene/Scene.hpp"
 
 #include "Utility/Utility.hpp"
-
+#include <glm/glm.hpp>
 
 namespace LumenRender {
 
-    struct Settings {
-        bool Accumulate = true;
-    };
+struct Settings
+{
+  bool Accumulate = true;
+};
 
-    class Renderer {
-    public:
-        Renderer() = default;
+class Renderer
+{
+public:
+  Renderer() = default;
 
-        void Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
+  void Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
 
-        void OnResize(uint32_t width, uint32_t height);
+  void OnResize(uint32_t width, uint32_t height);
 
-        [[nodiscard]] auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
+  [[nodiscard]] auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
-        auto GetSettings() -> Settings & { return m_Settings; }
+  auto GetSettings() -> Settings & { return m_Settings; }
 
-        void ResetFrame() { m_FrameSample = 1; }
+  void ResetFrame() { m_FrameSample = 1; }
 
-    private:
+private:
+  auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
 
-        auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
+  static auto Miss(LumenRender::Ray &ray) -> HitRecords;
 
-        static auto Miss(LumenRender::Ray &ray) -> HitRecords;
-
-        auto PerPixel(uint32_t x, uint32_t y) -> glm::vec4;
+  auto PerPixel(uint32_t x, uint32_t y) -> glm::vec4;
 
 
-        std::shared_ptr<Lumen::Image> m_Image;
-        Settings m_Settings;
+  std::shared_ptr<Lumen::Image> m_Image;
+  Settings m_Settings;
 
-        const Camera *m_ActiveCamera{};
-        const Scene *m_ActiveScene{};
+  const Camera *m_ActiveCamera{};
+  const Scene *m_ActiveScene{};
 
-        uint32_t *m_ImageData = nullptr;
-        glm::vec4 *m_AccumulationBuffer = nullptr;
+  uint32_t *m_ImageData = nullptr;
+  glm::vec4 *m_AccumulationBuffer = nullptr;
 
-        uint32_t m_FrameSample = 1;
-    };
+  uint32_t m_FrameSample = 1;
+};
 
-} // LumenRender
+}// namespace LumenRender
 
-#endif //LUMEN_RENDERER_HPP
+#endif// LUMEN_RENDERER_HPP

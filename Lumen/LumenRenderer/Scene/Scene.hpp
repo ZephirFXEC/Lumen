@@ -26,25 +26,25 @@ namespace LumenRender {
 
         Scene() = default;
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-        auto AddObject(Types object) -> void {
-            m_Objects.insert({ m_Index, object});
-            m_Index++;
-        };
+      [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+
+      auto AddObject(IHittable<Mesh> *object) -> void
+      {
+        m_Objects.insert({ m_Index, object });
+        m_Index++;
+      };
 
         auto Hit(LumenRender::Ray &ray, float t_max) const -> bool;
 
         auto GetBounds(LumenRender::AABB &outbox) const -> AABB;
 
-        auto GetObjects() -> std::unordered_map<uint32_t, Types>& { return m_Objects; }
+        auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
 
 
-    private:
-
-        std::unordered_map<uint32_t, Types> m_Objects{};
+      private:
+        std::unordered_map<uint32_t, IHittable<Mesh> *> m_Objects{};
         uint32_t m_Index = 0;
-
     };
 
 

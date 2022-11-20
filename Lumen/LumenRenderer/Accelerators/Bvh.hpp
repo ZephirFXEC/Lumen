@@ -18,47 +18,54 @@ namespace LumenRender {
     };
 
 
-    struct BVHNode {
+    struct alignas(32) BVHNode {
 
         union { struct { glm::vec3 m_Bounds_min; uint32_t m_LeftFirst; }; __m128 m_Bounds_min_m128; };
-        union { struct { glm::vec3 m_Bounds_max; uint32_t m_TriCount;  }; __m128 m_Bounds_max_m128; };
+        union { struct { glm::vec3 m_Bounds_max; uint32_t m_TriCount; }; __m128 m_Bounds_max_m128; };
 
-        [[nodiscard]] auto isLeaf() const -> bool { return m_TriCount > 0; } // empty BVH leaves do not exist
+        auto isLeaf() const -> bool { return m_TriCount > 0; } // empty BVH leaves do not exist
+        static auto CalculateNodeCost(BVHNode &node) -> float;
     };
 
 
-    class BVH : public IHittable<BVH> {
+    class alignas(32) BVH : public IHittable<BVH> {
+
+        struct BuildJob {
+            uint32_t m_nodeidx;
+            glm::vec3 m_centroidMin, m_centroidMax;
+        };
+
     public:
         BVH() = default;
 
-        explicit BVH(class IHittable<Mesh>* tri_mesh);
+        explicit BVH(class IHittable<Mesh> *tri_mesh);
 
         void Build();
 
-        void Subdivide(uint32_t nodeIdx);
-
-        void UpdateNodeBounds(uint32_t nodeIdx) const;
-
-        auto Traversal(Ray& ray, uint32_t nodeIdx, float t_max) const -> bool;
+        auto Traversal(Ray &ray, float t_max) const -> bool;
 
         auto Hit(Ray &ray, float t_max) const -> bool;
 
         auto GetBounds(AABB &outbox) const -> AABB;
 
-        auto CalculateSAH(BVHNode& node, int& axis, float& pos) const -> float;
 
-        auto FindBestPlane(BVHNode& node, int& axis, float& splitPos) const -> float;
+    private:
+        void
+        Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::vec3 &centroidMin, glm::vec3 &centroidMax);
 
-        static auto CalculateNodeCost(BVHNode& node) -> float;
+        void UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const;
 
+        auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin,
+                           glm::vec3 &centroidMax) const -> float;
 
+    public:
         [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-
-        Mesh* m_mesh{};
-        BVHNode *m_bvhNode{};
-        uint32_t *m_triIdx{}, m_rootNodeIdx{}, m_nodeCount{};
-
+        Mesh *m_mesh{};
+        BVHNode *m_bvhNode{ nullptr };
+        uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
+        std::array<BuildJob, 64> buildStack{};
+        uint32_t buildStackPtr{};
     };
 
 

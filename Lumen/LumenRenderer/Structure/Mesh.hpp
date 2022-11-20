@@ -14,26 +14,29 @@
 
 namespace LumenRender {
 
-    class Mesh : public IHittable<Mesh> {
-    public:
+class Mesh : public IHittable<Mesh>
+{
+public:
+  explicit Mesh(const char *file_path);
 
-        explicit Mesh(const char *file_path);
+  auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto Hit(Ray &ray, float t_max) const -> bool;
+  auto GetBounds(AABB &outbox) const -> AABB;
 
-        auto GetBounds(AABB &outbox) const -> AABB;
+  auto Transform(const glm::mat3 &transform) const -> void;
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+  [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-    private:
-        std::vector<tinyobj::shape_t> m_shapes;
-        std::vector<tinyobj::material_t> m_materials;
+private:
+  std::vector<tinyobj::shape_t> m_shapes;
+  std::vector<tinyobj::material_t> m_materials;
 
-    public:
-        LumenRender::Triangle* m_Triangles{};
-        LumenRender::TriData* m_TriData{};
-        uint32_t m_TriCount{0};
-    };
+public:
+  LumenRender::Triangle *m_Triangles = nullptr;
+  LumenRender::TriData *m_TriData = nullptr;
+  class BVH *m_BVH = nullptr;
+  uint32_t m_TriCount = 0;
+};
 
 } // LumenRender
 
