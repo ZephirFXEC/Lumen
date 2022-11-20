@@ -1,6 +1,5 @@
 # Lumen
-> My personal Render Engine wrote in modern C++20
-
+![header] (https://raw.githubusercontent.com/andela-ooranagwa/lumen/master/public/images/lumen.png)
 
 ## About me
 
