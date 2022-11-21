@@ -1,5 +1,5 @@
 ![Untitled-1](https://user-images.githubusercontent.com/66848869/202930412-3f399dad-4305-4be7-a370-21385a8eb718.png)
-
+> Still in really (really) early state 😔
 ## About me
 
 Enzo Crema – [@ZephirFX](https://twitter.com/zephirfxx) – ZephirFX.Pro@gmail.com
