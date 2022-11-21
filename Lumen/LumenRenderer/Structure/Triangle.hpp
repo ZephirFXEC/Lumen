@@ -14,38 +14,37 @@ namespace LumenRender {
 
 struct TriData
 {
-  glm::vec3 N{};
-  glm::vec2 UV{};
+    glm::vec3 N{};
+    glm::vec2 UV{};
 };
 
 
 class Triangle
 {
-public:
-  Triangle() = default;
+  public:
+    Triangle() = default;
 
-  explicit Triangle(const std::array<glm::vec3, 3> &v)
-    : vertex{ v }, Centroid((v[0] + v[1] + v[2]) / 3.F), _e1(v[1] - v[0]), _e2(v[2] - v[0])
-  {}
+    explicit Triangle(const std::array<glm::vec3, 3> &v)
+      : vertex{ v }, Centroid((v[0] + v[1] + v[2]) / 3.F), _e1(v[1] - v[0]), _e2(v[2] - v[0])
+    {}
 
-  static auto TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
+    static auto TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
 
-  auto GetBounds(AABB &outbox) const -> AABB;
+    auto CalculateBounds(AABB &outbox) const -> AABB;
 
-  [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
+    [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
 
-  auto Transform(const glm::mat3 &transform) -> void;
+    auto Transform(const glm::mat3 &transform) -> void;
 
 
-  std::array<glm::vec3, 3> vertex{};
-  glm::vec3 Centroid{};
+    std::array<glm::vec3, 3> vertex{};
+    glm::vec3 Centroid{};
 
-private:
-  glm::vec3 _e1{}, _e2{};
+  private:
+    glm::vec3 _e1{}, _e2{};
 };
 
 
+}// namespace LumenRender
 
-} // LumenRender
-
-#endif //LUMEN_TRIANGLE_HPP
+#endif// LUMEN_TRIANGLE_HPP

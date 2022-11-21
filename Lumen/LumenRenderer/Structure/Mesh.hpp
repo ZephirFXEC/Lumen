@@ -5,9 +5,9 @@
 #ifndef LUMEN_MESH_HPP
 #define LUMEN_MESH_HPP
 
+#include "../../Externals/tiny_obj_loader.h"
 #include "../Interfaces/IHittable.hpp"
 #include "Triangle.hpp"
-#include "../../Externals/tiny_obj_loader.h"
 #include <iostream>
 #include <vector>
 
@@ -16,28 +16,31 @@ namespace LumenRender {
 
 class Mesh : public IHittable<Mesh>
 {
-public:
-  explicit Mesh(const char *file_path);
+  public:
+    explicit Mesh(const char *file_path);
 
-  auto Hit(Ray &ray, float t_max) const -> bool;
+    auto Hit(Ray &ray, float t_max) const -> bool;
 
-  auto GetBounds(AABB &outbox) const -> AABB;
+    auto CalculateBounds(AABB &outbox) const -> AABB;
 
-  auto Transform(const glm::mat3 &transform) const -> void;
+    auto Transform(const glm::mat3 &transform) const -> void;
 
-  [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-private:
-  std::vector<tinyobj::shape_t> m_shapes;
-  std::vector<tinyobj::material_t> m_materials;
+    auto GetBounds() const & -> AABB { return m_Bounds; }
 
-public:
-  LumenRender::Triangle *m_Triangles = nullptr;
-  LumenRender::TriData *m_TriData = nullptr;
-  class BVH *m_BVH = nullptr;
-  uint32_t m_TriCount = 0;
+  private:
+    std::vector<tinyobj::shape_t> m_shapes;
+    std::vector<tinyobj::material_t> m_materials;
+
+  public:
+    LumenRender::Triangle *m_Triangles = nullptr;
+    LumenRender::TriData *m_TriData = nullptr;
+    class BVH *m_BVH = nullptr;
+    uint32_t m_TriCount = 0;
+    AABB m_Bounds;
 };
 
-} // LumenRender
+}// namespace LumenRender
 
-#endif //LUMEN_MESH_HPP
+#endif// LUMEN_MESH_HPP
