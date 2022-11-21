@@ -20,7 +20,7 @@ namespace LumenRender {
 
 struct Settings
 {
-    bool Accumulate = true;
+    bool Accumulate = false;
 };
 
 class Renderer

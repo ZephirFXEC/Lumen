@@ -2,7 +2,7 @@
 // Created by enzoc on 30/09/2022.
 //
 #define NOMINMAX
-#define MT
+// #define MT
 
 #include "Renderer.hpp"
 #include <glm/glm.hpp>
@@ -97,14 +97,20 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
     for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
         for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
 
-            glm::vec4 const color = PerPixel(x, y);
-            m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+            glm::vec4 color = PerPixel(x, y);
 
-            glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
-            accumulatedColor /= static_cast<float>(m_FrameSample);
+            if (m_Settings.Accumulate) {
+                m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
 
-            accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0F), glm::vec4(1.0F));
-            m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
+                glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
+                accumulatedColor /= static_cast<float>(m_FrameSample);
+
+                accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
+            } else {
+                color = glm::clamp(color, 0.0F, 1.0F);
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+            }
         }
     }
 #endif
