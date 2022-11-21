@@ -12,7 +12,7 @@
 template<class T> class IHittable : public IDeepInstance<IHittable<T>>
 {
   public:
-    IHittable() = default;
+    IHittable() noexcept = default;
     ~IHittable() noexcept override = default;
 
 
@@ -28,7 +28,7 @@ template<class T> class IHittable : public IDeepInstance<IHittable<T>>
         return static_cast<const T *>(this)->CalculateBounds(outbox);
     }
 
-    auto GetBounds() const -> LumenRender::AABB { return static_cast<const T *>(this)->GetBounds(); }
+    [[nodiscard]] auto GetBounds() const -> LumenRender::AABB { return static_cast<const T *>(this)->GetBounds(); }
 
     auto Transform(const glm::mat3 &transform) -> void { static_cast<T *>(this)->Transform(transform); }
 };

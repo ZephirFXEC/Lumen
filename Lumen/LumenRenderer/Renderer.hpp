@@ -32,16 +32,16 @@ class Renderer
 
     void OnResize(uint32_t width, uint32_t height);
 
-    [[nodiscard]] auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
+    __forceinline auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
-    auto GetSettings() -> Settings & { return m_Settings; }
+    __forceinline auto GetSettings() -> Settings & { return m_Settings; }
 
     void ResetFrame() { m_FrameSample = 1; }
 
   private:
     auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
 
-    auto PerPixel(uint32_t x, uint32_t y) -> glm::vec4;
+    auto PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4;
 
     std::shared_ptr<Lumen::Image> m_Image;
     Settings m_Settings;

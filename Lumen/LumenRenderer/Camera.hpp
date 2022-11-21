@@ -18,19 +18,22 @@ class Camera
 
     void OnResize(uint32_t width, uint32_t height);
 
-    [[nodiscard]] auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
+    [[nodiscard]] __forceinline auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
 
-    [[nodiscard]] auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
+    [[nodiscard]] __forceinline auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
 
-    [[nodiscard]] auto GetView() const -> const glm::mat4 & { return m_View; }
+    [[nodiscard]] __forceinline auto GetView() const -> const glm::mat4 & { return m_View; }
 
-    [[nodiscard]] auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
+    [[nodiscard]] __forceinline auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
 
-    [[nodiscard]] auto GetPosition() const -> const glm::vec3 & { return m_Position; }
+    [[nodiscard]] __forceinline auto GetPosition() const -> const glm::vec3 & { return m_Position; }
 
-    [[nodiscard]] auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
+    [[nodiscard]] __forceinline auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
 
-    [[nodiscard]] auto GetRayDirections() const -> const std::vector<glm::vec3> & { return m_RayDirections; }
+    [[nodiscard]] __forceinline auto GetRayDirections() const -> const std::vector<glm::vec3> &
+    {
+        return m_RayDirections;
+    }
 
     static auto GetRotationSpeed() -> float;
 
