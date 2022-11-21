@@ -12,78 +12,80 @@
 
 namespace LumenRender {
 
-    struct Bin {
-      AABB m_Bounds{ AABB() };
-      uint32_t m_TriCount{ 0 };
-    };
+struct Bin
+{
+    AABB m_Bounds{ AABB() };
+    uint32_t m_TriCount{ 0 };
+};
 
 
-    struct BVHNode
-    {
+struct BVHNode
+{
 
-      union {
+    union {
         struct
         {
-          glm::vec3 m_Bounds_min;
-          uint32_t m_LeftFirst;
+            glm::vec3 m_Bounds_min;
+            uint32_t m_LeftFirst;
         };
         __m128 m_Bounds_min_m128;
-      };
-      union {
+    };
+    union {
         struct
         {
-          glm::vec3 m_Bounds_max;
-          uint32_t m_TriCount;
+            glm::vec3 m_Bounds_max;
+            uint32_t m_TriCount;
         };
         __m128 m_Bounds_max_m128;
-      };
-
-      auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
-      static auto CalculateNodeCost(BVHNode &node) -> float;
     };
 
-
-    class alignas(32) BVH : public IHittable<BVH> {
-
-        struct BuildJob {
-            uint32_t m_nodeidx;
-            glm::vec3 m_centroidMin, m_centroidMax;
-        };
-
-    public:
-        BVH() = default;
-
-        explicit BVH(class IHittable<Mesh> *tri_mesh);
-
-        void Build();
-
-        auto Traversal(Ray &ray, float t_max) const -> bool;
-
-        auto Hit(Ray &ray, float t_max) const -> bool;
-
-        auto GetBounds(AABB &outbox) const -> AABB;
+    auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+    static auto CalculateNodeCost(BVHNode &node) -> float;
+};
 
 
-    private:
-        void
-        Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::vec3 &centroidMin, glm::vec3 &centroidMax);
+class alignas(32) BVH : public IHittable<BVH>
+{
 
-        void UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const;
-
-        auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin,
-                           glm::vec3 &centroidMax) const -> float;
-
-    public:
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
-
-        Mesh *m_mesh{};
-        BVHNode *m_bvhNode{ nullptr };
-        uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
-        std::array<BuildJob, 64> buildStack{};
-        uint32_t buildStackPtr{};
+    struct BuildJob
+    {
+        uint32_t m_nodeidx;
+        glm::vec3 m_centroidMin, m_centroidMax;
     };
 
+  public:
+    BVH() = default;
 
-} // LumenRender
+    explicit BVH(class IHittable<Mesh> *tri_mesh);
 
-#endif //LUMEN_BVH_HPP
+    void Build();
+
+    auto Traversal(Ray &ray, float t_max) const -> bool;
+
+    auto Hit(Ray &ray, float t_max) const -> bool;
+
+    auto GetBounds(AABB &outbox) const -> AABB;
+
+
+  private:
+    void Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::vec3 &centroidMin, glm::vec3 &centroidMax);
+
+    void UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const;
+
+    auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const
+      -> float;
+
+  public:
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+
+    Mesh *m_mesh{};
+    BVHNode *m_bvhNode{ nullptr };
+    uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
+    std::array<BuildJob, 64> buildStack{};
+    uint32_t buildStackPtr{};
+};
+
+
+}// namespace LumenRender
+
+#endif// LUMEN_BVH_HPP

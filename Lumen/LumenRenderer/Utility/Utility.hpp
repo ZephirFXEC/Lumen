@@ -12,10 +12,10 @@
 
 template<typename T> inline auto Random(T min, T max) -> T
 {
-  static std::random_device rd;
-  static std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(min, max);
-  return dis(gen);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<T> dis(min, max);
+    return dis(gen);
 }
 
 template<typename T> static auto MinComponent(const T &v) -> float { return std::min(v[0], std::min(v[1], v[2])); }

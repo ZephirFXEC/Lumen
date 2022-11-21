@@ -5,50 +5,51 @@
 #ifndef LUMEN_OBJECT_HPP
 #define LUMEN_OBJECT_HPP
 
-#include <string>
-#include <glm/glm.hpp>
+#include "../Accelerators/Aabb.hpp"
 #include "../Interfaces/IHittable.hpp"
 #include "../Ray.hpp"
-#include "../Accelerators/Aabb.hpp"
+#include <glm/glm.hpp>
+#include <string>
 
 
 namespace LumenRender {
 
 
-    class Sphere : public IHittable<Sphere> {
-    public:
-        Sphere() = default;
+class Sphere : public IHittable<Sphere>
+{
+  public:
+    Sphere() = default;
 
-        Sphere(const glm::vec3 &center, float radius) : m_Center(center), m_Radius(radius) {}
+    Sphere(const glm::vec3 &center, float radius) : m_Center(center), m_Radius(radius) {}
 
-        auto Hit(Ray &ray, float t_max) const -> bool;
+    auto Hit(Ray &ray, float t_max) const -> bool;
 
-        auto GetBounds(AABB &outbox) const -> AABB;
+    auto CalculateBounds(AABB &outbox) const -> AABB;
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
-
-
-
-        glm::vec3 m_Center{};
-        float m_Radius{};
-    };
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
 
-    class Plane : public IHittable<Plane>  {
-    public:
-        Plane() = default;
+    glm::vec3 m_Center{};
+    float m_Radius{};
+};
 
-        Plane(const glm::vec3 &center, const glm::vec3 &normal) : m_Center(center), m_Normal(normal) {}
 
-        auto Hit(Ray &ray, float t_max) const -> bool;
+class Plane : public IHittable<Plane>
+{
+  public:
+    Plane() = default;
 
-        auto GetBounds(AABB &outbox) const -> AABB;
+    Plane(const glm::vec3 &center, const glm::vec3 &normal) : m_Center(center), m_Normal(normal) {}
 
-        [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+    auto Hit(Ray &ray, float t_max) const -> bool;
 
-        glm::vec3 m_Center{};
-        glm::vec3 m_Normal{};
-    };
-} // LumenRender
+    auto CalculateBounds(AABB &outbox) const -> AABB;
 
-#endif //LUMEN_OBJECT_HPP
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+
+    glm::vec3 m_Center{};
+    glm::vec3 m_Normal{};
+};
+}// namespace LumenRender
+
+#endif// LUMEN_OBJECT_HPP
