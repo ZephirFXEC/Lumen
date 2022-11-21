@@ -7,62 +7,60 @@
 namespace LumenRender {
 
 
-    auto Scene::Hit(Ray &ray, float t_max) const -> bool {
-        Ray temp = ray;
-        bool hit_anything = false;
-        float closest_so_far = t_max;
+auto Scene::Hit(Ray &ray, float t_max) const -> bool
+{
+    if (m_Objects.empty()) { return false; }
 
-        for (const auto &[index, object]: m_Objects) {
-          /*
-                      auto hit = std::visit([&](auto&& arg) -> bool {
-                          return arg->Hit(temp, closest_so_far) && temp.m_Record.m_T < closest_so_far;
-                      }, object);
-          */
-          bool hit = object->Hit(temp, closest_so_far) && temp.m_Record.m_T < closest_so_far;
-          if (hit) {
+
+    bool hit_anything = false;
+    float closest_so_far = t_max;
+
+
+    // Check if AABB intersect with ray
+    AABB box = CalculateBounds(box);
+    if (box.IntersectAABB(ray, box.pMin, box.pMax) == 1e30F) { return false; }
+
+    // If AABB intersect, check if objects intersect
+    for (const auto &[index, object] : m_Objects) {
+
+        if (object->Hit(ray, closest_so_far) && ray.m_Record.m_T < closest_so_far) {
             hit_anything = true;
-            closest_so_far = temp.m_Record.m_T;
-            ray = temp;
-          }
+            closest_so_far = ray.m_Record.m_T;
         }
-
-        return hit_anything;
     }
 
-    auto Scene::GetBounds(AABB &outbox) const -> AABB
-    {
-      AABB temp_box;
-      bool first_box = true;
+    return hit_anything;
+}
 
-      if (m_Objects.empty()) return outbox;
+auto Scene::CalculateBounds(AABB &outbox) const -> AABB
+{
 
-      for (const auto &[index, object] : m_Objects) {
-        outbox = first_box ? temp_box : AABB::Union(outbox, temp_box);
+    for (const auto &[index, object] : m_Objects) { outbox = AABB::Union(object->GetBounds(), outbox); }
+
+    /*
+    for (const auto &[index, object]: m_Objects) {
+        auto box = std::visit([&](auto&& arg) -> AABB {
+            return arg->GetBounds(temp_box);
+        }, object);
+
+        outbox = first_box ? box : AABB::Union(outbox, box);
         first_box = false;
-      }
-
-      /*
-      for (const auto &[index, object]: m_Objects) {
-          auto box = std::visit([&](auto&& arg) -> AABB {
-              return arg->GetBounds(temp_box);
-          }, object);
-
-          outbox = first_box ? box : AABB::Union(outbox, box);
-          first_box = false;
-      } */
-
-      return outbox;
-    }
-
-    auto Scene::DeepCopy() const -> std::shared_ptr<IHittable> {
-        auto scene = std::make_shared<Scene>();
-        /*
-                for (const auto &[index, object]: m_Objects) {
-                    scene->AddObject(object);
-                }
-        */
-        return scene;
-    }
+    } */
 
 
-} // LumenRender
+    return outbox;
+}
+
+auto Scene::DeepCopy() const -> std::shared_ptr<IHittable>
+{
+    auto scene = std::make_shared<Scene>();
+    /*
+            for (const auto &[index, object]: m_Objects) {
+                scene->AddObject(object);
+            }
+    */
+    return scene;
+}
+
+
+}// namespace LumenRender

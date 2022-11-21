@@ -7,47 +7,46 @@
 
 #include "../Accelerators/Aabb.hpp"
 #include "../Accelerators/Bvh.hpp"
-#include "../Structure/Triangle.hpp"
 #include "../Structure/Mesh.hpp"
+#include "../Structure/Triangle.hpp"
 
 
-
-#include <memory>
 #include <unordered_map>
+#include <memory>
 #include <mutex>
 #include <variant>
 
 namespace LumenRender {
 
-    using Types = std::variant<IHittable<Mesh>*, IHittable<Sphere>*, IHittable<BVH>*>;
+using Types = std::variant<IHittable<Mesh> *, IHittable<Sphere> *, IHittable<BVH> *>;
 
-    class Scene : public IHittable<Scene> {
-    public:
+class Scene : public IHittable<Scene>
+{
+  public:
+    Scene() = default;
 
-        Scene() = default;
 
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-      [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
-
-      auto AddObject(IHittable<Mesh> *object) -> void
-      {
+    auto AddObject(IHittable<Mesh> *object) -> void
+    {
         m_Objects.insert({ m_Index, object });
         m_Index++;
-      };
-
-        auto Hit(LumenRender::Ray &ray, float t_max) const -> bool;
-
-        auto GetBounds(LumenRender::AABB &outbox) const -> AABB;
-
-        auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
-
-
-      private:
-        std::unordered_map<uint32_t, IHittable<Mesh> *> m_Objects{};
-        uint32_t m_Index = 0;
     };
 
+    auto Hit(LumenRender::Ray &ray, float t_max) const -> bool;
 
-} // LumenRender
+    auto CalculateBounds(LumenRender::AABB &outbox) const -> AABB;
 
-#endif //LUMEN_SCENE_HPP
+    auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
+
+
+  private:
+    std::unordered_map<uint32_t, IHittable<Mesh> *> m_Objects{};
+    uint32_t m_Index = 0;
+};
+
+
+}// namespace LumenRender
+
+#endif// LUMEN_SCENE_HPP
