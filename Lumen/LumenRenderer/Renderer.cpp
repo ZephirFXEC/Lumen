@@ -44,28 +44,30 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 
 #ifdef MT
 #if 1
-    tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
-      [&](const tbb::blocked_range2d<uint32_t> &range) {
-          for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
-              for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
+    if (m_ImageData[0] == 0) {
+        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
+          [&](const tbb::blocked_range2d<uint32_t> &range) {
+              for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
+                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
 
-                  glm::vec4 color = PerPixel(x, y);
+                      glm::vec4 color = PerPixel(x, y);
 
-                  if (m_Settings.Accumulate) {
-                      m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+                      if (m_Settings.Accumulate) {
+                          m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
 
-                      glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
-                      accumulatedColor /= static_cast<float>(m_FrameSample);
+                          glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
+                          accumulatedColor /= static_cast<float>(m_FrameSample);
 
-                      accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
-                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
-                  } else {
-                      color = glm::clamp(color, 0.0F, 1.0F);
-                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                          accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
+                          m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
+                      } else {
+                          color = glm::clamp(color, 0.0F, 1.0F);
+                          m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                      }
                   }
               }
-          }
-      });
+          });
+    }
 #else// Tiled Rendering
 
 
@@ -138,6 +140,18 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 }
 
 
+void Renderer::MemAlloc()
+{
+    if (m_Settings.Accumulate) {
+        memset(m_AccumulationBuffer,
+          0,
+          static_cast<uint64_t>(m_Image->GetWidth() * m_Image->GetHeight()) * sizeof(glm::vec4));
+    }
+
+    memset(m_ImageData, 0, static_cast<uint64_t>(m_Image->GetWidth() * m_Image->GetHeight()) * sizeof(uint32_t));
+}
+
+
 void Renderer::OnResize(uint32_t width, uint32_t height)
 {
     if (m_Image) {
@@ -152,9 +166,13 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
     _aligned_free(m_ImageData);
     _aligned_free(m_AccumulationBuffer);
 
-    m_ImageData = static_cast<uint32_t *>(_aligned_malloc(width * height * sizeof(uint32_t), 4));
-    m_AccumulationBuffer = static_cast<glm::vec4 *>(_aligned_malloc(width * height * sizeof(glm::vec4), 32));
+    m_ImageData = static_cast<uint32_t *>(
+      _aligned_malloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(uint32_t), sizeof(uint32_t)));
+
+    m_AccumulationBuffer = static_cast<glm::vec4 *>(
+      _aligned_malloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(glm::vec4), sizeof(glm::vec4)));
 }
+
 
 auto Renderer::TraceRay(LumenRender::Ray &ray) -> HitRecords
 {

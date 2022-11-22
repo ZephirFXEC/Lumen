@@ -32,6 +32,8 @@ class Renderer
 
     void OnResize(uint32_t width, uint32_t height);
 
+    void MemAlloc();
+
     __forceinline auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
     __forceinline auto GetSettings() -> Settings & { return m_Settings; }
