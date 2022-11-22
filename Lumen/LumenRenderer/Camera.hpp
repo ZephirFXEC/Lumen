@@ -30,10 +30,7 @@ class Camera
 
     [[nodiscard]] __forceinline auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
 
-    [[nodiscard]] __forceinline auto GetRayDirections() const -> const std::vector<glm::vec3> &
-    {
-        return m_RayDirections;
-    }
+    [[nodiscard]] __forceinline auto GetRayDirections() const -> const glm::vec3 * { return m_RayDirections; }
 
     static auto GetRotationSpeed() -> float;
 
@@ -58,7 +55,7 @@ class Camera
     glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };
 
     // Cached ray directions
-    std::vector<glm::vec3> m_RayDirections;
+    glm::vec3 *m_RayDirections;
 
     glm::vec2 m_LastMousePosition{ 0.0F, 0.0F };
 

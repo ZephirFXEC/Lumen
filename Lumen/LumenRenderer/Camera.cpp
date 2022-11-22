@@ -111,8 +111,8 @@ void Camera::RecalculateView()
 
 void Camera::RecalculateRayDirections()
 {
-
-    m_RayDirections.resize(static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight));
+    m_RayDirections = static_cast<glm::vec3 *>(
+      _aligned_malloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 8));
 
     for (uint32_t y = 0; y < m_ViewportHeight; ++y) {
         for (uint32_t x = 0; x < m_ViewportWidth; ++x) {
