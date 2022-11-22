@@ -42,8 +42,7 @@ jobs:
       
     - name: Configure CMake
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.developer_mode}} -DOPT_ENABLE_COVERAGE:BOOL=${{ matrix.build_type == 'Debug' }}
-
+        cmake -S . -B ./build -G "${{matrix.generator}}"
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
