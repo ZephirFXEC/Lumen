@@ -11,6 +11,8 @@
 #
 name: "CodeQL"
 
+
+
 on:
   push:
     branches: [ "main" ]
@@ -19,6 +21,11 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '38 0 * * 5'
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  
 
 jobs:
   analyze:
@@ -40,10 +47,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       
-    - name: Configure CMake
-      run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}"
-
+      
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
@@ -70,9 +74,8 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
     
     - name: Build
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: |
-        cmake --build ./build --config ${{matrix.build_type}}
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
