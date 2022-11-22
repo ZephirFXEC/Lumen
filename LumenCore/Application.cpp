@@ -71,18 +71,6 @@ static void check_vk_result(VkResult err)
   if (err < 0) { abort(); }
 }
 
-static void errorFunction(void * /*userPtr*/, enum RTCError error, const char *str) { printf("error %d: %s\n", error, str); }
-
-static auto initializeDevice(RTCDevice device) -> RTCDevice
-{
-  device = rtcNewDevice(nullptr);
-
-  if (device == nullptr) { printf("error %d: cannot create device\n", rtcGetDeviceError(nullptr)); }
-
-  rtcSetDeviceErrorFunction(device, errorFunction, nullptr);
-  return device;
-}
-
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags,
   VkDebugReportObjectTypeEXT objectType,
@@ -451,8 +439,6 @@ void Application::Init()
     std::cerr << "Could not initialize GLFW!\n";
     return;
   }
-
-  m_Device = initializeDevice(m_Device);// Initialize Embree TODO: Move this to a better place
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   m_WindowHandle =

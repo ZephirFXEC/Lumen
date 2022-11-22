@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include <embree3/rtcore.h>
 #include <imgui.h>
 #include <vulkan/vulkan.h>
 
@@ -81,7 +80,6 @@ private:
 
   ApplicationSpecification m_Specification;
   GLFWwindow *m_WindowHandle = nullptr;
-  RTCDevice m_Device = nullptr;
   bool m_Running = false;
 
   float m_TimeStep = 0.0F;
