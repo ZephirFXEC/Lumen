@@ -73,6 +73,7 @@ auto Camera::OnUpdate(float ts) -> bool
     }
 
     if (moved) {
+        _aligned_free(m_RayDirections);
         RecalculateView();
         RecalculateRayDirections();
     }
@@ -86,6 +87,7 @@ void Camera::OnResize(uint32_t width, uint32_t height)
 
     m_ViewportWidth = width;
     m_ViewportHeight = height;
+
 
     RecalculateProjection();
     RecalculateRayDirections();
@@ -111,8 +113,9 @@ void Camera::RecalculateView()
 
 void Camera::RecalculateRayDirections()
 {
+
     m_RayDirections = static_cast<glm::vec3 *>(
-      _aligned_malloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 8));
+      _aligned_malloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 16));
 
     for (uint32_t y = 0; y < m_ViewportHeight; ++y) {
         for (uint32_t x = 0; x < m_ViewportWidth; ++x) {

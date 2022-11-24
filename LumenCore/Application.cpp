@@ -574,8 +574,6 @@ void Application::Shutdown()
   glfwDestroyWindow(m_WindowHandle);
   glfwTerminate();
 
-  rtcReleaseDevice(m_Device);
-
   g_ApplicationRunning = false;
 }
 

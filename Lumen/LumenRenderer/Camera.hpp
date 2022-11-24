@@ -55,7 +55,7 @@ class Camera
     glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };
 
     // Cached ray directions
-    glm::vec3 *m_RayDirections;
+    glm::vec3 *m_RayDirections{ nullptr };
 
     glm::vec2 m_LastMousePosition{ 0.0F, 0.0F };
 

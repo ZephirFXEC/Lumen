@@ -10,8 +10,6 @@
 
 namespace LumenRender {
 
-const float MAX = std::numeric_limits<float>::max();
-
 struct HitRecords
 {
     glm::vec3 m_Position;
