@@ -7,7 +7,6 @@
 namespace LumenRender {
 auto Triangle::TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool
 {
-
     const glm::vec3 pvec = glm::cross(ray.Direction, tri._e2);
     const float det = glm::dot(tri._e1, pvec);
 
@@ -37,7 +36,6 @@ auto Triangle::GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3
 {
 
     glm::vec3 const v2 = p - vertex.at(0);
-
     float const den = _e1.x * _e2.y - _e2.x * _e1.y;
     float const v = (v2.x * _e2.y - _e2.x * v2.y) / den;
     float const w = (_e1.x * v2.y - v2.x * _e1.y) / den;
@@ -58,9 +56,7 @@ auto Triangle::Transform(const glm::mat3 &transform) -> void
     vertex.at(0) = transform * vertex.at(0);
     vertex.at(1) = transform * vertex.at(1);
     vertex.at(2) = transform * vertex.at(2);
-    Centroid = (vertex.at(0) + vertex.at(1) + vertex.at(2)) / 3.F;
     _e1 = vertex.at(1) - vertex.at(0);
-    _e2 = vertex.at(2) - vertex.at(0);
 }
 
 

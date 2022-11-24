@@ -12,10 +12,11 @@
 namespace LumenRender {
 
 
-struct TriData
+struct alignas(32) TriData
 {
     glm::vec3 N{};
     glm::vec2 UV{};
+    glm::vec3 Centroid{};
 };
 
 
@@ -24,9 +25,7 @@ class Triangle
   public:
     Triangle() = default;
 
-    explicit Triangle(const std::array<glm::vec3, 3> &v)
-      : vertex{ v }, Centroid((v[0] + v[1] + v[2]) / 3.F), _e1(v[1] - v[0]), _e2(v[2] - v[0])
-    {}
+    explicit Triangle(const std::array<glm::vec3, 3> &v) : vertex{ v }, _e1(v[1] - v[0]), _e2(v[2] - v[0]) {}
 
     static auto TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
 
@@ -38,10 +37,11 @@ class Triangle
 
 
     std::array<glm::vec3, 3> vertex{};
-    glm::vec3 Centroid{};
+    TriData *m_Data{ nullptr };
 
   private:
-    glm::vec3 _e1{}, _e2{};
+    glm::vec3 _e1{};
+    glm::vec3 _e2{};
 };
 
 

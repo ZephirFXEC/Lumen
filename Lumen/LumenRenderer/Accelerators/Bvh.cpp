@@ -31,7 +31,6 @@ void BVH::Build()
     // Populate Triangle indexes
     for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) { m_triIdx[i] = i; }
 
-
     BVHNode &root = m_bvhNode[0];
     root.m_TriCount = m_mesh->m_TriCount;
     root.m_LeftFirst = 0;
@@ -78,8 +77,8 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
         for (uint32_t i = 0; i < node.m_TriCount; i++) {
 
             auto &triangle = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
-            uint32_t const binIdx = std::min(
-              static_cast<uint32_t>(BINS - 1), static_cast<uint32_t>((triangle.Centroid[a] - boundsMin) * scale));
+            uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
+              static_cast<uint32_t>((triangle.m_Data->Centroid[a] - boundsMin) * scale));
             bin.at(binIdx).m_TriCount++;
             AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[0]);
             AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[1]);
@@ -142,8 +141,8 @@ void BVH::Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::ve
     float const scale = BINS / (centroidMax[axis] - centroidMin[axis]);
 
     while (i <= j) {
-        int const binIdx = std::min(
-          BINS - 1, static_cast<int>((m_mesh->m_Triangles[m_triIdx[i]].Centroid[axis] - centroidMin[axis]) * scale));
+        int const binIdx = std::min(BINS - 1,
+          static_cast<int>((m_mesh->m_Triangles[m_triIdx[i]].m_Data->Centroid[axis] - centroidMin[axis]) * scale));
         if (binIdx < splitPos) {
             i++;
         } else {
@@ -204,8 +203,8 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
         node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(0));
         node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(1));
         node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(2));
-        centroidMin = glm::min(centroidMin, leafTri.Centroid);
-        centroidMax = glm::max(centroidMax, leafTri.Centroid);
+        centroidMin = glm::min(centroidMin, leafTri.m_Data->Centroid);
+        centroidMax = glm::max(centroidMax, leafTri.m_Data->Centroid);
     }
 }
 

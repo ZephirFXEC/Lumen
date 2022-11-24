@@ -22,8 +22,8 @@ Mesh::Mesh(const char *file_path)
 
     for (const auto &shape : m_shapes) { m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size()); }
 
-    m_Triangles = new Triangle[m_TriCount];
-    m_TriData = new TriData[m_TriCount];
+    m_Triangles = static_cast<Triangle *>(_aligned_malloc(m_TriCount * sizeof(Triangle), 64));
+    m_TriData = static_cast<TriData *>(_aligned_malloc(m_TriCount * sizeof(TriData), 32));
 
     uint32_t triIndex = 0;
 
@@ -59,7 +59,10 @@ Mesh::Mesh(const char *file_path)
                 tri.at(v) = pos;
             }
             m_Triangles[triIndex] = Triangle(tri);
-            m_TriData[triIndex] = TriData({ .N = norm, .UV = uv });
+            m_TriData[triIndex] =
+              TriData({ .N = norm, .UV = uv, .Centroid = (tri.at(0) + tri.at(1) + tri.at(2)) / 3.0F });
+            m_Triangles[triIndex].m_Data = &m_TriData[triIndex];
+
             triIndex++;
         }
     }

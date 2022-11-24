@@ -18,6 +18,7 @@ class Mesh : public IHittable<Mesh>
 {
   public:
     explicit Mesh(const char *file_path);
+    ~Mesh() override = default;
 
     auto Hit(Ray &ray, float t_max) const -> bool;
 
@@ -27,16 +28,17 @@ class Mesh : public IHittable<Mesh>
 
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-    auto GetBounds() const & -> AABB { return m_Bounds; }
+    [[nodiscard]] __forceinline auto GetBounds() const & -> AABB { return m_Bounds; }
 
   private:
     std::vector<tinyobj::shape_t> m_shapes;
     std::vector<tinyobj::material_t> m_materials;
 
   public:
-    LumenRender::Triangle *m_Triangles = nullptr;
-    LumenRender::TriData *m_TriData = nullptr;
-    class BVH *m_BVH = nullptr;
+    LumenRender::Triangle *m_Triangles{ nullptr };
+    LumenRender::TriData *m_TriData{ nullptr };
+    class BVH *m_BVH{ nullptr };
+
     uint32_t m_TriCount = 0;
     AABB m_Bounds;
 };
