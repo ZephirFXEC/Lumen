@@ -11,13 +11,12 @@
 
 namespace LumenRender {
 
-#define BINS 12
-
+constexpr int BINS = 12;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
   : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
-    m_bvhNode(static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, 64))),
-    m_triIdx(new uint32_t[m_mesh->m_TriCount])
+    m_bvhNode(static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(BVHNode)))),
+    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t))))
 {
     Build();
 }
@@ -41,21 +40,21 @@ void BVH::Build()
     glm::vec3 centroid_max;
     UpdateNodeBounds(0, centroid_min, centroid_max);
 
-    buildStackPtr = 0;
+    m_buildStackPtr = 0;
     Subdivide(0, 0, m_nodeCount, centroid_min, centroid_max);
 
     std::array<uint32_t, 64> nodePtr{};
-    uint32_t const N = buildStackPtr;
+    uint32_t const N = m_buildStackPtr;
     nodePtr[0] = m_nodeCount;
 
     for (uint32_t i = 1; i < N; i++) {
-        nodePtr.at(i) = nodePtr.at(i - 1) + m_bvhNode[buildStack.at(i - 1).m_nodeidx].m_TriCount * 2;
+        nodePtr.at(i) = nodePtr.at(i - 1) + m_bvhNode[m_buildStack.at(i - 1).m_nodeidx].m_TriCount * 2;
     }
 
     for (uint32_t i = 0; i < N; i++) {
-        glm::vec3 cmin = buildStack.at(i).m_centroidMin;
-        glm::vec3 cmax = buildStack.at(i).m_centroidMax;
-        Subdivide(buildStack.at(i).m_nodeidx, 99, nodePtr.at(i), cmin, cmax);
+        glm::vec3 cmin = m_buildStack.at(i).m_centroidMin;
+        glm::vec3 cmax = m_buildStack.at(i).m_centroidMax;
+        Subdivide(m_buildStack.at(i).m_nodeidx, 99, nodePtr.at(i), cmin, cmax);
     }
     m_nodeCount = m_mesh->m_TriCount * 2 + 64;
 }
@@ -64,6 +63,7 @@ void BVH::Build()
 auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const
   -> float
 {
+
     float bestCost = 1e30F;
     for (int a = 0; a < 3; a++) {
         float const boundsMin = centroidMin[a];
@@ -168,9 +168,9 @@ void BVH::Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::ve
     UpdateNodeBounds(leftChildIdx, centroidMin, centroidMax);
     if (depth == 3) {
         // postpone the work, we'll do this in parallel later
-        buildStack.at(buildStackPtr).m_nodeidx = leftChildIdx;
-        buildStack.at(buildStackPtr).m_centroidMin = centroidMin;
-        buildStack.at(buildStackPtr++).m_centroidMax = centroidMax;
+        m_buildStack.at(m_buildStackPtr).m_nodeidx = leftChildIdx;
+        m_buildStack.at(m_buildStackPtr).m_centroidMin = centroidMin;
+        m_buildStack.at(m_buildStackPtr++).m_centroidMax = centroidMax;
     } else {
         Subdivide(leftChildIdx, depth + 1, nodePtr, centroidMin, centroidMax);
     }
@@ -178,9 +178,9 @@ void BVH::Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::ve
     UpdateNodeBounds(rightChildIdx, centroidMin, centroidMax);
     if (depth == 3) {
         // postpone the work, we'll do this in parallel later
-        buildStack.at(buildStackPtr).m_nodeidx = rightChildIdx;
-        buildStack.at(buildStackPtr).m_centroidMin = centroidMin;
-        buildStack.at(buildStackPtr++).m_centroidMax = centroidMax;
+        m_buildStack.at(m_buildStackPtr).m_nodeidx = rightChildIdx;
+        m_buildStack.at(m_buildStackPtr).m_centroidMin = centroidMin;
+        m_buildStack.at(m_buildStackPtr++).m_centroidMax = centroidMax;
     } else {
         Subdivide(rightChildIdx, depth + 1, nodePtr, centroidMin, centroidMax);
     }
@@ -221,6 +221,7 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 
     while (true) {
         if (node->isLeaf()) {
+
             for (uint32_t i = 0; i < node->m_TriCount; ++i) {
 
                 uint32_t const leafTriIdx = m_triIdx[node->m_LeftFirst + i];
@@ -276,7 +277,7 @@ auto BVHNode::CalculateNodeCost(BVHNode &node) -> float
 {
     glm::vec3 const e = node.m_Bounds_max - node.m_Bounds_min;// extent of the node
     float const surfaceArea = e.x * e.y + e.y * e.z + e.z * e.x;
-    return node.m_TriCount * surfaceArea;
+    return surfaceArea * node.m_TriCount;
 }
 
 

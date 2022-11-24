@@ -37,30 +37,11 @@ auto Scene::CalculateBounds(AABB &outbox) const -> AABB
 
     for (const auto &[index, object] : m_Objects) { outbox = AABB::Union(object->GetBounds(), outbox); }
 
-    /*
-    for (const auto &[index, object]: m_Objects) {
-        auto box = std::visit([&](auto&& arg) -> AABB {
-            return arg->GetBounds(temp_box);
-        }, object);
-
-        outbox = first_box ? box : AABB::Union(outbox, box);
-        first_box = false;
-    } */
-
-
     return outbox;
 }
 
 auto Scene::DeepCopy() const -> std::shared_ptr<IHittable>
-{
-    auto scene = std::make_shared<Scene>();
-    /*
-            for (const auto &[index, object]: m_Objects) {
-                scene->AddObject(object);
-            }
-    */
-    return scene;
-}
+{ return std::make_shared<Scene>(*this); }
 
 
 }// namespace LumenRender

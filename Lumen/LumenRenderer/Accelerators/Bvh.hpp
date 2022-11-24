@@ -39,12 +39,13 @@ struct BVHNode
         __m128 m_Bounds_max_m128;
     };
 
-    auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+
     static auto CalculateNodeCost(BVHNode &node) -> float;
 };
 
 
-class alignas(32) BVH : public IHittable<BVH>
+class BVH : public IHittable<BVH>
 {
 
     struct BuildJob
@@ -55,6 +56,7 @@ class alignas(32) BVH : public IHittable<BVH>
 
   public:
     BVH() = default;
+    ~BVH() override = default;
 
     explicit BVH(class IHittable<Mesh> *tri_mesh);
 
@@ -78,11 +80,11 @@ class alignas(32) BVH : public IHittable<BVH>
   public:
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-    Mesh *m_mesh{};
+    Mesh *m_mesh{ nullptr };
     BVHNode *m_bvhNode{ nullptr };
     uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
-    std::array<BuildJob, 64> buildStack{};
-    uint32_t buildStackPtr{};
+    std::array<BuildJob, 64> m_buildStack{};
+    uint32_t m_buildStackPtr{};
 };
 
 
