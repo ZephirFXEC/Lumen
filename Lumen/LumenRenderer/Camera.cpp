@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <tbb/tbb.h>
 
 namespace LumenRender {
 
@@ -88,6 +89,7 @@ void Camera::OnResize(uint32_t width, uint32_t height)
     m_ViewportWidth = width;
     m_ViewportHeight = height;
 
+    _aligned_free(m_RayDirections);
 
     RecalculateProjection();
     RecalculateRayDirections();
@@ -117,6 +119,26 @@ void Camera::RecalculateRayDirections()
     m_RayDirections = static_cast<glm::vec3 *>(
       _aligned_malloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 16));
 
+    tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_ViewportHeight, 0, m_ViewportWidth),
+      [&](const tbb::blocked_range2d<uint32_t> &range) {
+          for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
+              for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
+
+                  glm::vec2 coord = { static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
+                      static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
+
+                  coord = coord * 2.0F - 1.0F;// -1 -> 1
+
+                  glm::vec4 const target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
+                  glm::vec3 const rayDirection =
+                    glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));// World space
+
+                  m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
+              }
+          }
+      });
+
+    /*
     for (uint32_t y = 0; y < m_ViewportHeight; ++y) {
         for (uint32_t x = 0; x < m_ViewportWidth; ++x) {
 
@@ -132,5 +154,6 @@ void Camera::RecalculateRayDirections()
             m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
         }
     }
+     */
 }
 }// namespace LumenRender
