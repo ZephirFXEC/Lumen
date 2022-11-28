@@ -24,10 +24,9 @@ auto Triangle::TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &
     const float t = glm::dot(tri._e2, qvec) * inv_det;
     if (t < 0.0F || t > std::numeric_limits<float>::max()) { return false; }
 
-    ray.m_Record.m_T = t;
-    ray.m_Record.m_Position = ray.At(t);
-    ray.m_Record.m_UV = glm::vec2(u, v);
-    ray.m_Record.m_PrimIndex = primidx;
+    ray.m_Record->m_T = t;
+    ray.m_Record->m_UV = glm::vec2(u, v);
+    ray.m_Record->m_PrimIndex = primidx;
 
     return true;
 }

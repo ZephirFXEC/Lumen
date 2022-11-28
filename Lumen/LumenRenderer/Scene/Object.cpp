@@ -12,9 +12,8 @@ auto Sphere::Hit(Ray &ray, float t_max) const -> bool
 {
     float t{};
     if (glm::intersectRaySphere(ray.Origin, ray.Direction, m_Center, m_Radius * m_Radius, t) && t < t_max) {
-        ray.m_Record.m_T = t;
-        ray.m_Record.m_Position = ray.At(t);
-        ray.m_Record.m_Normal = glm::normalize(ray.m_Record.m_Position - m_Center);
+        ray.m_Record->m_T = t;
+        ray.m_Record->m_Normal = glm::normalize(ray.At(t) - m_Center);
         return true;
     }
     return false;
@@ -34,9 +33,8 @@ auto Plane::Hit(Ray &ray, float t_max) const -> bool
     float t{};
     if (!glm::intersectRayPlane(ray.Origin, ray.Direction, m_Center, m_Normal, t) || t < t_max) { return false; }
 
-    ray.m_Record.m_Position = ray.At(t);
-    ray.m_Record.m_Normal = m_Normal;
-    ray.m_Record.m_T = t;
+    ray.m_Record->m_Normal = m_Normal;
+    ray.m_Record->m_T = t;
 
     return true;
 }

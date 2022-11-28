@@ -8,6 +8,8 @@
 #include "../Ray.hpp"
 #include <glm/glm.hpp>
 
+#define INF 1e30F
+
 namespace LumenRender {
 
 class AABB
@@ -85,12 +87,11 @@ class AABB
     }
 
 
-    [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const glm::vec3 &min, const glm::vec3 max)
-      -> float;
-    [[nodiscard]] static auto IntersectAABB_SSE(const LumenRender::Ray &ray, const __m128 &min4, const __m128 &max4)
+    [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const glm::vec3 &min, const glm::vec3 &max)
       -> float;
 
 
+  public:
     glm::vec3 pMin{};
     glm::vec3 pMax{};
 };

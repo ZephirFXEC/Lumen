@@ -23,9 +23,9 @@ auto Scene::Hit(Ray &ray, float t_max) const -> bool
     // If AABB intersect, check if objects intersect
     for (const auto &[index, object] : m_Objects) {
 
-        if (object->Hit(ray, closest_so_far) && ray.m_Record.m_T < closest_so_far) {
+        if (object->Hit(ray, closest_so_far) && ray.m_Record->m_T < closest_so_far) {
             hit_anything = true;
-            closest_so_far = ray.m_Record.m_T;
+            closest_so_far = ray.m_Record->m_T;
         }
     }
 

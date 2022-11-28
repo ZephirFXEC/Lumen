@@ -18,6 +18,19 @@ struct Bin
     uint32_t m_TriCount{ 0 };
 };
 
+struct LinearBVHNode
+{
+    glm::vec3 m_Bounds_min;
+    glm::vec3 m_Bounds_max;
+
+    union {
+        uint32_t m_PrimitivesOffset{};// leaf
+        uint32_t m_SecondChildOffset;// interior
+    };
+    uint16_t m_nPrimitives{};// 0 -> interior node
+    uint8_t m_Axis{};// interior node: xyz
+    uint8_t _pad[1]{};// ensure 32 byte total size
+};
 
 struct BVHNode
 {
@@ -77,12 +90,15 @@ class BVH : public IHittable<BVH>
     auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const
       -> float;
 
+    auto FlattenBVHTree(BVHNode &node, uint32_t nodeIdx) -> uint32_t;
+
   public:
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
     Mesh *m_mesh{ nullptr };
     BVHNode *m_bvhNode{ nullptr };
     uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
+    LinearBVHNode *m_LinearNodes{ nullptr };
     std::array<BuildJob, 64> m_buildStack{};
     uint32_t m_buildStackPtr{};
 };

@@ -11,12 +11,14 @@
 
 namespace LumenRender {
 
-constexpr int BINS = 12;
+constexpr int BINS = 32;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
   : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
     m_bvhNode(static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(BVHNode)))),
-    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t))))
+    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t)))),
+    m_LinearNodes(static_cast<LinearBVHNode *>(
+      _aligned_malloc(sizeof(LinearBVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(LinearBVHNode))))
 {
     Build();
 }
@@ -194,7 +196,8 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     centroidMin = glm::vec3(0.0F);
     centroidMax = glm::vec3(0.0F);
 
-    for (uint32_t first = node.m_LeftFirst, i = 0; i < node.m_TriCount; i++) {
+    uint32_t const first = node.m_LeftFirst;
+    for (uint32_t i = 0; i < node.m_TriCount; i++) {
         uint32_t const leafTriIdx = m_triIdx[first + i];
         auto &leafTri = m_mesh->m_Triangles[leafTriIdx];
         node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(0));
@@ -209,10 +212,26 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
 }
 
 
+auto BVH::FlattenBVHTree(BVHNode &node, uint32_t nodeIdx) -> uint32_t
+{
+    uint32_t const first = node.m_LeftFirst;
+    uint32_t const count = node.m_TriCount;
+    if (count == 0) {
+        uint32_t const leftChildIdx = FlattenBVHTree(m_bvhNode[first], first);
+        uint32_t const rightChildIdx = FlattenBVHTree(m_bvhNode[first + 1], first + 1);
+        node.m_LeftFirst = leftChildIdx;
+        node.m_TriCount = rightChildIdx;
+        return nodeIdx;
+    } else {
+        return nodeIdx;
+    }
+}
+
+
 auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 {
     BVHNode *node = &m_bvhNode[0];
-    std::array<BVHNode *, 64> stack{};
+    std::array<BVHNode *, 32> stack{};
     uint32_t stackPtr = 0;
 
     bool hit = false;
@@ -220,16 +239,15 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 
     while (true) {
         if (node->isLeaf()) {
-
             for (uint32_t i = 0; i < node->m_TriCount; ++i) {
 
                 uint32_t const leafTriIdx = m_triIdx[node->m_LeftFirst + i];
                 auto leafTri = m_mesh->m_Triangles[leafTriIdx];
 
-                if (LumenRender::Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record.m_T < closest) {
+                if (LumenRender::Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record->m_T < closest) {
                     hit = true;
-                    closest = ray.m_Record.m_T;
-                    ray.m_Record.m_Normal = m_mesh->m_TriData[leafTriIdx].N;
+                    closest = ray.m_Record->m_T;
+                    ray.m_Record->m_Normal = m_mesh->m_TriData[leafTriIdx].N;
                 }
             }
 
@@ -240,13 +258,9 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
         BVHNode *left = &m_bvhNode[node->m_LeftFirst];
         BVHNode *right = &m_bvhNode[node->m_LeftFirst + 1];
 
-#if 1
-        float t0 = LumenRender::AABB::IntersectAABB(ray, left->m_Bounds_min, left->m_Bounds_max);
-        float t1 = LumenRender::AABB::IntersectAABB(ray, right->m_Bounds_min, right->m_Bounds_max);
-#else
-        float t0 = LumenRender::AABB::IntersectAABB_SSE(temp, left->m_Bounds_min_m128, left->m_Bounds_max_m128);
-        float t1 = LumenRender::AABB::IntersectAABB_SSE(temp, right->m_Bounds_min_m128, right->m_Bounds_max_m128);
-#endif
+        float t0 = AABB::IntersectAABB(ray, left->m_Bounds_min, left->m_Bounds_max);
+        float t1 = AABB::IntersectAABB(ray, right->m_Bounds_min, right->m_Bounds_max);
+
         if (t0 > t1) {
             std::swap(t0, t1);
             std::swap(left, right);
@@ -272,11 +286,12 @@ auto BVH::GetBounds(AABB &outbox) const -> AABB
 
 auto BVH::DeepCopy() const -> std::shared_ptr<IHittable> { return std::make_shared<BVH>(*this); }
 
+
 auto BVHNode::CalculateNodeCost(BVHNode &node) -> float
 {
     glm::vec3 const e = node.m_Bounds_max - node.m_Bounds_min;// extent of the node
     float const surfaceArea = e.x * e.y + e.y * e.z + e.z * e.x;
-    return surfaceArea * node.m_TriCount;
+    return surfaceArea * static_cast<float>(node.m_TriCount);
 }
 
 

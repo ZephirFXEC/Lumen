@@ -60,7 +60,8 @@ Mesh::Mesh(const char *file_path)
             }
             m_Triangles[triIndex] = Triangle(tri);
             m_TriData[triIndex] =
-              TriData({ .N = norm, .UV = uv, .Centroid = (tri.at(0) + tri.at(1) + tri.at(2)) / 3.0F });
+              TriData({ .N = norm, .UV = uv, .Centroid = (tri.at(0) + tri.at(1) + tri.at(2)) * 0.3334F });
+
             m_Triangles[triIndex].m_Data = &m_TriData[triIndex];
 
             triIndex++;
@@ -75,7 +76,9 @@ auto Mesh::Hit(Ray &ray, float t_max) const -> bool { return m_BVH->Hit(ray, t_m
 
 auto Mesh::CalculateBounds(AABB &outbox) const -> AABB
 {
+
     AABB tri_box = AABB();
+
     for (uint32_t i = 0; i < m_TriCount; i++) {
         m_Triangles[i].CalculateBounds(tri_box);
         outbox = AABB::Union(outbox, tri_box);
