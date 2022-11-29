@@ -6,7 +6,6 @@
 #define LUMEN_RAY_HPP
 
 #include <glm/glm.hpp>
-#include <xmmintrin.h>
 
 namespace LumenRender {
 

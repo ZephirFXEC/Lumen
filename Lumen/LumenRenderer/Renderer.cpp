@@ -163,14 +163,14 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
         m_Image = std::make_shared<Lumen::Image>(width, height, Lumen::ImageFormat::RGBA);
     }
 
-    _aligned_free(m_ImageData);
-    _aligned_free(m_AccumulationBuffer);
+    free(m_ImageData);
+    free(m_AccumulationBuffer);
 
     m_ImageData = static_cast<uint32_t *>(
-      _aligned_malloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(uint32_t), sizeof(uint32_t)));
+      aligned_alloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(uint32_t), sizeof(uint32_t)));
 
     m_AccumulationBuffer = static_cast<glm::vec4 *>(
-      _aligned_malloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(glm::vec4), sizeof(glm::vec4)));
+      aligned_alloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(glm::vec4), sizeof(glm::vec4)));
 }
 
 

@@ -34,9 +34,9 @@ class Renderer
 
     void MemAlloc();
 
-    __forceinline auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
+    FORCEDINLINE auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
-    __forceinline auto GetSettings() -> Settings & { return m_Settings; }
+    FORCEDINLINE auto GetSettings() -> Settings & { return m_Settings; }
 
     void ResetFrame() { m_FrameSample = 1; }
 

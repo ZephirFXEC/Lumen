@@ -11,6 +11,11 @@
 #include <iostream>
 #include <vector>
 
+#ifdef __MSVC__
+#define FORCEDINLINE __forceinline
+#else
+#define FORCEDINLINE __attribute__((always_inline))
+#endif
 
 namespace LumenRender {
 
@@ -28,7 +33,7 @@ class Mesh : public IHittable<Mesh>
 
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
-    [[nodiscard]] __forceinline auto GetBounds() const & -> AABB { return m_Bounds; }
+    [[nodiscard]] FORCEDINLINE auto GetBounds() const & -> AABB { return m_Bounds; }
 
   private:
     std::vector<tinyobj::shape_t> m_shapes;

@@ -64,10 +64,10 @@ static uint32_t s_CurrentFrameIndex = 0;
 
 static Lumen::Application *s_Instance = nullptr;
 
-static void check_vk_result(VkResult err)
+static void check_vk_result(VkResult err, uint32_t line)
 {
   if (err == 0) { return; }
-  fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+  fprintf(stderr, "[vulkan] Error: VkResult = %d at %d", err, line);
   if (err < 0) { abort(); }
 }
 
@@ -118,7 +118,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
 
     // Create Vulkan Instance
     err = vkCreateInstance(&create_info, g_Allocator, &g_Instance);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     free(extensions_ext);
 
     // Get the function pointer (required for any extensions)
@@ -134,11 +134,11 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
     debug_report_ci.pfnCallback = debug_report;
     debug_report_ci.pUserData = NULL;
     err = vkCreateDebugReportCallbackEXT(g_Instance, &debug_report_ci, g_Allocator, &g_DebugReport);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
 #else
     // Create Vulkan Instance without any debug feature
     err = vkCreateInstance(&create_info, g_Allocator, &g_Instance);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     IM_UNUSED(g_DebugReport);
 #endif
   }
@@ -147,12 +147,12 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
   {
     uint32_t gpu_count = 0;
     err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, nullptr);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     IM_ASSERT(gpu_count > 0);
 
     auto *gpus = static_cast<VkPhysicalDevice *>(malloc(sizeof(VkPhysicalDevice) * gpu_count));
     err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, gpus);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
 
     // If a number >1 of GPUs got reported, find discrete GPU if present, or use first one available. This covers
     // most common cases (multi-gpu/integrated+dedicated graphics). Handling more complicated setups (multiple
@@ -206,7 +206,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
       .ppEnabledExtensionNames = device_extensions };
 
     err = vkCreateDevice(g_PhysicalDevice, &create_info, g_Allocator, &g_Device);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     vkGetDeviceQueue(g_Device, g_QueueFamily, 0, &g_Queue);
   }
 
@@ -230,7 +230,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
       .pPoolSizes = pool_sizes };
 
     err = vkCreateDescriptorPool(g_Device, &pool_info, g_Allocator, &g_DescriptorPool);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 }
 
@@ -309,7 +309,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data)
     g_SwapChainRebuild = true;
     return;
   }
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   s_CurrentFrameIndex = (s_CurrentFrameIndex + 1) % g_MainWindowData.ImageCount;
 
@@ -320,10 +320,10 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data)
       &fd->Fence,
       VK_TRUE,
       UINT64_MAX);// wait indefinitely instead of periodically checking
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
 
     err = vkResetFences(g_Device, 1, &fd->Fence);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 
   {
@@ -345,12 +345,12 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data)
     }
 
     err = vkResetCommandPool(g_Device, fd->CommandPool, 0);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     VkCommandBufferBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     err = vkBeginCommandBuffer(fd->CommandBuffer, &info);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
   {
     VkRenderPassBeginInfo const info = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -381,9 +381,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data)
 
 
     err = vkEndCommandBuffer(fd->CommandBuffer);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     err = vkQueueSubmit(g_Queue, 1, &info, fd->Fence);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 }
 
@@ -403,7 +403,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd)
     g_SwapChainRebuild = true;
     return;
   }
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
   wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount;// Now we can use the next set of semaphores
 }
 
@@ -456,7 +456,7 @@ void Application::Init()
   // Create Window Surface
   VkSurfaceKHR surface = nullptr;
   VkResult err = glfwCreateWindowSurface(g_Instance, m_WindowHandle, g_Allocator, &surface);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   // Create Framebuffers
   int w = 0;
@@ -504,8 +504,7 @@ void Application::Init()
     .MinImageCount = static_cast<uint32_t>(g_MinImageCount),
     .ImageCount = wd->ImageCount,
     .MSAASamples = VK_SAMPLE_COUNT_1_BIT,
-    .Allocator = g_Allocator,
-    .CheckVkResultFn = check_vk_result };
+    .Allocator = g_Allocator};
 
   ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
 
@@ -523,12 +522,12 @@ void Application::Init()
     VkCommandBuffer command_buffer = wd->Frames[wd->FrameIndex].CommandBuffer;
 
     err = vkResetCommandPool(g_Device, command_pool, 0);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     VkCommandBufferBeginInfo begin_info = {};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     err = vkBeginCommandBuffer(command_buffer, &begin_info);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
 
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
@@ -538,12 +537,12 @@ void Application::Init()
 
 
     err = vkEndCommandBuffer(command_buffer);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     err = vkQueueSubmit(g_Queue, 1, &end_info, VK_NULL_HANDLE);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
 
     err = vkDeviceWaitIdle(g_Device);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     ImGui_ImplVulkan_DestroyFontUploadObjects();
   }
 }
@@ -556,7 +555,7 @@ void Application::Shutdown()
 
   // Cleanup
   VkResult const err = vkDeviceWaitIdle(g_Device);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   // Free resources in queue
   for (auto &queue : s_ResourceFreeQueue) {
@@ -649,9 +648,6 @@ void Application::Run()
 
       // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
       // and handle the pass-thru hole, so we ask Begin() to not render a background.
-      if ((dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0) {
-        window_flags |= ImGuiWindowFlags_NoBackground;
-      }
 
       // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
       // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
@@ -739,7 +735,7 @@ auto Application::GetCommandBuffer(bool /*begin*/) -> VkCommandBuffer
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
   err = vkBeginCommandBuffer(command_buffer, &begin_info);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   return command_buffer;
 }
@@ -753,7 +749,7 @@ void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer)
   };
 
   auto err = vkEndCommandBuffer(commandBuffer);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   // Create fence to ensure that the command buffer has finished executing
   VkFenceCreateInfo fenceCreateInfo = {};
@@ -761,13 +757,13 @@ void Application::FlushCommandBuffer(VkCommandBuffer commandBuffer)
   fenceCreateInfo.flags = 0;
   VkFence fence = nullptr;
   err = vkCreateFence(g_Device, &fenceCreateInfo, nullptr, &fence);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   err = vkQueueSubmit(g_Queue, 1, &end_info, fence);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   err = vkWaitForFences(g_Device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
-  check_vk_result(err);
+  check_vk_result(err, __LINE__);
 
   vkDestroyFence(g_Device, fence, nullptr);
 }

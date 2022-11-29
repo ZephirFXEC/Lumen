@@ -9,7 +9,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include "stb_image.h"
 
 namespace Lumen {
 
@@ -62,7 +61,7 @@ namespace Utils {
   }
 
 }// namespace Utils
-
+/*
 Image::Image(std::string_view path) : m_Filepath(path)
 {
   int width = 0;
@@ -85,6 +84,7 @@ Image::Image(std::string_view path) : m_Filepath(path)
   SetData(data);
   stbi_image_free(data);
 }
+*/
 
 Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void *data)
   : m_Width(width), m_Height(height), m_Format(format)

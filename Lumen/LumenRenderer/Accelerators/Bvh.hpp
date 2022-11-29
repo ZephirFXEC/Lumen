@@ -41,7 +41,6 @@ struct BVHNode
             glm::vec3 m_Bounds_min;
             uint32_t m_LeftFirst;
         };
-        __m128 m_Bounds_min_m128;
     };
     union {
         struct
@@ -49,10 +48,9 @@ struct BVHNode
             glm::vec3 m_Bounds_max;
             uint32_t m_TriCount;
         };
-        __m128 m_Bounds_max_m128;
     };
 
-    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+    [[nodiscard]] auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
 
     static auto CalculateNodeCost(BVHNode &node) -> float;
 };

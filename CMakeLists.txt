@@ -1,17 +1,9 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.1)
 project(Lumen)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(ENABLE_DEVELOPER_MODE TRUE CACHE BOOL "Enable 'developer mode'")
-
-set(OPT_WARNINGS_AS_ERRORS_DEVELOPER_DEFAULT FALSE)
-
-
-if (WIN32)
-
-    set(CMAKE_TOOLCHAIN_FILE "F:/repos/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "/Users/ecrema/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 
     file(GLOB_RECURSE SOURCES "Lumen/*.cpp" "LumenCore/*.cpp")
     file(GLOB_RECURSE HEADERS "Lumen/*.hpp" "LumenCore/*.hpp" "Lumen/Externals/*.h")
@@ -25,4 +17,3 @@ if (WIN32)
     find_package(tbb CONFIG REQUIRED)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
-endif()

@@ -35,7 +35,7 @@ class Scene : public IHittable<Scene>
 
     auto CalculateBounds(LumenRender::AABB &outbox) const -> AABB;
 
-    __forceinline auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
+    FORCEDINLINE auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
 
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 

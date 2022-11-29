@@ -8,6 +8,12 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#ifdef __MSVC__
+#define FORCEDINLINE __forceinline
+#else
+#define FORCEDINLINE __attribute__((always_inline))
+#endif
+
 namespace LumenRender {
 class Camera
 {
@@ -18,19 +24,19 @@ class Camera
 
     void OnResize(uint32_t width, uint32_t height);
 
-    [[nodiscard]] __forceinline auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
+    [[nodiscard]]  auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
 
-    [[nodiscard]] __forceinline auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
+    [[nodiscard]] FORCEDINLINE auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
 
-    [[nodiscard]] __forceinline auto GetView() const -> const glm::mat4 & { return m_View; }
+    [[nodiscard]] FORCEDINLINE auto GetView() const -> const glm::mat4 & { return m_View; }
 
-    [[nodiscard]] __forceinline auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
+    [[nodiscard]] FORCEDINLINE auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
 
-    [[nodiscard]] __forceinline auto GetPosition() const -> const glm::vec3 & { return m_Position; }
+    [[nodiscard]] FORCEDINLINE auto GetPosition() const -> const glm::vec3 & { return m_Position; }
 
-    [[nodiscard]] __forceinline auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
+    [[nodiscard]] FORCEDINLINE auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
 
-    [[nodiscard]] __forceinline auto GetRayDirections() const -> const glm::vec3 * { return m_RayDirections; }
+    [[nodiscard]] FORCEDINLINE auto GetRayDirections() const -> const glm::vec3 * { return m_RayDirections; }
 
     static auto GetRotationSpeed() -> float;
 

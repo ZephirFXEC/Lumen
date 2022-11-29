@@ -7,6 +7,7 @@
 
 #include "../Ray.hpp"
 #include <glm/glm.hpp>
+#include <algorithm>
 
 #define INF 1e30F
 
@@ -91,7 +92,7 @@ class AABB
       -> float;
 
 
-  public:
+
     glm::vec3 pMin{};
     glm::vec3 pMax{};
 };

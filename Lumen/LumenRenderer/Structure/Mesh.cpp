@@ -22,8 +22,8 @@ Mesh::Mesh(const char *file_path)
 
     for (const auto &shape : m_shapes) { m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size()); }
 
-    m_Triangles = static_cast<Triangle *>(_aligned_malloc(m_TriCount * sizeof(Triangle), 64));
-    m_TriData = static_cast<TriData *>(_aligned_malloc(m_TriCount * sizeof(TriData), 32));
+    m_Triangles = static_cast<Triangle *>(aligned_alloc(m_TriCount * sizeof(Triangle), 64));
+    m_TriData = static_cast<TriData *>(aligned_alloc(m_TriCount * sizeof(TriData), 32));
 
     uint32_t triIndex = 0;
 

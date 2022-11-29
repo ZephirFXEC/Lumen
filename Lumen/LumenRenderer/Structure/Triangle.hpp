@@ -7,7 +7,6 @@
 
 #include "../Scene/Object.hpp"
 #include <array>
-#include <xmmintrin.h>
 
 namespace LumenRender {
 

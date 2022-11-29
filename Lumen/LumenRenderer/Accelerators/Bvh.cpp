@@ -15,10 +15,10 @@ constexpr int BINS = 32;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
   : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
-    m_bvhNode(static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(BVHNode)))),
-    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t)))),
+    m_bvhNode(static_cast<BVHNode *>(aligned_alloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(BVHNode)))),
+    m_triIdx(static_cast<uint32_t *>(aligned_alloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t)))),
     m_LinearNodes(static_cast<LinearBVHNode *>(
-      _aligned_malloc(sizeof(LinearBVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(LinearBVHNode))))
+      aligned_alloc(sizeof(LinearBVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(LinearBVHNode))))
 {
     Build();
 }
