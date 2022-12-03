@@ -5,8 +5,11 @@
 #include "Bvh.hpp"
 #include <execution>
 
+#include <smmintrin.h>
+#include <xmmintrin.h>
+
+
 #include "../Utility/Utility.hpp"
-#include <cmath>
 
 
 namespace LumenRender {
@@ -15,10 +18,9 @@ constexpr int BINS = 32;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
   : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
-    m_bvhNode(static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(BVHNode)))),
-    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->m_TriCount, sizeof(uint32_t)))),
-    m_LinearNodes(static_cast<LinearBVHNode *>(
-      _aligned_malloc(sizeof(LinearBVHNode) * m_mesh->m_TriCount * 2 + 64, sizeof(LinearBVHNode))))
+    m_bvhNode(
+      static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->GetTriCount() * 2 + 64, sizeof(BVHNode)))),
+    m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->GetTriCount(), sizeof(uint32_t))))
 {
     Build();
 }
@@ -28,13 +30,13 @@ void BVH::Build()
 {
 
     m_nodeCount = 2;
-    memset(m_bvhNode, 0, sizeof(BVHNode) * m_mesh->m_TriCount * 2);
+    memset(m_bvhNode, 0, sizeof(BVHNode) * m_mesh->GetTriCount() * 2);
 
     // Populate Triangle indexes
-    for (uint32_t i = 0; i < m_mesh->m_TriCount; i++) { m_triIdx[i] = i; }
+    for (uint32_t i = 0; i < m_mesh->GetTriCount(); i++) { m_triIdx[i] = i; }
 
     BVHNode &root = m_bvhNode[0];
-    root.m_TriCount = m_mesh->m_TriCount;
+    root.m_TriCount = m_mesh->GetTriCount();
     root.m_LeftFirst = 0;
 
     glm::vec3 centroid_min;
@@ -57,7 +59,7 @@ void BVH::Build()
         glm::vec3 cmax = m_buildStack.at(i).m_centroidMax;
         Subdivide(m_buildStack.at(i).m_nodeidx, 99, nodePtr.at(i), cmin, cmax);
     }
-    m_nodeCount = m_mesh->m_TriCount * 2 + 64;
+    m_nodeCount = m_mesh->GetTriCount() * 2 + 64;
 }
 
 
@@ -78,7 +80,7 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
 
         for (uint32_t i = 0; i < node.m_TriCount; i++) {
 
-            auto &triangle = m_mesh->m_Triangles[m_triIdx[node.m_LeftFirst + i]];
+            auto &triangle = m_mesh->GetTriangles()[m_triIdx[node.m_LeftFirst + i]];
             uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
               static_cast<uint32_t>((triangle.m_Data->Centroid[a] - boundsMin) * scale));
             bin.at(binIdx).m_TriCount++;
@@ -144,12 +146,12 @@ void BVH::Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::ve
 
     while (i <= j) {
         int const binIdx = std::min(BINS - 1,
-          static_cast<int>((m_mesh->m_Triangles[m_triIdx[i]].m_Data->Centroid[axis] - centroidMin[axis]) * scale));
+          static_cast<int>((m_mesh->GetTriangles()[m_triIdx[i]].m_Data->Centroid[axis] - centroidMin[axis]) * scale));
         if (binIdx < splitPos) {
             i++;
         } else {
             std::swap(m_triIdx[i], m_triIdx[j--]);
-        };
+        }
     }
 
     uint32_t const leftCount = i - node.m_LeftFirst;
@@ -199,7 +201,7 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     uint32_t const first = node.m_LeftFirst;
     for (uint32_t i = 0; i < node.m_TriCount; i++) {
         uint32_t const leafTriIdx = m_triIdx[first + i];
-        auto &leafTri = m_mesh->m_Triangles[leafTriIdx];
+        auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
         node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(0));
         node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(1));
         node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(2));
@@ -211,21 +213,6 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     }
 }
 
-
-auto BVH::FlattenBVHTree(BVHNode &node, uint32_t nodeIdx) -> uint32_t
-{
-    uint32_t const first = node.m_LeftFirst;
-    uint32_t const count = node.m_TriCount;
-    if (count == 0) {
-        uint32_t const leftChildIdx = FlattenBVHTree(m_bvhNode[first], first);
-        uint32_t const rightChildIdx = FlattenBVHTree(m_bvhNode[first + 1], first + 1);
-        node.m_LeftFirst = leftChildIdx;
-        node.m_TriCount = rightChildIdx;
-        return nodeIdx;
-    } else {
-        return nodeIdx;
-    }
-}
 
 
 auto BVH::Traversal(Ray &ray, float t_max) const -> bool
@@ -239,17 +226,22 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 
     while (true) {
         if (node->isLeaf()) {
+
+
             for (uint32_t i = 0; i < node->m_TriCount; ++i) {
 
                 uint32_t const leafTriIdx = m_triIdx[node->m_LeftFirst + i];
-                auto leafTri = m_mesh->m_Triangles[leafTriIdx];
 
-                if (LumenRender::Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record->m_T < closest) {
+                const auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
+
+                if (Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record->m_T < closest) {
                     hit = true;
                     closest = ray.m_Record->m_T;
-                    ray.m_Record->m_Normal = m_mesh->m_TriData[leafTriIdx].N;
+                    ray.m_Record->m_Normal = leafTri.m_Data->N;
                 }
             }
+
+            if (hit) { return true; }
 
             if (stackPtr == 0) { break; }
             node = stack.at(--stackPtr);
@@ -275,6 +267,10 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
     }
     return hit;
 }
+
+
+auto BVH::Traversal_SSE(Ray &ray, float t_max) const -> bool { return true; }
+
 
 auto BVH::Hit(Ray &ray, float t_max) const -> bool { return Traversal(ray, t_max); }
 

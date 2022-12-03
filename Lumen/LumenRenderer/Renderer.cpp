@@ -45,28 +45,49 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 #ifdef MT
 #if 1
     if (m_ImageData[0] == 0) {
-        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(), 0, m_Image->GetWidth()),
-          [&](const tbb::blocked_range2d<uint32_t> &range) {
-              for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
-                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
+        // Create a task group for the parallel tasks
+        tbb::task_group group;
 
-                      glm::vec4 color = PerPixel(x, y);
+        constexpr uint32_t TASK_COUNT = 8;
 
-                      if (m_Settings.Accumulate) {
-                          m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+        // Calculate the size of the range for each task
+        const uint32_t rangeSize = m_Image->GetHeight() / TASK_COUNT;
 
-                          glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
-                          accumulatedColor /= static_cast<float>(m_FrameSample);
+        // Create and launch TASK_COUNT tasks
+        for (uint32_t i = 0; i < TASK_COUNT; ++i) {
+            // Calculate the starting and ending rows for this task
+            uint32_t const startRow = i * rangeSize;
+            uint32_t const endRow = startRow + rangeSize;
 
-                          accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
-                          m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
-                      } else {
-                          color = glm::clamp(color, 0.0F, 1.0F);
-                          m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+            // Add the task to the group
+            group.run([&, startRow, endRow]() {
+                // Use a parallel_for loop to process the rows for this task
+                tbb::parallel_for(
+                  tbb::blocked_range<uint32_t>(startRow, endRow), [&](const tbb::blocked_range<uint32_t> &range) {
+                      for (uint32_t y = range.begin(); y != range.end(); ++y) {
+                          for (uint32_t x = 0; x < m_Image->GetWidth(); ++x) {
+                              glm::vec4 color = PerPixel(x, y);
+
+                              if (m_Settings.Accumulate) {
+                                  m_AccumulationBuffer[y * m_Image->GetWidth() + x] += color;
+
+                                  glm::vec4 accumulatedColor = m_AccumulationBuffer[y * m_Image->GetWidth() + x];
+                                  accumulatedColor /= static_cast<float>(m_FrameSample);
+
+                                  accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
+                                  m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
+                              } else {
+                                  color = glm::clamp(color, 0.0F, 1.0F);
+                                  m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                              }
+                          }
                       }
-                  }
-              }
-          });
+                  });
+            });
+        }
+
+        // Wait for all tasks to complete
+        group.wait();
     }
 #else// Tiled Rendering
 
@@ -79,16 +100,16 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 
     tbb::parallel_for(
       tbb::blocked_range3d<uint32_t>(0, TILES, 0, TILES, 0, numTile), [&](const tbb::blocked_range3d<uint32_t> &range) {
-          for (uint32_t y = range.pages().begin(); y != range.pages().end(); y++) {
-              for (uint32_t x = range.rows().begin(); x != range.rows().end(); x++) {
-                  for (uint32_t i = range.cols().begin(); i != range.cols().end(); i++) {
+          for (uint32_t y = range.pages().begin(); y != range.pages().end(); ++y) {
+              for (uint32_t x = range.rows().begin(); x != range.rows().end(); ++x) {
+                  for (uint32_t i = range.cols().begin(); i != range.cols().end(); ++i) {
 
                       uint32_t const tileX = i % tileWidth;
                       uint32_t const tileY = i / tileWidth;
 
                       uint32_t const idx = m_Image->GetWidth() * (y * tileHeight + tileY) + (x * tileWidth + tileX);
 
-                      glm::vec4 color = PerPixel(x, y);
+                      glm::vec4 color = PerPixel(x * tileWidth + tileX, y * tileHeight + tileY);
 
                       if (m_Settings.Accumulate) {
                           m_AccumulationBuffer[idx] += color;
