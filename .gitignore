@@ -33,9 +33,11 @@
 
 # Other files
 .vscode/
+.vs/
+.idea/
 build/
 cmake-build-debug/
 cmake-build-release/
-cmake-build-relwithdebinfo/
+cmake-build-*/
 images/
 Lumen/Externals/
