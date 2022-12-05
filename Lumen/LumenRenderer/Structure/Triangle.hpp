@@ -33,8 +33,6 @@ class Triangle
 
     [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
 
-    auto Transform(const glm::mat3 &transform) -> void;
-
 
     std::array<glm::vec3, 3> vertex{};
     TriData *m_Data{ nullptr };

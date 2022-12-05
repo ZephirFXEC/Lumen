@@ -24,5 +24,5 @@ if (WIN32)
     find_package(glm CONFIG REQUIRED)
     find_package(tbb CONFIG REQUIRED)
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb TBB::tbbmalloc TBB::tbbmalloc_proxy)
 endif()

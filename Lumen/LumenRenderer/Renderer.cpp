@@ -11,15 +11,15 @@
 
 namespace LumenRender {
 
-namespace Utils {
+namespace {
 
-    static auto BackgroundColor(const Ray &ray) -> glm::vec3
+    auto BackgroundColor(const Ray &ray) -> glm::vec3
     {
         auto t = 0.5F * (ray.Direction.y + 1.0F);
         return (1.0F - t) * glm::vec3(1.0F, 1.0F, 1.0F) + t * glm::vec3(0.5F, 0.7F, 1.0F);
     }
 
-    static auto ConvertToRGBA(glm::vec4 color) -> uint32_t
+    auto ConvertToRGBA(glm::vec4 color) -> uint32_t
     {
         auto r = static_cast<uint8_t>(color.r * 255U);
         auto g = static_cast<uint8_t>(color.g * 255U);
@@ -75,10 +75,10 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
                                   accumulatedColor /= static_cast<float>(m_FrameSample);
 
                                   accumulatedColor = glm::clamp(accumulatedColor, 0.0F, 1.0F);
-                                  m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(accumulatedColor);
+                                  m_ImageData[y * m_Image->GetWidth() + x] = ConvertToRGBA(accumulatedColor);
                               } else {
                                   color = glm::clamp(color, 0.0F, 1.0F);
-                                  m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(color);
+                                  m_ImageData[y * m_Image->GetWidth() + x] = ConvertToRGBA(color);
                               }
                           }
                       }
@@ -161,7 +161,7 @@ void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Scen
 }
 
 
-void Renderer::MemAlloc()
+void Renderer::MemAlloc()// TODO: Use TBB Malloc
 {
     if (m_Settings.Accumulate) {
         memset(m_AccumulationBuffer,
@@ -216,7 +216,7 @@ auto Renderer::PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4
 
     // if we miss the scene, return the background color
     if (ray.m_Record->m_T < 0.0F) {
-        return { Utils::BackgroundColor(ray), 1.0F };
+        return { BackgroundColor(ray), 1.0F };
 
     } else {
 

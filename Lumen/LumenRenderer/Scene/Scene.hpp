@@ -18,8 +18,6 @@
 
 namespace LumenRender {
 
-using Types = std::variant<IHittable<Mesh> *, IHittable<Sphere> *, IHittable<BVH> *>;
-
 class Scene : public IHittable<Scene>
 {
   public:
@@ -31,11 +29,11 @@ class Scene : public IHittable<Scene>
         m_Index++;
     };
 
-    auto Hit(LumenRender::Ray &ray, float t_max) const -> bool;
+    auto Hit(Ray &ray, float t_max) const -> bool;
 
-    auto CalculateBounds(LumenRender::AABB &outbox) const -> AABB;
+    auto CalculateBounds(AABB &outbox) const -> AABB;
 
-    __forceinline auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> & { return m_Objects; }
+    __forceinline auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> const & { return m_Objects; }
 
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 

@@ -3,14 +3,13 @@
 //
 
 #include "Aabb.hpp"
-#include <array>
 
 namespace LumenRender {
-auto AABB::IntersectAABB(const LumenRender::Ray &ray, const glm::vec3 &min, const glm::vec3 &max) -> float
+auto AABB::IntersectAABB(const LumenRender::Ray &ray,
+  const glm::vec3 &invdir,
+  const glm::vec3 &min,
+  const glm::vec3 &max) -> float
 {
-
-    glm::vec3 const invdir = 1.0F / ray.Direction;
-
     float tmin = 0;
     float tmax = INF;
 

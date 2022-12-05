@@ -84,9 +84,9 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
             uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
               static_cast<uint32_t>((triangle.m_Data->Centroid[a] - boundsMin) * scale));
             bin.at(binIdx).m_TriCount++;
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[0]);
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[1]);
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex[2]);
+            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(0));
+            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(1));
+            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(2));
         }
         // gather data for the 7 planes between the 8 bins
         std::array<float, BINS - 1> leftArea{};
@@ -217,6 +217,9 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
 
 auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 {
+    // Precompute and store the inverse of ray.direction.
+    glm::vec3 const inv_dir = 1.0F / ray.Direction;
+
     BVHNode *node = &m_bvhNode[0];
     std::array<BVHNode *, 32> stack{};
     uint32_t stackPtr = 0;
@@ -227,13 +230,13 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
     while (true) {
         if (node->isLeaf()) {
 
-
             for (uint32_t i = 0; i < node->m_TriCount; ++i) {
 
                 uint32_t const leafTriIdx = m_triIdx[node->m_LeftFirst + i];
 
                 const auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
 
+                // Use a early-exit strategy in the TriangleIntersect function.
                 if (Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record->m_T < closest) {
                     hit = true;
                     closest = ray.m_Record->m_T;
@@ -250,8 +253,9 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
         BVHNode *left = &m_bvhNode[node->m_LeftFirst];
         BVHNode *right = &m_bvhNode[node->m_LeftFirst + 1];
 
-        float t0 = AABB::IntersectAABB(ray, left->m_Bounds_min, left->m_Bounds_max);
-        float t1 = AABB::IntersectAABB(ray, right->m_Bounds_min, right->m_Bounds_max);
+        // Use a faster intersection test for the bounding boxes.
+        float t0 = AABB::IntersectAABB(ray, inv_dir, left->m_Bounds_min, left->m_Bounds_max);
+        float t1 = AABB::IntersectAABB(ray, inv_dir, right->m_Bounds_min, right->m_Bounds_max);
 
         if (t0 > t1) {
             std::swap(t0, t1);

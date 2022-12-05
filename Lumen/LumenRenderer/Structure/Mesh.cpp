@@ -5,6 +5,7 @@
 
 #include "Mesh.hpp"
 #include "../Accelerators/Bvh.hpp"
+#include <numeric>
 
 namespace LumenRender {
 
@@ -13,21 +14,23 @@ Mesh::Mesh(const char *file_path)
     std::string err;
     std::string warn;
     tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
 
-    bool const ret = tinyobj::LoadObj(&attrib, &m_shapes, &m_materials, &warn, &err, file_path);
+    bool const ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_path);
 
     if (!warn.empty()) { std::cout << warn << "\n"; }
     if (!err.empty()) { std::cerr << err << "\n"; }
     if (!ret) { std::cerr << "Failed to load " << file_path << "\n"; }
 
-    for (const auto &shape : m_shapes) { m_TriCount += static_cast<uint32_t>(shape.mesh.num_face_vertices.size()); }
+    for (const auto &shape : shapes) { m_TriCount += shape.mesh.num_face_vertices.size(); }
 
     m_Triangles = static_cast<Triangle *>(_aligned_malloc(m_TriCount * sizeof(Triangle), 64));
     m_TriData = static_cast<TriData *>(_aligned_malloc(m_TriCount * sizeof(TriData), 32));
 
     uint32_t triIndex = 0;
 
-    for (auto &shape : m_shapes) {
+    for (auto &shape : shapes) {
 
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
             auto fv = static_cast<size_t>(shape.mesh.num_face_vertices.at(f));
@@ -70,27 +73,37 @@ Mesh::Mesh(const char *file_path)
 
     m_BVH = new BVH(this);
     m_Bounds = CalculateBounds(m_Bounds);
+    CalculateBounds(m_Bounds);
 }
 
-auto Mesh::Hit(Ray &ray, float t_max) const -> bool { return m_BVH->Hit(ray, t_max); }
+
+auto Mesh::Hit(Ray &ray, float t_max) const -> bool
+{
+    if (m_BVH != nullptr) { return m_BVH->Hit(ray, t_max); }
+
+    return false;
+}
+
 
 auto Mesh::CalculateBounds(AABB &outbox) const -> AABB
 {
 
-    AABB tri_box = AABB();
-
     for (uint32_t i = 0; i < m_TriCount; i++) {
+        AABB tri_box = AABB();
         m_Triangles[i].CalculateBounds(tri_box);
         outbox = AABB::Union(outbox, tri_box);
     }
     return outbox;
 }
 
+
 auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> { return std::make_shared<Mesh>(*this); }
 
-auto Mesh::Transform(const glm::mat3 &transform) const -> void
+
+Mesh::~Mesh()
 {
-    for (uint32_t i = 0; i < m_TriCount; i++) { m_Triangles[i].Transform(transform); }
+    _aligned_free(m_Triangles);
+    _aligned_free(m_TriData);
 }
 
 

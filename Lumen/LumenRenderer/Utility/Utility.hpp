@@ -5,6 +5,9 @@
 #ifndef LUMEN_UTILITY_HPP
 #define LUMEN_UTILITY_HPP
 
+// #define GLM_FORCE_SSE2
+// #define GLM_FORCE_ALIGNED
+
 #include <glm/glm.hpp>
 #include <cmath>
 #include <random>

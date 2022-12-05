@@ -30,6 +30,5 @@ template<class T> class IHittable : public IDeepInstance<IHittable<T>>
 
     [[nodiscard]] auto GetBounds() const -> LumenRender::AABB { return static_cast<const T *>(this)->GetBounds(); }
 
-    auto Transform(const glm::mat3 &transform) -> void { static_cast<T *>(this)->Transform(transform); }
 };
 #endif// LUMEN_IHITTABLE_HPP

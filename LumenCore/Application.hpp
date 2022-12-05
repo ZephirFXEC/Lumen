@@ -44,7 +44,7 @@ public:
 
   static auto GetTime() -> float;
 
-  [[nodiscard]] auto GetWindowHandle() const -> GLFWwindow * { return m_WindowHandle; }
+  [[nodiscard]] __forceinline auto GetWindowHandle() const & -> GLFWwindow * { return m_WindowHandle; }
 
 
   template<typename T> void PushLayer()
@@ -82,9 +82,9 @@ private:
   GLFWwindow *m_WindowHandle = nullptr;
   bool m_Running = false;
 
-  float m_TimeStep = 0.0F;
-  float m_FrameTime = 0.0F;
-  float m_LastFrameTime = 0.0F;
+  float m_TimeStep{ 0.0F };
+  float m_FrameTime{ 0.0F };
+  float m_LastFrameTime{ 0.0F };
 
   std::vector<std::shared_ptr<Layer>> m_LayerStack;
   std::function<void()> m_MenubarCallback;

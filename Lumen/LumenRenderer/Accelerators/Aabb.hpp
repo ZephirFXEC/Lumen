@@ -8,7 +8,7 @@
 #include "../Ray.hpp"
 #include <glm/glm.hpp>
 
-#define INF 1e30F
+constexpr float INF = 1e30F;
 
 namespace LumenRender {
 
@@ -35,10 +35,9 @@ class AABB
           std::max(p1.z, std::max(p2.z, p3.z)) })
     {}
 
+    auto operator[](int i) const -> const glm::vec3 & { return (i == 0) ? pMin : pMax; }
 
-    auto operator[](int i) const -> const glm::vec3 &;
-
-    auto operator[](int i) -> glm::vec3 &;
+    auto operator[](int i) -> glm::vec3 & { return (i == 0) ? pMin : pMax; }
 
     auto operator==(const AABB &b) const -> bool { return b.pMin == pMin && b.pMax == pMax; }
 
@@ -69,7 +68,7 @@ class AABB
         return ret;
     }
 
-    auto Union(const glm::vec3 &p) const -> AABB
+    [[nodiscard]] auto Union(const glm::vec3 &p) const -> AABB
     {
         AABB ret;
         ret.pMin = { std::min(pMin.x, p.x), std::min(pMin.y, p.y), std::min(pMin.z, p.z) };
@@ -87,8 +86,9 @@ class AABB
     }
 
 
-    [[nodiscard]] static auto IntersectAABB(const LumenRender::Ray &ray, const glm::vec3 &min, const glm::vec3 &max)
-      -> float;
+    [[nodiscard]] static auto
+      IntersectAABB(const LumenRender::Ray &ray, const glm::vec3 &invdir, const glm::vec3 &min, const glm::vec3 &max)
+        -> float;
 
 
   public:

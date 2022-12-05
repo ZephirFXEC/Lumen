@@ -3,26 +3,20 @@
 //
 
 #include "Scene.hpp"
+#include <algorithm>
 
 namespace LumenRender {
 
 
 auto Scene::Hit(Ray &ray, float t_max) const -> bool
 {
-    if (m_Objects.empty()) { return false; }
-
+    AABB box = CalculateBounds(box);
+    if (box.IntersectAABB(ray, 1.0F / ray.Direction, box.pMin, box.pMax) == 1e30F) { return false; }
 
     bool hit_anything = false;
     float closest_so_far = t_max;
 
-
-    // Check if AABB intersect with ray
-    AABB box = CalculateBounds(box);
-    if (box.IntersectAABB(ray, box.pMin, box.pMax) == 1e30F) { return false; }
-
-    // If AABB intersect, check if objects intersect
     for (const auto &[index, object] : m_Objects) {
-
         if (object->Hit(ray, closest_so_far) && ray.m_Record->m_T < closest_so_far) {
             hit_anything = true;
             closest_so_far = ray.m_Record->m_T;
