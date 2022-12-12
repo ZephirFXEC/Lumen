@@ -12,21 +12,19 @@
 namespace LumenRender {
 
 Camera::Camera(float verticalFOV, float nearClip, float farClip)
-  : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip)
-{
-    m_ForwardDirection = glm::vec3(0, 0, -1);
-    m_Position = glm::vec3(0, 0, 5);
-}
+  : m_VerticalFOV(verticalFOV), m_NearClip(nearClip), m_FarClip(farClip), m_Position({ 0, 0, 5 }),
+    m_ForwardDirection({ 0, 0, -1 })
+{}
 
-auto Camera::OnUpdate(float ts) -> bool
+auto Camera::OnUpdate(float ts) -> std::optional<bool>
 {
-    glm::vec2 const mousePos = Lumen::Input::GetMousePosition();
-    glm::vec2 const delta = (mousePos - m_LastMousePosition) * 0.002F;
+    const auto mousePos = Lumen::Input::GetMousePosition();
+    const auto delta = (mousePos - m_LastMousePosition) * 0.002F;
     m_LastMousePosition = mousePos;
 
     if (!Lumen::Input::IsMouseButtonDown(Lumen::MouseButton::Right)) {
         Lumen::Input::SetCursorMode(Lumen::CursorMode::Normal);
-        return false;
+        return {};
     }
 
     Lumen::Input::SetCursorMode(Lumen::CursorMode::Locked);
@@ -34,9 +32,9 @@ auto Camera::OnUpdate(float ts) -> bool
     bool moved = false;
 
     constexpr glm::vec3 upDirection(0.0F, 1.0F, 0.0F);
-    glm::vec3 const rightDirection = glm::cross(m_ForwardDirection, upDirection);
+    const auto rightDirection = glm::cross(m_ForwardDirection, upDirection);
 
-    float const speed = 5.0F;
+    constexpr auto speed = 5.0F;
 
     // Movement
     if (Lumen::Input::IsKeyDown(Lumen::KeyCode::W)) {
@@ -74,7 +72,6 @@ auto Camera::OnUpdate(float ts) -> bool
     }
 
     if (moved) {
-        _aligned_free(m_RayDirections);
         RecalculateView();
         RecalculateRayDirections();
     }
@@ -89,13 +86,9 @@ void Camera::OnResize(uint32_t width, uint32_t height)
     m_ViewportWidth = width;
     m_ViewportHeight = height;
 
-    _aligned_free(m_RayDirections);
-
     RecalculateProjection();
     RecalculateRayDirections();
 }
-
-auto Camera::GetRotationSpeed() -> float { return 0.3F; }
 
 void Camera::RecalculateProjection()
 {
@@ -109,27 +102,31 @@ void Camera::RecalculateProjection()
 
 void Camera::RecalculateView()
 {
-    m_View = glm::lookAt(m_Position, m_Position + m_ForwardDirection, glm::vec3(0, 1, 0));
+    m_View = glm::lookAt(m_Position, m_Position + m_ForwardDirection, { 0, 1, 0 });
     m_InverseView = glm::inverse(m_View);
 }
 
 void Camera::RecalculateRayDirections()
 {
+    m_RayDirections.clear();
+    m_RayDirections.resize(m_ViewportWidth * m_ViewportHeight);
 
-    m_RayDirections = static_cast<glm::vec3 *>(
-      _aligned_malloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 16));
+    // Store results of calculations in local variables to avoid repeating them in the inner loop
+    auto const width = static_cast<float>(m_ViewportWidth);
+    auto const height = static_cast<float>(m_ViewportHeight);
+
 
     tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_ViewportHeight, 0, m_ViewportWidth),
       [&](const tbb::blocked_range2d<uint32_t> &range) {
           for (uint32_t y = range.rows().begin(); y != range.rows().end(); ++y) {
               for (uint32_t x = range.cols().begin(); x != range.cols().end(); ++x) {
 
-                  glm::vec2 coord = { static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
-                      static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
+                  glm::vec2 coord = { static_cast<float>(x) / width, static_cast<float>(y) / height };
 
                   coord = coord * 2.0F - 1.0F;// -1 -> 1
 
                   glm::vec4 const target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
+
                   glm::vec3 const rayDirection =
                     glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));// World space
 
@@ -137,23 +134,5 @@ void Camera::RecalculateRayDirections()
               }
           }
       });
-
-    /*
-    for (uint32_t y = 0; y < m_ViewportHeight; ++y) {
-        for (uint32_t x = 0; x < m_ViewportWidth; ++x) {
-
-            glm::vec2 coord = { static_cast<float>(x) / static_cast<float>(m_ViewportWidth),
-                static_cast<float>(y) / static_cast<float>(m_ViewportHeight) };
-
-            coord = coord * 2.0F - 1.0F;// -1 -> 1
-
-            glm::vec4 const target = m_InverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
-            glm::vec3 const rayDirection =
-              glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));// World space
-
-            m_RayDirections[y * m_ViewportWidth + x] = rayDirection;
-        }
-    }
-     */
 }
 }// namespace LumenRender

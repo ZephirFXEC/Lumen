@@ -10,7 +10,6 @@
 
 #include "Camera.hpp"
 #include "Ray.hpp"
-#include "Scene/Object.hpp"
 #include "Scene/Scene.hpp"
 
 #include "Utility/Utility.hpp"
@@ -41,7 +40,7 @@ class Renderer
     void ResetFrame() { m_FrameSample = 1; }
 
   private:
-    auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
+    auto TraceRay(LumenRender::Ray &ray) -> HitRecords &;
 
     auto PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4;
 
@@ -55,6 +54,7 @@ class Renderer
     glm::vec4 *m_AccumulationBuffer = nullptr;
 
     uint32_t m_FrameSample = 1;
+    HitRecords m_HitRecords{};
 };
 
 }// namespace LumenRender

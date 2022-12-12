@@ -6,6 +6,7 @@
 #define LUMEN_CAMERA_HPP
 
 #include <glm/glm.hpp>
+#include <optional>
 #include <vector>
 
 namespace LumenRender {
@@ -14,7 +15,7 @@ class Camera
   public:
     Camera(float verticalFOV, float nearClip, float farClip);
 
-    auto OnUpdate(float ts) -> bool;
+    auto OnUpdate(float ts) -> std::optional<bool>;
 
     void OnResize(uint32_t width, uint32_t height);
 
@@ -30,9 +31,12 @@ class Camera
 
     [[nodiscard]] __forceinline auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
 
-    [[nodiscard]] __forceinline auto GetRayDirections() const -> const glm::vec3 * { return m_RayDirections; }
+    [[nodiscard]] __forceinline auto GetRayDirections() const -> const std::vector<glm::vec3> &
+    {
+        return m_RayDirections;
+    }
 
-    static auto GetRotationSpeed() -> float;
+    __forceinline constexpr auto GetRotationSpeed() const -> float { return 0.3F; };
 
   private:
     void RecalculateProjection();
@@ -55,7 +59,7 @@ class Camera
     glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };
 
     // Cached ray directions
-    glm::vec3 *m_RayDirections{ nullptr };
+    std::vector<glm::vec3> m_RayDirections{};
 
     glm::vec2 m_LastMousePosition{ 0.0F, 0.0F };
 

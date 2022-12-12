@@ -5,9 +5,11 @@
 #define MT
 
 #include "Renderer.hpp"
-#include <glm/glm.hpp>
 #include <tbb/tbb.h>
 
+
+constexpr glm::vec3 lightDir = glm::vec3(-0.57735026918962584, -0.57735026918962584, -0.57735026918962584);
+constexpr float tmax = std::numeric_limits<float>::max();
 
 namespace LumenRender {
 
@@ -195,11 +197,8 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 }
 
 
-auto Renderer::TraceRay(LumenRender::Ray &ray) -> HitRecords
+auto Renderer::TraceRay(LumenRender::Ray &ray) -> HitRecords &
 {
-
-    constexpr float tmax = std::numeric_limits<float>::max();
-
     HitRecords hitRecords{};
     ray.m_Record = &hitRecords;
 
@@ -213,22 +212,23 @@ auto Renderer::PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4
     Ray ray(m_ActiveCamera->GetPosition(), m_ActiveCamera->GetRayDirections()[y * m_Image->GetWidth() + x]);
     TraceRay(ray);
 
+    // Calculate the light direction and intensity once for all pixels
+    float const lightIntensity = glm::max(glm::dot(ray.m_Record->m_Normal, -lightDir), 0.0F);// == cos(angle)
+
+    // Pre-calculate the sphere color
+    glm::vec3 sphereColor = glm::vec3(1.0F, 0.4F, 0.3F);
+    sphereColor *= lightIntensity;
+
+    // Use a local variable to store the background color
+    glm::vec3 const bgColor = BackgroundColor(ray);
 
     // if we miss the scene, return the background color
-    if (ray.m_Record->m_T < 0.0F) {
-        return { BackgroundColor(ray), 1.0F };
+    if (ray.m_Record->m_T < 0.0F) { return { bgColor, 1.0F }; }
 
-    } else {
 
-        glm::vec3 color(0.0F);
-        glm::vec3 const lightDir = glm::normalize(glm::vec3(-1));
-        float const lightIntensity = glm::max(glm::dot(ray.m_Record->m_Normal, -lightDir), 0.0F);// == cos(angle)
-        glm::vec3 sphereColor = glm::vec3(1.0F, 0.4F, 0.3F);
-        sphereColor *= lightIntensity;
-        color += sphereColor;
-
-        return { color, 1.0F };
-    }
+    glm::vec3 color(0.0F);
+    color += sphereColor;
+    return { color, 1.0F };
 }
 
 

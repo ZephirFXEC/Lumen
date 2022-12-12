@@ -11,9 +11,9 @@ namespace LumenRender {
 
 struct alignas(32) HitRecords
 {
-    glm::vec3 m_Normal;
-    glm::vec2 m_UV;
-    uint32_t m_PrimIndex;
+    glm::vec3 m_Normal{};
+    glm::vec2 m_UV{};
+    uint32_t m_PrimIndex{};
     float m_T = -1.0F;
 };
 
