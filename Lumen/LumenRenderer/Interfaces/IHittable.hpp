@@ -7,7 +7,7 @@
 
 #include "../Accelerators/Aabb.hpp"
 #include "IDeepInstance.hpp"
-#include <unordered_map>
+#include <optional>
 
 template<class T> class IHittable : public IDeepInstance<IHittable<T>>
 {
@@ -21,14 +21,18 @@ template<class T> class IHittable : public IDeepInstance<IHittable<T>>
         return std::make_shared<IHittable>(static_cast<const IHittable &>(*this));
     }
 
-    auto Hit(LumenRender::Ray &ray, float t_max) const -> bool { return static_cast<const T *>(this)->Hit(ray, t_max); }
-
-    auto CalculateBounds(LumenRender::AABB &outbox) const -> LumenRender::AABB
+    constexpr auto Hit(LumenRender::Ray &ray, float t_max) const -> bool
+    {
+        return static_cast<const T *>(this)->Hit(ray, t_max);
+    }
+    constexpr auto CalculateBounds(LumenRender::AABB &outbox) const -> LumenRender::AABB
     {
         return static_cast<const T *>(this)->CalculateBounds(outbox);
     }
 
-    [[nodiscard]] auto GetBounds() const -> LumenRender::AABB { return static_cast<const T *>(this)->GetBounds(); }
-
+    [[nodiscard]] constexpr auto GetBounds() const -> LumenRender::AABB
+    {
+        return static_cast<const T *>(this)->GetBounds();
+    }
 };
 #endif// LUMEN_IHITTABLE_HPP
