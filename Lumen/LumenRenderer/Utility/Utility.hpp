@@ -5,11 +5,7 @@
 #ifndef LUMEN_UTILITY_HPP
 #define LUMEN_UTILITY_HPP
 
-// #define GLM_FORCE_SSE2
-// #define GLM_FORCE_ALIGNED
-
 #include <glm/glm.hpp>
-#include <cmath>
 #include <random>
 
 
@@ -25,5 +21,11 @@ template<typename T> static auto MinComponent(const T &v) -> float { return std:
 
 template<typename T> static auto MaxComponent(const T &v) -> float { return std::max(v[0], std::max(v[1], v[2])); }
 
+template<typename T> static auto DominantAxis(const T &v) -> uint8_t
+{
+    float x = fabs(v.x), y = fabs(v.y), z = fabs(v.z);
+    float m = glm::max(glm::max(x, y), z);
+    return m == x ? 0 : (m == y ? 1 : 2);
+}
 
 #endif// LUMEN_UTILITY_HPP
