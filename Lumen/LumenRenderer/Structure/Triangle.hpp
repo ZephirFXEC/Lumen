@@ -5,9 +5,14 @@
 #ifndef LUMEN_TRIANGLE_HPP
 #define LUMEN_TRIANGLE_HPP
 
-#include "../Scene/Object.hpp"
+
+#include "../Accelerators/Aabb.hpp"
+#include "../Ray.hpp"
+
+#include <glm/glm.hpp>
 #include <array>
-#include <xmmintrin.h>
+#include <optional>
+
 
 namespace LumenRender {
 

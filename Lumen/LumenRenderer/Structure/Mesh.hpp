@@ -24,21 +24,23 @@ class Mesh : public IHittable<Mesh>
 
     auto CalculateBounds(AABB &outbox) const -> AABB;
 
-
-    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;// TODO
 
     [[nodiscard]] __forceinline auto GetBounds() const & -> AABB { return m_Bounds; }
-    [[nodiscard]] __forceinline auto GetTriangles() const & -> Triangle * { return m_Triangles; }
-    [[nodiscard]] __forceinline auto GetTriData() const & -> TriData * { return m_TriData; }
+    [[nodiscard]] __forceinline auto GetTriangles() const & -> const std::unique_ptr<LumenRender::Triangle[]> &
+    {
+        return m_Triangles;
+    }
+    [[nodiscard]] __forceinline auto GetTriData() const & -> const std::unique_ptr<TriData[]> & { return m_TriData; }
     [[nodiscard]] __forceinline auto GetTriCount() const & -> uint32_t { return m_TriCount; }
 
   private:
-    LumenRender::Triangle *m_Triangles{ nullptr };
-    LumenRender::TriData *m_TriData{ nullptr };
-    class BVH *m_BVH{ nullptr };
-
     AABB m_Bounds{};
-    uint32_t m_TriCount{ 0 };
+    uint32_t m_TriCount{};
+
+    std::unique_ptr<LumenRender::Triangle[]> m_Triangles;
+    std::unique_ptr<LumenRender::TriData[]> m_TriData;
+    std::unique_ptr<class BVH> m_BVH;
 };
 
 }// namespace LumenRender

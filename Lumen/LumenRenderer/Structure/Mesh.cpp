@@ -25,8 +25,8 @@ Mesh::Mesh(const char *file_path)
 
     for (const auto &shape : shapes) { m_TriCount += shape.mesh.num_face_vertices.size(); }
 
-    m_Triangles = static_cast<Triangle *>(_aligned_malloc(m_TriCount * sizeof(Triangle), 64));
-    m_TriData = static_cast<TriData *>(_aligned_malloc(m_TriCount * sizeof(TriData), 32));
+    m_Triangles = std::make_unique<Triangle[]>(m_TriCount);
+    m_TriData = std::make_unique<TriData[]>(m_TriCount);
 
     uint32_t triIndex = 0;
 
@@ -71,7 +71,7 @@ Mesh::Mesh(const char *file_path)
         }
     }
 
-    m_BVH = new BVH(this);
+    m_BVH = std::make_unique<BVH>(this);
     m_Bounds = CalculateBounds(m_Bounds);
     CalculateBounds(m_Bounds);
 }
@@ -97,13 +97,11 @@ auto Mesh::CalculateBounds(AABB &outbox) const -> AABB
 }
 
 
-auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> { return std::make_shared<Mesh>(*this); }
-
-
 Mesh::~Mesh()
 {
-    _aligned_free(m_Triangles);
-    _aligned_free(m_TriData);
+    m_Triangles.reset();
+    m_TriData.reset();
+    m_BVH.reset();
 }
 
 
