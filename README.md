@@ -15,6 +15,14 @@
 - LLVM 15.0.2 
 >(Using Clang-cl)
 
+## How to Build 
+ - Have VCPKG installed
+ - install dependencies / Libraries using vcpkg 
+ > Make sure to install imgui[docking-experimental,vulkan-binding, glfw-binding]
+ - Set -DCMAKE_TOOLCHAIN_FILE to ``~/vcpkg/scripts/buildsystems/vcpkg.cmake``
+ - Build it in your favorite IDE & Enjoy 😌
+
+ 
 
 ## About me
 
