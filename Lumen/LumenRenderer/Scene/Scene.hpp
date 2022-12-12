@@ -7,14 +7,11 @@
 
 #include "../Accelerators/Aabb.hpp"
 #include "../Accelerators/Bvh.hpp"
+#include "../Ray.hpp"
 #include "../Structure/Mesh.hpp"
 #include "../Structure/Triangle.hpp"
 
-
 #include <unordered_map>
-#include <memory>
-#include <mutex>
-#include <variant>
 
 namespace LumenRender {
 
