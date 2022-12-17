@@ -1,20 +1,18 @@
-//
-// Created by enzoc on 16/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
+#define NOMINMAX
 
 #include "Bvh.hpp"
 #include <execution>
+#include <functional>
 
-#include <smmintrin.h>
-#include <xmmintrin.h>
-
-
-#include "../Utility/Utility.hpp"
-
+#include <tbb/tbb.h>
 
 namespace LumenRender {
 
-constexpr int BINS = 32;
+constexpr int BINS = 12;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
   : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
@@ -33,10 +31,10 @@ void BVH::Build()
     memset(m_bvhNode, 0, sizeof(BVHNode) * m_mesh->GetTriCount() * 2);
 
     // Populate Triangle indexes
-    for (uint32_t i = 0; i < m_mesh->GetTriCount(); i++) { m_triIdx[i] = i; }
+    for (uint32_t i = 0; i < m_mesh->GetTriCount(); ++i) { m_triIdx[i] = i; }
 
     BVHNode &root = m_bvhNode[0];
-    root.m_TriCount = m_mesh->GetTriCount();
+    root.m_TriCount = static_cast<uint32_t>(m_mesh->GetTriCount());
     root.m_LeftFirst = 0;
 
     glm::vec3 centroid_min;
@@ -50,16 +48,18 @@ void BVH::Build()
     uint32_t const N = m_buildStackPtr;
     nodePtr[0] = m_nodeCount;
 
-    for (uint32_t i = 1; i < N; i++) {
+    for (uint32_t i = 1; i < N; ++i) {
         nodePtr.at(i) = nodePtr.at(i - 1) + m_bvhNode[m_buildStack.at(i - 1).m_nodeidx].m_TriCount * 2;
     }
 
-    for (uint32_t i = 0; i < N; i++) {
+    for (uint32_t i = 0; i < N; ++i) {
         glm::vec3 cmin = m_buildStack.at(i).m_centroidMin;
         glm::vec3 cmax = m_buildStack.at(i).m_centroidMax;
         Subdivide(m_buildStack.at(i).m_nodeidx, 99, nodePtr.at(i), cmin, cmax);
     }
-    m_nodeCount = m_mesh->GetTriCount() * 2 + 64;
+    m_nodeCount = static_cast<uint32_t>(m_mesh->GetTriCount()) * 2 + 64;
+
+    FlattenBVH();
 }
 
 
@@ -68,7 +68,7 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
 {
 
     float bestCost = 1e30F;
-    for (int a = 0; a < 3; a++) {
+    for (int a = 0; a < 3; ++a) {
         float const boundsMin = centroidMin[a];
         float const boundsMax = centroidMax[a];
 
@@ -78,7 +78,7 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
         std::array<Bin, BINS> bin{};
         float scale = BINS / (boundsMax - boundsMin);
 
-        for (uint32_t i = 0; i < node.m_TriCount; i++) {
+        for (uint32_t i = 0; i < node.m_TriCount; ++i) {
 
             auto &triangle = m_mesh->GetTriangles()[m_triIdx[node.m_LeftFirst + i]];
             uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
@@ -99,7 +99,7 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
         uint32_t leftSum = 0;
         uint32_t rightSum = 0;
 
-        for (uint32_t i = 0; i < BINS - 1; i++) {
+        for (uint32_t i = 0; i < BINS - 1; ++i) {
             leftSum += bin.at(i).m_TriCount;
             leftCount.at(i) = leftSum;
             leftBox = AABB::Union(leftBox, bin.at(i).m_Bounds);
@@ -113,7 +113,7 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
 
         // calculate SAH cost for the 7 planes
         scale = (boundsMax - boundsMin) / BINS;
-        for (uint32_t i = 0; i < BINS - 1; i++) {
+        for (uint32_t i = 0; i < BINS - 1; ++i) {
             float const planeCost = leftCount.at(i) * leftArea.at(i) + rightCount.at(i) * rightArea.at(i);
             if (planeCost < bestCost) {
                 axis = a;
@@ -199,7 +199,7 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     centroidMax = glm::vec3(0.0F);
 
     uint32_t const first = node.m_LeftFirst;
-    for (uint32_t i = 0; i < node.m_TriCount; i++) {
+    for (uint32_t i = 0; i < node.m_TriCount; ++i) {
         uint32_t const leafTriIdx = m_triIdx[first + i];
         auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
         node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(0));
@@ -213,45 +213,62 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     }
 }
 
-
-
-auto BVH::Traversal(Ray &ray, float t_max) const -> bool
+auto BVH::FlattenBVH() -> void
 {
+    m_FlattenBVH.resize(m_nodeCount);
+    std::queue<uint32_t> queue;
+    queue.push(0);
+    uint32_t idx = 0;
+    while (!queue.empty()) {
+        uint32_t const nodeIdx = queue.front();
+        queue.pop();
+        m_FlattenBVH.at(idx++) = &m_bvhNode[nodeIdx];
+        if (m_bvhNode[nodeIdx].m_TriCount == 0) {
+            queue.push(m_bvhNode[nodeIdx].m_LeftFirst);
+            queue.push(m_bvhNode[nodeIdx].m_LeftFirst + 1);
+        }
+    }
+}
+
+
+auto BVH::Traversal(const Ray &ray, float t_max) const -> bool
+{
+    if (!m_bvhNode) { return false; }
+
     // Precompute and store the inverse of ray.direction.
-    glm::vec3 const inv_dir = 1.0F / ray.Direction;
+    glm::vec3 const inv_dir = glm::vec3(1.0F) / ray.Direction;
 
     BVHNode *node = &m_bvhNode[0];
-    std::array<BVHNode *, 32> stack{};
+    std::array<BVHNode *, 64> stack{};
     uint32_t stackPtr = 0;
 
     bool hit = false;
     float closest = t_max;
 
     while (true) {
+
         if (node->isLeaf()) {
 
             for (uint32_t i = 0; i < node->m_TriCount; ++i) {
 
-                uint32_t const leafTriIdx = m_triIdx[node->m_LeftFirst + i];
-
-                const auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
+                const auto &leafTri = m_mesh->GetTriangles()[m_triIdx[node->m_LeftFirst + i]];
 
                 // Use a early-exit strategy in the TriangleIntersect function.
-                if (Triangle::TriangleIntersect(ray, leafTri, leafTriIdx) && ray.m_Record->m_T < closest) {
+                if (Triangle::TriangleIntersect(ray, leafTri, m_triIdx[node->m_LeftFirst + i])
+                    && ray.m_Record->m_T < closest) {
                     hit = true;
                     closest = ray.m_Record->m_T;
                     ray.m_Record->m_Normal = leafTri.m_Data->N;
                 }
             }
 
-            if (hit) { return true; }
 
             if (stackPtr == 0) { break; }
             node = stack.at(--stackPtr);
             continue;
         }
-        BVHNode *left = &m_bvhNode[node->m_LeftFirst];
-        BVHNode *right = &m_bvhNode[node->m_LeftFirst + 1];
+        auto *left = &m_bvhNode[node->m_LeftFirst];
+        auto *right = &m_bvhNode[node->m_LeftFirst + 1];
 
         // Use a faster intersection test for the bounding boxes.
         float t0 = AABB::IntersectAABB(ray, inv_dir, left->m_Bounds_min, left->m_Bounds_max);
@@ -276,7 +293,7 @@ auto BVH::Traversal(Ray &ray, float t_max) const -> bool
 auto BVH::Traversal_SSE(Ray &ray, float t_max) const -> bool { return true; }
 
 
-auto BVH::Hit(Ray &ray, float t_max) const -> bool { return Traversal(ray, t_max); }
+auto BVH::Hit(const Ray &ray, float t_max) const -> bool { return Traversal(ray, t_max); }
 
 auto BVH::GetBounds(AABB &outbox) const -> AABB
 {

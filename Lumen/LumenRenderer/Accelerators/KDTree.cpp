@@ -2,9 +2,6 @@
 // Enzo Crema
 // All rights reserved
 
-//
-// Created by enzoc on 08/12/2022.
-//
 
 #include "KDTree.hpp"
 
@@ -97,8 +94,11 @@ void KDTree::Subdivide(KDTree::KDNode &node, uint32_t depth)
         return;// split failed
     }
     uint32_t const leftIdx = nodePtr;
-    node.left = leftIdx, node.right = leftIdx + 1, nodePtr += 2;
-    node.parax = (node.parax & 0xfffffff8) + axis, node.splitPos = center;
+    node.left = leftIdx;
+    node.right = leftIdx + 1;
+    nodePtr += 2;
+    node.parax = (node.parax & 0xfffffff8) + axis;
+    node.splitPos = center;
     Subdivide(this->node[leftIdx], depth + 1);
     Subdivide(this->node[leftIdx + 1], depth + 1);
 }
@@ -193,9 +193,11 @@ void KDTree::Add(uint32_t idx)
             node[intIdx].parax += axis;
             node[intIdx].splitPos = ((Pn + P) * 0.5F)[axis];
             if (P[axis] < node[intIdx].splitPos) {
-                node[intIdx].left = leafIdx, node[intIdx].right = nidx;
+                node[intIdx].left = leafIdx;
+                node[intIdx].right = nidx;
             } else {
-                node[intIdx].right = leafIdx, node[intIdx].left = nidx;
+                node[intIdx].right = leafIdx;
+                node[intIdx].left = nidx;
             }
             break;
         } else {// traverse

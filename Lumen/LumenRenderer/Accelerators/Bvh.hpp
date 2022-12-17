@@ -1,13 +1,16 @@
-//
-// Created by enzoc on 16/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
 
 #ifndef LUMEN_BVH_HPP
 #define LUMEN_BVH_HPP
 
-#include "../Scene/Object.hpp"
 #include "../Structure/Mesh.hpp"
+#include "../Structure/Triangle.hpp"
+
+#include <optional>
 #include <vector>
+#include <xmmintrin.h>
 
 
 namespace LumenRender {
@@ -38,11 +41,11 @@ struct BVHNode
         __m128 m_Bounds_max_m128;
     };
 
-    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_TriCount > 0; }// empty BVH leaves do not exist
+    [[nodiscard]] constexpr auto isLeaf() const noexcept -> bool { return m_TriCount > 0; }
+    // empty BVH leaves do not exist
 
     static auto CalculateNodeCost(BVHNode &node) -> float;
 };
-
 
 class BVH : public IHittable<BVH>
 {
@@ -61,11 +64,11 @@ class BVH : public IHittable<BVH>
 
     void Build();
 
-    auto Traversal(Ray &ray, float t_max) const -> bool;
+    auto Traversal(const Ray &ray, float t_max) const -> bool;
 
     auto Traversal_SSE(Ray &ray, float t_max) const -> bool;
 
-    auto Hit(Ray &ray, float t_max) const -> bool;
+    auto Hit(const Ray &ray, float t_max) const -> bool;
 
     auto GetBounds(AABB &outbox) const -> AABB;
 
@@ -78,6 +81,8 @@ class BVH : public IHittable<BVH>
     auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const
       -> float;
 
+    auto FlattenBVH() -> void;
+
   public:
     [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
 
@@ -86,6 +91,37 @@ class BVH : public IHittable<BVH>
     uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
     std::array<BuildJob, 64> m_buildStack{};
     uint32_t m_buildStackPtr{};
+
+    std::vector<BVHNode *> m_FlattenBVH;
+};
+
+struct TLASNode
+{
+    union {
+        struct
+        {
+            float dummy1[3];
+            uint32_t m_LeftRight;
+        };
+        struct
+        {
+            float dummy3[3];
+            unsigned short m_left, m_right;
+        };
+        glm::vec3 m_Bounds_min;
+        __m128 m_Bounds_min_m128;
+    };
+    union {
+        struct
+        {
+            float dummy2[3];
+            uint32_t m_BLAS;
+        };
+        glm::vec3 m_Bounds_max;
+        __m128 m_Bounds_max_m128;
+    };
+
+    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_LeftRight == 0; }
 };
 
 

@@ -2,9 +2,6 @@
 // Enzo Crema
 // All rights reserved
 
-//
-// Created by enzoc on 08/12/2022.
-//
 
 #ifndef LUMEN_KDTREE_HPP
 #define LUMEN_KDTREE_HPP

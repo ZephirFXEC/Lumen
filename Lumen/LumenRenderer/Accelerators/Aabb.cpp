@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 15/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #include "Aabb.hpp"
 
