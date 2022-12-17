@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 14/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include "Mesh.hpp"
@@ -32,42 +33,42 @@ Mesh::Mesh(const char *file_path)
 
     for (auto &shape : shapes) {
 
-        for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
-            auto fv = static_cast<size_t>(shape.mesh.num_face_vertices.at(f));
+        for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
+
+            auto fv = shape.mesh.num_face_vertices[f];
 
             std::array<glm::vec3, 3> tri{};
             glm::vec3 pos{};
             glm::vec3 norm{};
             glm::vec2 uv{};
 
-            for (size_t v = 0; v < 3; v++) {
+            for (size_t v = 0; v < 3; ++v) {
                 tinyobj::index_t const idx = shape.mesh.indices[triIndex * fv + v];
 
 
-                pos.x = attrib.vertices[3 * idx.vertex_index + 0];
-                pos.y = attrib.vertices[3 * idx.vertex_index + 1];
-                pos.z = attrib.vertices[3 * idx.vertex_index + 2];
+                pos.x = attrib.vertices[3 * static_cast<uint64_t>(idx.vertex_index) + 0];
+                pos.y = attrib.vertices[3 * static_cast<uint64_t>(idx.vertex_index) + 1];
+                pos.z = attrib.vertices[3 * static_cast<uint64_t>(idx.vertex_index) + 2];
 
                 if (idx.normal_index != -1) {
-                    norm.x = attrib.normals[3 * idx.normal_index + 0];
-                    norm.y = attrib.normals[3 * idx.normal_index + 1];
-                    norm.z = attrib.normals[3 * idx.normal_index + 2];
+                    norm.x = attrib.normals[3 * static_cast<uint64_t>(idx.normal_index) + 0];
+                    norm.y = attrib.normals[3 * static_cast<uint64_t>(idx.normal_index) + 1];
+                    norm.z = attrib.normals[3 * static_cast<uint64_t>(idx.normal_index) + 2];
                 }
 
                 if (idx.texcoord_index != -1) {
-                    uv.x = attrib.texcoords[2 * idx.texcoord_index + 0];
-                    uv.y = attrib.texcoords[2 * idx.texcoord_index + 1];
+                    uv.x = attrib.texcoords[2 * static_cast<uint64_t>(idx.texcoord_index) + 0];
+                    uv.y = attrib.texcoords[2 * static_cast<uint64_t>(idx.texcoord_index) + 1];
                 }
 
-                tri.at(v) = pos;
+                tri[v] = pos;
             }
             m_Triangles[triIndex] = Triangle(tri);
-            m_TriData[triIndex] =
-              TriData({ .N = norm, .UV = uv, .Centroid = (tri.at(0) + tri.at(1) + tri.at(2)) * 0.3334F });
+            m_TriData[triIndex] = TriData({ .N = norm, .UV = uv, .Centroid = (tri[0] + tri[1] + tri[2]) * 0.33334F });
 
             m_Triangles[triIndex].m_Data = &m_TriData[triIndex];
 
-            triIndex++;
+            ++triIndex;
         }
     }
 
@@ -77,18 +78,20 @@ Mesh::Mesh(const char *file_path)
 }
 
 
-auto Mesh::Hit(Ray &ray, float t_max) const -> bool
+auto Mesh::Hit(const Ray &ray, float t_max) const -> bool
 {
-    if (m_BVH != nullptr) { return m_BVH->Hit(ray, t_max); }
+    if (m_BVH == nullptr) { return false; }
 
-    return false;
+    if (m_Bounds.IntersectAABB(ray, 1.0F / ray.Direction, m_Bounds.pMin, m_Bounds.pMax) == 1e30F) { return false; }
+
+    return m_BVH->Hit(ray, t_max);
 }
 
 
 auto Mesh::CalculateBounds(AABB &outbox) const -> AABB
 {
 
-    for (uint32_t i = 0; i < m_TriCount; i++) {
+    for (uint32_t i = 0; i < m_TriCount; ++i) {
         AABB tri_box = AABB();
         m_Triangles[i].CalculateBounds(tri_box);
         outbox = AABB::Union(outbox, tri_box);
@@ -103,6 +106,7 @@ Mesh::~Mesh()
     m_TriData.reset();
     m_BVH.reset();
 }
+auto Mesh::DeepCopy() const -> std::shared_ptr<IHittable> { return IHittable::DeepCopy(); }
 
 
 }// namespace LumenRender

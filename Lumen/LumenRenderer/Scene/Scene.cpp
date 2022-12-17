@@ -1,6 +1,6 @@
-//
-// Created by enzoc on 02/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
 
 
 #include "Scene.hpp"
@@ -8,11 +8,8 @@
 namespace LumenRender {
 
 
-auto Scene::Hit(Ray &ray, float t_max) const -> bool
+auto Scene::Hit(const Ray &ray, float t_max) const -> bool
 {
-    AABB box = CalculateBounds(box);
-    if (box.IntersectAABB(ray, 1.0F / ray.Direction, box.pMin, box.pMax) == 1e30F) { return false; }
-
     bool hit_anything = false;
     float closest_so_far = t_max;
 

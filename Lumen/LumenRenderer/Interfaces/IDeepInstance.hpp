@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 12/11/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_IDEEPINSTANCE_HPP
 #define LUMEN_IDEEPINSTANCE_HPP

@@ -1,9 +1,13 @@
-// s
-//  Created by enzoc on 01/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_RAY_HPP
 #define LUMEN_RAY_HPP
+
+// #define GLM_FORCE_SSE2
+// #define GLM_FORCE_ALIGNED
 
 #include <glm/glm.hpp>
 

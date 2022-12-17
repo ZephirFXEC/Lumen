@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 12/11/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_IHITTABLE_HPP
 #define LUMEN_IHITTABLE_HPP
@@ -21,7 +22,7 @@ template<class T> class IHittable : public IDeepInstance<IHittable<T>>
         return std::make_shared<IHittable>(static_cast<const IHittable &>(*this));
     }
 
-    constexpr auto Hit(LumenRender::Ray &ray, float t_max) const -> bool
+    constexpr auto Hit(const LumenRender::Ray &ray, float t_max) const -> bool
     {
         return static_cast<const T *>(this)->Hit(ray, t_max);
     }

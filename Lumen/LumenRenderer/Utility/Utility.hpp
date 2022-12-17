@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 16/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_UTILITY_HPP
 #define LUMEN_UTILITY_HPP

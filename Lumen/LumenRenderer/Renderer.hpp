@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 30/09/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_RENDERER_HPP
 #define LUMEN_RENDERER_HPP

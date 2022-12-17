@@ -1,15 +1,14 @@
-//
-// Created by enzoc on 14/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_TRIANGLE_HPP
 #define LUMEN_TRIANGLE_HPP
 
 
 #include "../Accelerators/Aabb.hpp"
-#include "../Ray.hpp"
 
-#include <glm/glm.hpp>
 #include <array>
 #include <optional>
 
@@ -32,7 +31,7 @@ class Triangle
 
     explicit Triangle(const std::array<glm::vec3, 3> &v) : vertex{ v }, _e1(v[1] - v[0]), _e2(v[2] - v[0]) {}
 
-    static auto TriangleIntersect(Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
+    static auto TriangleIntersect(const Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
 
     auto CalculateBounds(AABB &outbox) const -> AABB;
 

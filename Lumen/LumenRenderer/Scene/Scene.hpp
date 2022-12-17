@@ -1,6 +1,6 @@
-//
-// Created by enzoc on 02/10/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
 
 #ifndef LUMEN_SCENE_HPP
 #define LUMEN_SCENE_HPP
@@ -26,7 +26,7 @@ class Scene : public IHittable<Scene>
         m_Index++;
     };
 
-    auto Hit(Ray &ray, float t_max) const -> bool;
+    auto Hit(const Ray &ray, float t_max) const -> bool;
 
     auto CalculateBounds(AABB &outbox) const -> AABB;
 

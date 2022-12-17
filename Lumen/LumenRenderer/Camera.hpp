@@ -1,6 +1,7 @@
-//
-// Created by enzoc on 30/09/2022.
-//
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 
 #ifndef LUMEN_CAMERA_HPP
 #define LUMEN_CAMERA_HPP
@@ -36,7 +37,7 @@ class Camera
         return m_RayDirections;
     }
 
-    __forceinline constexpr auto GetRotationSpeed() const -> float { return 0.3F; };
+    static __forceinline constexpr auto GetRotationSpeed() -> float { return 0.3F; };
 
   private:
     void RecalculateProjection();
