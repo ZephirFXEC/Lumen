@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 3.5)
-
-project(Lumen)
+cmake_minimum_required(VERSION 3.24)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(ENABLE_DEVELOPER_MODE TRUE CACHE BOOL "Enable 'developer mode'")
 
-set(OPT_WARNINGS_AS_ERRORS_DEVELOPER_DEFAULT FALSE)
-
+project(Lumen CXX)
 
 if (WIN32)
 
@@ -26,4 +23,7 @@ if (WIN32)
     find_package(tbb CONFIG REQUIRED)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb TBB::tbbmalloc TBB::tbbmalloc_proxy)
+
+    set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 endif()
