@@ -46,14 +46,14 @@ class Image
 
     ImageFormat m_Format = ImageFormat::None;
 
-  VkBuffer m_StagingBuffer = nullptr;
-  VkDeviceMemory m_StagingBufferMemory = nullptr;
+    VkBuffer m_StagingBuffer = nullptr;
+    VkDeviceMemory m_StagingBufferMemory = nullptr;
 
-  size_t m_AlignedSize = 0;
+    size_t m_AlignedSize = 0;
 
-  VkDescriptorSet m_DescriptorSet = nullptr;
+    VkDescriptorSet m_DescriptorSet = nullptr;
 
-  std::string m_Filepath;
+    std::string m_Filepath;
 };
 
 }// namespace Lumen

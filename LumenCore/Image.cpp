@@ -179,7 +179,7 @@ void Image::Release()
                                     memory = m_Memory,
                                     stagingBuffer = m_StagingBuffer,
                                     stagingBufferMemory = m_StagingBufferMemory]() {
-    VkDevice device = Application::GetDevice();
+      VkDevice device = Application::GetDevice();
 
     vkDestroySampler(device, sampler, nullptr);
     vkDestroyImageView(device, imageView, nullptr);
@@ -209,9 +209,9 @@ void Image::SetData(const void *data)
     // Create the Upload Buffer
     {
       VkBufferCreateInfo const buffer_info = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = upload_size,
-        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
+          .size = upload_size,
+          .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+          .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
 
       err = vkCreateBuffer(device, &buffer_info, nullptr, &m_StagingBuffer);
       check_vk_result(err);
@@ -270,6 +270,7 @@ void Image::SetData(const void *data)
       nullptr,
       1,
       &copy_barrier);
+
 
     VkBufferImageCopy const region = { .bufferOffset = 0,
       .bufferRowLength = 0,

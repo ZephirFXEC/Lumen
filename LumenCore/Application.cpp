@@ -4,6 +4,7 @@
 
 #include "Application.hpp"
 
+
 //
 // Adapted from Dear ImGui Vulkan example
 //
@@ -35,7 +36,7 @@ extern bool g_ApplicationRunning;
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-// #define IMGUI_UNLIMITED_FRAME_RATE
+#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif
