@@ -10,15 +10,14 @@ bool g_ApplicationRunning = true;
 
 namespace Lumen {
 
-static auto Main(int argc, char **argv) -> int
-{
-  while (g_ApplicationRunning) {
-    Lumen::Application *app = Lumen::CreateApplication(argc, argv);
-    app->Run();
-    delete app;
-  }
-  return 0;
-}
+    static auto Main(int argc, char **argv) -> int {
+        while (g_ApplicationRunning) {
+            Lumen::Application *app = Lumen::CreateApplication(argc, argv);
+            app->Run();
+            delete app;
+        }
+        return 0;
+    }
 
 }// namespace Lumen
 

@@ -11,27 +11,23 @@
 
 using namespace LumenRender;
 
-class ExampleLayer : public Lumen::Layer
-{
-  public:
-    ExampleLayer() : m_Camera(45.0F, 0.01F, 1000.0F)
-    {
+class ExampleLayer : public Lumen::Layer {
+public:
+    ExampleLayer() : m_Camera(45.0F, 0.01F, 1000.0F) {
         //IHittable<Mesh> *mesh = new Mesh(
-          //R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        //R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
 
         //m_Scene.AddObject();
     }
 
-    void OnUpdate(float ts) override
-    {
+    void OnUpdate(float ts) override {
         if (m_Camera.OnUpdate(ts)) {
             m_Renderer.ResetFrame();
             m_Renderer.MemAlloc();
         }
     }
 
-    void OnUIRender() override
-    {
+    void OnUIRender() override {
 
         embraceTheDarkness();
 
@@ -48,7 +44,7 @@ class ExampleLayer : public Lumen::Layer
         ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
 
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
 
         m_ViewportWidth = static_cast<int>(ImGui::GetContentRegionAvail().x);
@@ -58,9 +54,9 @@ class ExampleLayer : public Lumen::Layer
 
         if (image) {
             ImGui::Image(image->GetDescriptorSet(),
-              { static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()) },
-              ImVec2(0, 1),
-              ImVec2(1, 0));
+                         {static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight())},
+                         ImVec2(0, 1),
+                         ImVec2(1, 0));
         }
         ImGui::End();
         ImGui::PopStyleVar();
@@ -68,8 +64,7 @@ class ExampleLayer : public Lumen::Layer
         Render();
     }
 
-    static void embraceTheDarkness()
-    {
+    static void embraceTheDarkness() {
         ImVec4 *colors = ImGui::GetStyle().Colors;
         colors[ImGuiCol_Text] = ImVec4(1.00F, 1.00F, 1.00F, 1.00F);
         colors[ImGuiCol_TextDisabled] = ImVec4(0.50F, 0.50F, 0.50F, 1.00F);
@@ -151,8 +146,7 @@ class ExampleLayer : public Lumen::Layer
         style.TabRounding = 4;
     }
 
-    void Render()
-    {
+    void Render() {
 
         m_Renderer.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
         m_Camera.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
@@ -164,7 +158,7 @@ class ExampleLayer : public Lumen::Layer
     }
 
 
-  private:
+private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
     LumenRender::Scene m_Scene;
@@ -173,8 +167,7 @@ class ExampleLayer : public Lumen::Layer
     float m_ElapsedTime{};
 };
 
-auto Lumen::CreateApplication(int /*unused*/, char ** /*unused*/) -> Lumen::Application *
-{
+auto Lumen::CreateApplication(int /*unused*/, char ** /*unused*/) -> Lumen::Application * {
     Lumen::ApplicationSpecification spec;
     spec.Name = "Lumen";
 

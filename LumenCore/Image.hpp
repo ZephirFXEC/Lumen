@@ -11,51 +11,52 @@
 
 namespace Lumen {
 
-enum class ImageFormat { None = 0, RGBA, RGBA32F };
+    enum class ImageFormat {
+        None = 0, RGBA, RGBA32F
+    };
 
-class Image
-{
-public:
-  explicit Image(std::string_view path) {};
+    class Image {
+    public:
+        explicit Image(std::string_view path) {};
 
-  Image(uint32_t width, uint32_t height, ImageFormat format, const void *data = nullptr);
+        Image(uint32_t width, uint32_t height, ImageFormat format, const void *data = nullptr);
 
-  ~Image();
+        ~Image();
 
-  void SetData(const void *data);
+        void SetData(const void *data);
 
-  [[nodiscard]] auto GetDescriptorSet() const -> VkDescriptorSet { return m_DescriptorSet; }
+        [[nodiscard]] auto GetDescriptorSet() const -> VkDescriptorSet { return m_DescriptorSet; }
 
-  void Resize(uint32_t width, uint32_t height);
+        void Resize(uint32_t width, uint32_t height);
 
-  [[nodiscard]] auto GetWidth() const -> uint32_t { return m_Width; }
+        [[nodiscard]] auto GetWidth() const -> uint32_t { return m_Width; }
 
-  [[nodiscard]] auto GetHeight() const -> uint32_t { return m_Height; }
+        [[nodiscard]] auto GetHeight() const -> uint32_t { return m_Height; }
 
-private:
-  void AllocateMemory();
+    private:
+        void AllocateMemory();
 
-  void Release();
+        void Release();
 
 
-  uint32_t m_Width = 0, m_Height = 0;
+        uint32_t m_Width = 0, m_Height = 0;
 
-  VkImage m_Image = nullptr;
-  VkImageView m_ImageView = nullptr;
-  VkDeviceMemory m_Memory = nullptr;
-  VkSampler m_Sampler = nullptr;
+        VkImage m_Image = nullptr;
+        VkImageView m_ImageView = nullptr;
+        VkDeviceMemory m_Memory = nullptr;
+        VkSampler m_Sampler = nullptr;
 
-  ImageFormat m_Format = ImageFormat::None;
+        ImageFormat m_Format = ImageFormat::None;
 
-  VkBuffer m_StagingBuffer = nullptr;
-  VkDeviceMemory m_StagingBufferMemory = nullptr;
+        VkBuffer m_StagingBuffer = nullptr;
+        VkDeviceMemory m_StagingBufferMemory = nullptr;
 
-  size_t m_AlignedSize = 0;
+        size_t m_AlignedSize = 0;
 
-  VkDescriptorSet m_DescriptorSet = nullptr;
+        VkDescriptorSet m_DescriptorSet = nullptr;
 
-  std::string m_Filepath;
-};
+        std::string m_Filepath;
+    };
 
 }// namespace Lumen
 
