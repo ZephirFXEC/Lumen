@@ -1,24 +1,7 @@
-cmake_minimum_required(VERSION 3.23.0)
+cmake_minimum_required(VERSION 3.24.2)
 
 set(NAME Lumen)
 project(${NAME} VERSION 0.1.0 LANGUAGES CXX)
-
-set(MoltenVK_DIR "/Users/ecrema/VulkanSDK/1.3.236.0/MoltenVK")
-
-if(EXISTS ${MoltenVK_DIR})
-    set(Vulkan_INCLUDE_DIR "${MoltenVK_DIR}/include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARIES "${MoltenVK_DIR}/dylib") # 1.2 Make sure lib path is correct
-    set(Vulkan_FOUND "True")
-else()
-    set(Vulkan_FOUND "False")
-endif()
-
-if (NOT Vulkan_FOUND)
-    message(FATAL_ERROR "Could not find Vulkan library!")
-else()
-    message(STATUS "Using vulkan include dir: ${Vulkan_INCLUDE_DIR}")
-    message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
-endif()
 
 file(GLOB_RECURSE SOURCES "Lumen/*.cpp" "LumenCore/*.cpp")
 file(GLOB_RECURSE HEADERS "Lumen/*.hpp" "LumenCore/*.hpp" "Lumen/Externals/*.h")
@@ -30,6 +13,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(tbb CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 
-target_include_directories(${NAME} PUBLIC ${Vulkan_INCLUDE_DIR})
-target_link_libraries(${NAME} PUBLIC ${Vulkan_LIBRARIES} glfw imgui::imgui glm::glm TBB::tbb)
+#target_include_directories(${NAME} PUBLIC ${Vulkan_INCLUDE_DIR})
+target_link_libraries(${NAME} PUBLIC Vulkan::Vulkan glfw imgui::imgui glm::glm TBB::tbb)
