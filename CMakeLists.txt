@@ -5,18 +5,21 @@ set(NAME Lumen)
 project(${NAME} VERSION 0.1.0)
 
 
-# 1. Set VULKAN_SDK_PATH in .env.cmake to target specific vulkan version
-if (DEFINED VULKAN_SDK_PATH)
-    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
+
+set(MoltenVK_DIR "/Users/ecrema/VulkanSDK/1.3.236.0/MoltenVK")
+
+if(EXISTS ${MoltenVK_DIR})
+    set(Vulkan_INCLUDE_DIR "${MoltenVK_DIR}/include") # 1.1 Make sure this include path is correct
+    set(Vulkan_LIBRARIES "${MoltenVK_DIR}/dylib") # 1.2 Make sure lib path is correct
     set(Vulkan_FOUND "True")
 else()
-    find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-    message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
+    set(Vulkan_FOUND "False")
 endif()
+
 if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Could not find Vulkan library!")
 else()
+    message(STATUS "Using vulkan include dir: ${Vulkan_INCLUDE_DIR}")
     message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
 endif()
 
@@ -31,4 +34,5 @@ find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(tbb CONFIG REQUIRED)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw imgui::imgui glm::glm TBB::tbb ${Vulkan_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw imgui::imgui glm::glm TBB::tbb)
