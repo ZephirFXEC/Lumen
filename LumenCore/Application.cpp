@@ -106,9 +106,9 @@ static void SetupVulkan(const std::vector<const char *> extensions, uint32_t ext
     // Create Vulkan Instance
     {
         VkInstanceCreateInfo create_info = {};
-        create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
         create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         create_info.pApplicationInfo = &appInfo;
+        create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledLayerCount = 0;

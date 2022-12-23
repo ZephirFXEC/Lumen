@@ -12,11 +12,11 @@
 
 namespace Lumen {
 
-static void check_vk_result(VkResult err)
+static void check_vk_result(VkResult err, uint32_t line)
 {
-  if (err == 0) { return; }
-  fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-  if (err < 0) { abort(); }
+    if (err == 0) { return; }
+    fprintf(stderr, "[vulkan] Error: VkResult = %d at %d", err, line);
+    if (err < 0) { abort(); }
 }
 
 namespace Utils {
@@ -118,7 +118,7 @@ void Image::AllocateMemory()
       .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED };
 
     err = vkCreateImage(device, &info, nullptr, &m_Image);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     VkMemoryRequirements req;
     vkGetImageMemoryRequirements(device, m_Image, &req);
 
@@ -127,9 +127,9 @@ void Image::AllocateMemory()
       .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, req.memoryTypeBits) };
 
     err = vkAllocateMemory(device, &alloc_info, nullptr, &m_Memory);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     err = vkBindImageMemory(device, m_Image, m_Memory, 0);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 
   // Create the Image View:
@@ -141,7 +141,7 @@ void Image::AllocateMemory()
       .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1 } };
 
     err = vkCreateImageView(device, &info, nullptr, &m_ImageView);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 
   // Create sampler:
@@ -164,7 +164,7 @@ void Image::AllocateMemory()
       .unnormalizedCoordinates = VK_FALSE };
 
     err = vkCreateSampler(device, &info, nullptr, &m_Sampler);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
   }
 
   // Create the Descriptor Set:
@@ -214,7 +214,7 @@ void Image::SetData(const void *data)
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
 
       err = vkCreateBuffer(device, &buffer_info, nullptr, &m_StagingBuffer);
-      check_vk_result(err);
+      check_vk_result(err, __LINE__);
       VkMemoryRequirements req;
       vkGetBufferMemoryRequirements(device, m_StagingBuffer, &req);
       m_AlignedSize = req.size;
@@ -224,9 +224,9 @@ void Image::SetData(const void *data)
         .memoryTypeIndex = Utils::GetVulkanMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, req.memoryTypeBits) };
 
       err = vkAllocateMemory(device, &alloc_info, nullptr, &m_StagingBufferMemory);
-      check_vk_result(err);
+      check_vk_result(err , __LINE__);
       err = vkBindBufferMemory(device, m_StagingBuffer, m_StagingBufferMemory, 0);
-      check_vk_result(err);
+      check_vk_result(err, __LINE__);
     }
   }
 
@@ -234,14 +234,14 @@ void Image::SetData(const void *data)
   {
     char *map = nullptr;
     err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, reinterpret_cast<void **>(&map));
-    check_vk_result(err);
+    check_vk_result(err , __LINE__);
     memcpy(map, data, upload_size);
     VkMappedMemoryRange range[1] = {};
     range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     range[0].memory = m_StagingBufferMemory;
     range[0].size = m_AlignedSize;
     err = vkFlushMappedMemoryRanges(device, 1, range);
-    check_vk_result(err);
+    check_vk_result(err, __LINE__);
     vkUnmapMemory(device, m_StagingBufferMemory);
   }
 

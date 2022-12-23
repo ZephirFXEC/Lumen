@@ -2,7 +2,7 @@
 // Created by enzoc on 30/09/2022.
 //
 #define NOMINMAX
-#define MT
+//#define MT
 
 #include "Renderer.hpp"
 #include <glm/glm.hpp>
@@ -163,14 +163,11 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
         m_Image = std::make_shared<Lumen::Image>(width, height, Lumen::ImageFormat::RGBA);
     }
 
-    free(m_ImageData);
-    free(m_AccumulationBuffer);
+    delete[] m_ImageData;
+    delete[] m_AccumulationBuffer;
 
-    m_ImageData = static_cast<uint32_t *>(
-      aligned_alloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(uint32_t), sizeof(uint32_t)));
-
-    m_AccumulationBuffer = static_cast<glm::vec4 *>(
-      aligned_alloc(m_Image->GetWidth() * m_Image->GetHeight() * sizeof(glm::vec4), sizeof(glm::vec4)));
+    m_ImageData = new uint32_t[static_cast<uint64_t>(width * height)];
+    m_AccumulationBuffer = new glm::vec4[static_cast<uint64_t>(width * height)];
 }
 
 

@@ -16,10 +16,10 @@ class ExampleLayer : public Lumen::Layer
   public:
     ExampleLayer() : m_Camera(45.0F, 0.01F, 1000.0F)
     {
-        IHittable<Mesh> *mesh = new Mesh(
-          R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        //IHittable<Mesh> *mesh = new Mesh(
+          //R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
 
-        m_Scene.AddObject(mesh);
+        //m_Scene.AddObject();
     }
 
     void OnUpdate(float ts) override
@@ -156,7 +156,7 @@ class ExampleLayer : public Lumen::Layer
 
         m_Renderer.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
         m_Camera.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
-
+        //TODO: Fix sigfault when Render() is called
         Lumen::Timer timer;
         m_Renderer.Render(m_Camera, m_Scene);
         m_ElapsedTime = timer.ElapsedMillis();
