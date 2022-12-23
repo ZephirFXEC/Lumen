@@ -4,6 +4,7 @@
 
 #include "Camera.hpp"
 #include "../../LumenCore/Inputs/Input.hpp"
+#include <cstddef>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -74,7 +75,7 @@ auto Camera::OnUpdate(float ts) -> bool
     }
 
     if (moved) {
-        free(m_RayDirections);
+        delete[] m_RayDirections;
         RecalculateView();
         RecalculateRayDirections();
     }
@@ -89,7 +90,7 @@ void Camera::OnResize(uint32_t width, uint32_t height)
     m_ViewportWidth = width;
     m_ViewportHeight = height;
 
-    free(m_RayDirections);
+    delete[] m_RayDirections;
 
     RecalculateProjection();
     RecalculateRayDirections();
@@ -116,8 +117,7 @@ void Camera::RecalculateView()
 void Camera::RecalculateRayDirections()
 {
 
-    m_RayDirections = static_cast<glm::vec3 *>(
-      aligned_alloc(sizeof(glm::vec3) * static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight), 16));
+    m_RayDirections = new glm::vec3[static_cast<uint32_t>(m_ViewportWidth * m_ViewportHeight)];
 
     tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_ViewportHeight, 0, m_ViewportWidth),
       [&](const tbb::blocked_range2d<uint32_t> &range) {

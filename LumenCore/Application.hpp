@@ -5,11 +5,7 @@
 #ifndef LUMEN_APPLICATION_HPP
 #define LUMEN_APPLICATION_HPP
 
-#define GLFW_INCLUDE_NONE
-
 #include <vulkan/vulkan.hpp>
-#include <GLFW/glfw3.h>
-
 #include "Layer.hpp"
 
 #include <functional>

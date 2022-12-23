@@ -13,6 +13,11 @@
 #include <cstdio>// printf, fprintf
 #include <cstdlib>// abort
 
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
+
+#include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 #include <iostream>
 #include <utility>
@@ -88,7 +93,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags,
 }
 #endif// IMGUI_VULKAN_DEBUG_REPORT
 
-static void SetupVulkan(const std::vector<const char *> extensions, uint32_t extensions_count)
+static void SetupVulkan(const std::vector<const char *>& extensions, uint32_t extensions_count)
 {
     VkResult err{};
 
@@ -469,6 +474,7 @@ void Application::Init()
     const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&extensions_count);
 
     std::vector<const char*> extensions;
+    extensions.reserve(extensions_count);
 
     for (int i = 0; i < extensions_count; ++i) {
         extensions.emplace_back(glfwExtensions[i]);
@@ -560,7 +566,6 @@ void Application::Init()
         VkSubmitInfo const end_info = {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount = 1, .pCommandBuffers = &command_buffer
         };
-
 
         err = vkEndCommandBuffer(command_buffer);
         check_vk_result(err, __LINE__);

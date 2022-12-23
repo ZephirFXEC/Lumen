@@ -34,14 +34,14 @@ class Renderer
 
     void MemAlloc();
 
-    FORCEDINLINE auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
+    [[nodiscard]] FORCEDINLINE auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
     FORCEDINLINE auto GetSettings() -> Settings & { return m_Settings; }
 
     void ResetFrame() { m_FrameSample = 1; }
 
   private:
-    auto TraceRay(LumenRender::Ray &ray) -> HitRecords;
+    auto TraceRay(LumenRender::Ray &ray) -> HitRecords &;
 
     auto PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4;
 
@@ -55,6 +55,7 @@ class Renderer
     glm::vec4 *m_AccumulationBuffer = nullptr;
 
     uint32_t m_FrameSample = 1;
+    HitRecords m_HitRecords{};
 };
 
 }// namespace LumenRender

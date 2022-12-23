@@ -160,6 +160,7 @@ class ExampleLayer : public Lumen::Layer
         Lumen::Timer timer;
         m_Renderer.Render(m_Camera, m_Scene);
         m_ElapsedTime = timer.ElapsedMillis();
+
     }
 
 

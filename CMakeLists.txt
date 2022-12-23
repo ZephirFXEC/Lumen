@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.23.0)
 
 set(NAME Lumen)
-
-project(${NAME} VERSION 0.1.0)
-
-
+project(${NAME} VERSION 0.1.0 LANGUAGES CXX)
 
 set(MoltenVK_DIR "/Users/ecrema/VulkanSDK/1.3.236.0/MoltenVK")
 
@@ -26,13 +23,13 @@ endif()
 file(GLOB_RECURSE SOURCES "Lumen/*.cpp" "LumenCore/*.cpp")
 file(GLOB_RECURSE HEADERS "Lumen/*.hpp" "LumenCore/*.hpp" "Lumen/Externals/*.h")
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+add_executable(${NAME} ${SOURCES} ${HEADERS})
+target_compile_features(${NAME} PUBLIC cxx_std_20)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(tbb CONFIG REQUIRED)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw imgui::imgui glm::glm TBB::tbb)
+target_include_directories(${NAME} PUBLIC ${Vulkan_INCLUDE_DIR})
+target_link_libraries(${NAME} PUBLIC ${Vulkan_LIBRARIES} glfw imgui::imgui glm::glm TBB::tbb)
