@@ -15,7 +15,6 @@
 #include <imgui.h>
 #include <vulkan/vulkan.h>
 
-
 struct GLFWwindow;
 
 namespace Lumen {

@@ -20,7 +20,6 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <utility>
-#include <vulkan/vulkan.h>
 
 // Embedded font
 #include "Roboto-Regular.embed"
@@ -92,16 +91,32 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags,
 }
 #endif// IMGUI_VULKAN_DEBUG_REPORT
 
-static void SetupVulkan(const char **extensions, uint32_t extensions_count)
+static void SetupVulkan(const std::vector<const char*> extensions, uint32_t extensions_count)
 {
   VkResult err{};
+
+  // Create App info
+  VkApplicationInfo appInfo = {};
+  {
+      appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+      appInfo.pApplicationName = "Lumen Render";
+      appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.pEngineName = "No Engine";
+      appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+      appInfo.apiVersion = VK_API_VERSION_1_0;
+  }
 
   // Create Vulkan Instance
   {
     VkInstanceCreateInfo create_info = {};
     create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.enabledExtensionCount = extensions_count;
-    create_info.ppEnabledExtensionNames = extensions;
+    create_info.pApplicationInfo = &appInfo;
+    create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    create_info.ppEnabledExtensionNames = extensions.data();
+    create_info.enabledLayerCount = 0;
+    create_info.pNext = nullptr;
+
+
 #ifdef IMGUI_VULKAN_DEBUG_REPORT
     // Enabling validation layers
     const char *layers[] = { "VK_LAYER_KHRONOS_validation" };
@@ -139,6 +154,7 @@ static void SetupVulkan(const char **extensions, uint32_t extensions_count)
     // Create Vulkan Instance without any debug feature
     err = vkCreateInstance(&create_info, g_Allocator, &g_Instance);
     check_vk_result(err, __LINE__);
+
     IM_UNUSED(g_DebugReport);
 #endif
   }
@@ -450,7 +466,11 @@ void Application::Init()
     return;
   }
   uint32_t extensions_count = 0;
-  const char **extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
+
+  const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&extensions_count);
+
+  std::vector<const char *> const extensions(glfwExtensions, glfwExtensions + extensions_count);
+
   SetupVulkan(extensions, extensions_count);
 
   // Create Window Surface
