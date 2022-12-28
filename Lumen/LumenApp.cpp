@@ -1,3 +1,7 @@
+// Copyright (c) 2022.
+// Enzo Crema
+// All rights reserved
+
 #include "../LumenCore/Application.hpp"
 #include "../LumenCore/EntryPoint.hpp"
 #include "../LumenCore/Image.hpp"

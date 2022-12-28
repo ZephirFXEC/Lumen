@@ -11,8 +11,8 @@ auto AABB::IntersectAABB(const LumenRender::Ray &ray,
   const glm::vec3 &min,
   const glm::vec3 &max) -> float
 {
-    float tmin = 0;
-    float tmax = INF;
+    constexpr float tmin = 0;
+    constexpr float tmax = INF;
 
     for (int j = 0; j < 3; ++j) {
         float const t1 = (min[j] - ray.Origin[j]) * invdir[j];
