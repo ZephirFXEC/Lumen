@@ -12,13 +12,6 @@ public:
     : m_Camera(45.0f, 0.1f, 100.0f) {
 
 
-        LumenRender::TriangleMesh *mesh = LumenRender::generatePolySphere(0.2f, 5);
-        auto *tri = new LumenRender::Triangle({-1, 0, 0}, {0, 1, 0}, {1, 0, 0});
-        m_Objects = *new LumenRender::Triangle(*tri);
-
-
-
-
     }
 
     void OnUpdate(float ts) override {
@@ -173,7 +166,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer;
     LumenRender::Camera m_Camera;
-    LumenRender::Triangle m_Objects;
+    LumenRender::Object m_Objects;
 
     int m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

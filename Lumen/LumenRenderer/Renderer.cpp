@@ -11,12 +11,13 @@
 namespace LumenRender {
 
     namespace Utils {
-        uint32_t ConvertToRGBA(glm::vec4 color) {
-            return uint32_t (color.a * 255.99f) << 24 | uint32_t (color.b * 255.99f) << 16 | uint32_t (color.g * 255.99f) << 8 | uint32_t (color.r * 255.99f);
+        static uint32_t ConvertToRGBA(glm::vec4 color) {
+            return uint32_t(color.a * 255.99f) << 24 | uint32_t(color.b * 255.99f) << 16 |
+                   uint32_t(color.g * 255.99f) << 8 | uint32_t(color.r * 255.99f);
         }
     }
 
-    void Renderer::Render(const LumenRender::Camera &camera, const Triangle &objects) {
+    void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Object &objects) {
 
         m_ActiveCamera = &camera;
         m_Objects = &objects;
@@ -66,13 +67,8 @@ namespace LumenRender {
 
     HitRecords Renderer::TraceRay(const LumenRender::Ray &ray) {
         HitRecords records{};
-            if (m_Objects->Intersect(ray, records)) {
-                records.m_Index = 0;
-                return records;
-            } else {
-                records.m_T = -1.0f;
-                return records;
-            }
+
+        return records;
     }
 
 

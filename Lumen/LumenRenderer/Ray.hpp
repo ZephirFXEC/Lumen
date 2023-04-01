@@ -7,7 +7,7 @@
 
 #include <glm/glm.hpp>
 
-/// @brief 
+
 namespace LumenRender {
 
     struct HitRecords {
@@ -20,8 +20,9 @@ namespace LumenRender {
     struct Ray { // Ray descriptor organized like this for better memory alignment
 
         Ray() = default;
-        Ray(const glm::vec3& origin, const glm::vec3& direction, float tMin, float tMax)
-            : Origin(origin), Direction(direction), Min(tMin), Max(tMax) {}
+
+        Ray(const glm::vec3 &origin, const glm::vec3 &direction, float tMin, float tMax)
+                : Origin(origin), Min(tMin), Direction(direction), Max(tMax) {}
 
         [[nodiscard]] glm::vec3 At(const float& t) const { return Origin + t * Direction; }
 
