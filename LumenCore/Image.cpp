@@ -5,7 +5,9 @@
 #include "Image.hpp"
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
+#include <vcruntime_string.h>
 #include "Application.hpp"
+#include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -13,7 +15,7 @@
 
 namespace Lumen {
 
-    void check_vk_result(VkResult err) {
+    static void check_vk_result(VkResult err) {
         if (err == 0)
             return;
         fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
@@ -46,7 +48,7 @@ namespace Lumen {
             return 0;
         }
 
-        static VkFormat WalnutFormatToVulkanFormat(ImageFormat format) {
+        static VkFormat LumenFormatToVKFormat(ImageFormat format) {
             switch (format) {
                 case ImageFormat::RGBA:
                     return VK_FORMAT_R8G8B8A8_UNORM;
@@ -96,7 +98,7 @@ namespace Lumen {
 
         VkResult err;
 
-        VkFormat vulkanFormat = Utils::WalnutFormatToVulkanFormat(m_Format);
+        VkFormat vulkanFormat = Utils::LumenFormatToVKFormat(m_Format);
 
         // Create the Image
         {
@@ -186,6 +188,7 @@ namespace Lumen {
         m_StagingBufferMemory = nullptr;
     }
 
+
     void Image::SetData(const void *data) {
         VkDevice device = Application::GetDevice();
 
@@ -213,6 +216,7 @@ namespace Lumen {
                                                                         req.memoryTypeBits);
                 err = vkAllocateMemory(device, &alloc_info, nullptr, &m_StagingBufferMemory);
                 check_vk_result(err);
+
                 err = vkBindBufferMemory(device, m_StagingBuffer, m_StagingBufferMemory, 0);
                 check_vk_result(err);
             }
@@ -221,16 +225,22 @@ namespace Lumen {
 
         // Upload to Buffer
         {
-            char *map = nullptr;
-            err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, (void **) (&map));
+            void *mapped_memory = nullptr;
+            err = vkMapMemory(device, m_StagingBufferMemory, 0, m_AlignedSize, 0, &mapped_memory);
             check_vk_result(err);
-            memcpy(map, data, upload_size);
-            VkMappedMemoryRange range[1] = {};
-            range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range[0].memory = m_StagingBufferMemory;
-            range[0].size = m_AlignedSize;
-            err = vkFlushMappedMemoryRanges(device, 1, range);
+
+            //memcpy(mapped_memory, data, upload_size);
+            std::copy((uint8_t *) data, (uint8_t *) data + upload_size, (uint8_t *) mapped_memory);
+
+            VkMappedMemoryRange range = {};
+            range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range.memory = m_StagingBufferMemory;
+            range.offset = 0;
+            range.size = m_AlignedSize;
+
+            err = vkFlushMappedMemoryRanges(device, 1, &range);
             check_vk_result(err);
+
             vkUnmapMemory(device, m_StagingBufferMemory);
         }
 

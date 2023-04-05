@@ -27,24 +27,27 @@ namespace LumenRender {
 
         void OnResize(uint32_t width, uint32_t height);
 
-        [[nodiscard]] std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
+        inline std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
-        HitRecords TraceRay(const Ray &ray);
 
-        static HitRecords ClosestHit(const Ray &ray, float dist, uint32_t ObjectID);
+        static HitRecords ClosestHit(const Ray &ray, const float &dist, uint32_t ObjectID);
 
         static HitRecords Miss(const Ray &ray);
 
-        glm::vec4 PerPixel(uint32_t x, uint32_t y);
+        HitRecords TraceRay(const Ray &ray);
+
+        glm::vec4 PerPixel(int x, int y);
+
 
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
-        const Object *m_Objects = {};
-        const Camera *m_ActiveCamera = nullptr;
+        const Object *m_Objects{nullptr};
+        const Camera *m_ActiveCamera{nullptr};
 
-        uint32_t *m_ImageData = nullptr;
+        uint32_t *m_ImageData{nullptr};
+
 
     };
 

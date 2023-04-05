@@ -8,8 +8,7 @@
 
 class ExampleLayer : public Lumen::Layer {
 public:
-    ExampleLayer()
-    : m_Camera(45.0f, 0.1f, 100.0f) {
+    ExampleLayer() {
 
 
     }
@@ -32,34 +31,20 @@ public:
 
 
         ImGui::Begin("Objects");
-        //ImGui::Text("Objects : %llu", m_Objects.size());
-/*
-        ImGui::BeginTable("Objects", 2);
-        ImGui::TableSetupColumn("Object");
-        ImGui::TableSetupColumn("Index");
-        ImGui::TableHeadersRow();
-        for (auto& object : m_Objects) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("%s", object.first->c_str());
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%d", object->m_Index);
-        }
-        ImGui::EndTable();
-*/
         ImGui::End();
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
         ImGui::Begin("Viewport");
 
-        m_ViewportWidth = (int) ImGui::GetContentRegionAvail().x;
-        m_ViewPortHeight = (int) ImGui::GetContentRegionAvail().y;
+        m_ViewportWidth = (uint32_t) ImGui::GetContentRegionAvail().x;
+        m_ViewPortHeight = (uint32_t) ImGui::GetContentRegionAvail().y;
 
         auto image = m_Renderer.GetFinalImage();
 
         if (image) {
-            ImGui::Image(image->GetDescriptorSet(), { (float) image->GetWidth(), (float) image->GetHeight() }, {0, 1}, {1, 0});
+            ImGui::Image(image->GetDescriptorSet(), {(float) image->GetWidth(), (float) image->GetHeight()}, {0, 1},
+                         {1, 0});
         }
         ImGui::End();
         ImGui::PopStyleVar();
@@ -153,22 +138,24 @@ public:
     }
 
     void Render() {
-        Lumen::Timer timer;
 
         m_Renderer.OnResize(m_ViewportWidth, m_ViewPortHeight);
         m_Camera.OnResize(m_ViewportWidth, m_ViewPortHeight);
 
+        Lumen::Timer timer;
+
         m_Renderer.Render(m_Camera, m_Objects);
+
         m_ElapsedTime = timer.ElapsedMillis();
     }
 
 
 private:
-    LumenRender::Renderer m_Renderer;
-    LumenRender::Camera m_Camera;
-    LumenRender::Object m_Objects;
+    LumenRender::Renderer m_Renderer{};
+    LumenRender::Camera m_Camera{45.0f, 0.1f, 100.0f};
+    LumenRender::Object m_Objects{};
 
-    int m_ViewportWidth{}, m_ViewPortHeight{};
+    uint32_t m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};
     bool m_toggleRender{};
 };

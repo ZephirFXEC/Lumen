@@ -8,6 +8,8 @@
 // Adapted from Dear ImGui Vulkan example
 //
 
+#define IMGUI_UNLIMITED_FRAME_RATE
+
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
 #include <cstdio>          // printf, fprintf
@@ -21,6 +23,7 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include <utility>
+#include <thread>
 
 // Embedded font
 #include "Roboto-Regular.embed"
@@ -48,6 +51,8 @@ static VkQueue g_Queue = VK_NULL_HANDLE;
 static VkDebugReportCallbackEXT g_DebugReport = VK_NULL_HANDLE;
 static VkPipelineCache g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool g_DescriptorPool = VK_NULL_HANDLE;
+static VkFence fence;
+
 
 static ImGui_ImplVulkanH_Window g_MainWindowData;
 static int g_MinImageCount = 2;
@@ -63,7 +68,7 @@ static uint32_t s_CurrentFrameIndex = 0;
 
 static Lumen::Application *s_Instance = nullptr;
 
-void check_vk_result(VkResult err) {
+static void check_vk_result(VkResult err) {
     if (err == 0)
         return;
     fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
@@ -360,14 +365,21 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
 static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
     if (g_SwapChainRebuild)
         return;
+
+    VkSemaphore image_acquired_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
     VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-    VkPresentInfoKHR info = {};
-    info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    info.waitSemaphoreCount = 1;
-    info.pWaitSemaphores = &render_complete_semaphore;
-    info.swapchainCount = 1;
-    info.pSwapchains = &wd->Swapchain;
-    info.pImageIndices = &wd->FrameIndex;
+
+    VkPresentInfoKHR info = {
+            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &render_complete_semaphore,
+            .swapchainCount = 1,
+            .pSwapchains = &wd->Swapchain,
+            .pImageIndices = &wd->FrameIndex,
+            .pResults = nullptr // Optional
+    };
+
+
     VkResult err = vkQueuePresentKHR(g_Queue, &info);
     if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
         g_SwapChainRebuild = true;
@@ -375,6 +387,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
     }
     check_vk_result(err);
     wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
+
 }
 
 static void glfw_error_callback(int error, const char *description) {
@@ -723,22 +736,20 @@ namespace Lumen {
         end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         end_info.commandBufferCount = 1;
         end_info.pCommandBuffers = &commandBuffer;
-        auto err = vkEndCommandBuffer(commandBuffer);
-        check_vk_result(err);
+
+        vkEndCommandBuffer(commandBuffer);
 
         // Create fence to ensure that the command buffer has finished executing
         VkFenceCreateInfo fenceCreateInfo = {};
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = 0;
-        VkFence fence;
-        err = vkCreateFence(g_Device, &fenceCreateInfo, nullptr, &fence);
-        check_vk_result(err);
 
-        err = vkQueueSubmit(g_Queue, 1, &end_info, fence);
-        check_vk_result(err);
+        vkCreateFence(g_Device, &fenceCreateInfo, nullptr, &fence);
 
-        err = vkWaitForFences(g_Device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
-        check_vk_result(err);
+        vkQueueSubmit(g_Queue, 1, &end_info, fence);
+
+        // may cause a deadlock
+        //vkWaitForFences(g_Device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT);
 
         vkDestroyFence(g_Device, fence, nullptr);
     }

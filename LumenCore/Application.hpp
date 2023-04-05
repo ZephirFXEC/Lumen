@@ -20,9 +20,9 @@ struct GLFWwindow;
 namespace Lumen {
 
     struct ApplicationSpecification {
-        std::string Name = "Lumen Render";
-        uint32_t Width = 1600;
-        uint32_t Height = 900;
+        std::string Name{"Lumen Render"};
+        uint32_t Width{1280};
+        uint32_t Height{720};
     };
 
     class Application {
@@ -39,9 +39,9 @@ namespace Lumen {
 
         void SetMenubarCallback(const std::function<void()> &menubarCallback) { m_MenubarCallback = menubarCallback; }
 
-        float GetTime();
+        static float GetTime();
 
-        GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
+        __forceinline GLFWwindow *GetWindowHandle() const { return m_WindowHandle; }
 
 
         template <typename T>
@@ -75,12 +75,12 @@ namespace Lumen {
 
     private:
         ApplicationSpecification m_Specification;
-        GLFWwindow *m_WindowHandle = nullptr;
-        bool m_Running = false;
+        GLFWwindow *m_WindowHandle{nullptr};
+        bool m_Running{false};
 
-        float m_TimeStep = 0.0f;
-        float m_FrameTime = 0.0f;
-        float m_LastFrameTime = 0.0f;
+        float m_TimeStep{0.0f};
+        float m_FrameTime{0.0f};
+        float m_LastFrameTime{0.0f};
 
         std::vector<std::shared_ptr<Layer>> m_LayerStack;
         std::function<void()> m_MenubarCallback;

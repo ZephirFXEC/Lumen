@@ -2,18 +2,39 @@
 // Created by enzoc on 30/09/2022.
 //
 
-#include <tbb/tbb.h>
-#include "Renderer.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/norm.hpp>
+#include "Renderer.hpp"
+#include <immintrin.h>
+#include <tbb/tbb.h>
+#include <bitset>
 
 namespace LumenRender {
 
     namespace Utils {
-        static uint32_t ConvertToRGBA(glm::vec4 color) {
-            return uint32_t(color.a * 255.99f) << 24 | uint32_t(color.b * 255.99f) << 16 |
-                   uint32_t(color.g * 255.99f) << 8 | uint32_t(color.r * 255.99f);
+        static uint32_t ConvertToRGBA(const glm::vec4 *color) {
+
+            uint8_t out[4];
+#if 1
+
+            const __m128 x = _mm_mul_ps(_mm_load_ps((float *) color), _mm_set_ps1(255));
+            __m128i y = _mm_cvtps_epi32(x);
+            y = _mm_packus_epi32(y, y);
+            y = _mm_packus_epi16(y, y);
+            *(int *) out = _mm_cvtsi128_si32(y);
+
+            const std::bitset<32> bits = (*reinterpret_cast<uint32_t *>(out));
+
+            return bits.to_ulong();
+
+#else
+
+            uint8_t r = color.r * 255U;
+            uint8_t g = color.g * 255U;
+            uint8_t b = color.b * 255U;
+            uint8_t a = color.a * 255U;
+            return (uint32_t) (a << 24U | b << 16U | g << 8U | r);
+
+#endif
         }
     }
 
@@ -23,28 +44,29 @@ namespace LumenRender {
         m_Objects = &objects;
 
 
-#if 0
+#ifdef MT
+        tbb::parallel_for(tbb::blocked_range<uint32_t>(0, m_Image->GetHeight()),
+                [&](const tbb::blocked_range<uint32_t>& r) {
 
-        tbb::parallel_for(tbb::blocked_range2d<uint32_t>(0, m_Image->GetHeight(),0, m_Image->GetWidth()),
-                          [&](const tbb::blocked_range2d<uint32_t>& range) {
+            for (uint32_t y = r.begin(); y < r.end(); y++) {
+                for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
+                const glm::vec4 cd = PerPixel(x, y);
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(&cd);
+                }
+            }
 
-                              for (uint32_t y = range.rows().begin(); y != range.rows().end(); y++) {
-                                  for (uint32_t x = range.cols().begin(); x != range.cols().end(); x++) {
-                                      m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y));
-                                  }
-                              }
-                          });
-
-
+        });
 #else
 
         for (uint32_t y = 0; y < m_Image->GetHeight(); y++) {
             for (uint32_t x = 0; x < m_Image->GetWidth(); x++) {
-                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(PerPixel(x, y));
+                const glm::vec4 cd = PerPixel(x, y);
+                m_ImageData[y * m_Image->GetWidth() + x] = Utils::ConvertToRGBA(&cd);
             }
         }
 
 #endif
+
         m_Image->SetData(m_ImageData);
     }
 
@@ -72,12 +94,13 @@ namespace LumenRender {
     }
 
 
-
-    glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y) {
-
+    glm::vec4 Renderer::PerPixel(int x, int y) {
+        /*
         Ray ray;
         ray.Origin = m_ActiveCamera->GetPosition();
         ray.Direction = m_ActiveCamera->GetRayDirections()[y * m_Image->GetWidth() + x];
+
+
 
         HitRecords payload = TraceRay(ray);
 
@@ -86,15 +109,18 @@ namespace LumenRender {
         if(payload.m_T < 0.0f) {
             col = glm::vec3(0.0f);
         } else {
-            col = glm::vec3(1.0f, 0.0f, 0.0f);
+            col = ray.Direction;
         }
 
-        return {col, 1.0f};
+         */
+
+        return {m_ActiveCamera->GetRayDirections()[y * m_Image->GetWidth() + x], 1.0f};
     }
 
-    HitRecords Renderer::ClosestHit(const Ray &ray, float dist, uint32_t ObjectID) {
-
-        return {};
+    HitRecords Renderer::ClosestHit(const Ray &ray, const float &dist, uint32_t ObjectID) {
+        HitRecords payload{};
+        payload.m_T = dist;
+        return payload;
     }
 
 
