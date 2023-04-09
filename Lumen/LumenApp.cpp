@@ -153,7 +153,7 @@ public:
 private:
     LumenRender::Renderer m_Renderer{};
     LumenRender::Camera m_Camera{45.0f, 0.1f, 100.0f};
-    LumenRender::Object m_Objects{};
+    LumenRender::Mesh m_Objects{};
 
     uint32_t m_ViewportWidth{}, m_ViewPortHeight{};
     float m_ElapsedTime{};

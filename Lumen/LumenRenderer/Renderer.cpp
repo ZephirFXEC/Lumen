@@ -7,6 +7,12 @@
 #include <immintrin.h>
 #include <tbb/tbb.h>
 #include <bitset>
+#include <embree4/rtcore.h>
+#include "Structure/Triangle.hpp"
+
+RTCScene g_scene = nullptr;
+LumenRender::Triangle data;
+
 
 namespace LumenRender {
 
@@ -38,7 +44,7 @@ namespace LumenRender {
         }
     }
 
-    void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Object &objects) {
+    void Renderer::Render(const LumenRender::Camera &camera, const LumenRender::Mesh &objects) {
 
         m_ActiveCamera = &camera;
         m_Objects = &objects;
@@ -129,4 +135,6 @@ namespace LumenRender {
         payload.m_T = -1.0f;
         return payload;
     }
+
+
 } // LumenRender

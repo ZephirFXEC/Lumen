@@ -5,36 +5,26 @@ set(CMAKE_CXX_STANDARD 20)
 
 if(WIN32)
 
-    set(DCMAKE_TOOLCHAIN_FILE "D:/DEV/vcpkg/scripts/buildsystems/vcpkg.cmake")
-
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Vulkan REQUIRED)
     find_package(imgui CONFIG REQUIRED)
     find_package(glm CONFIG REQUIRED)
     find_package(TBB CONFIG REQUIRED)
+    find_package(embree 4 REQUIRED)
 
-    add_executable(Lumen Lumen/LumenApp.cpp
-            LumenCore/Application.cpp
-            LumenCore/Application.hpp
-            LumenCore/EntryPoint.hpp
-            LumenCore/Image.cpp
-            LumenCore/Image.hpp
-            LumenCore/Layer.hpp
-            LumenCore/Random.cpp
-            LumenCore/Random.hpp
-            LumenCore/Timer.hpp
-            LumenCore/Inputs/Input.cpp
-            LumenCore/Inputs/Input.hpp
-            LumenCore/Inputs/KeyCodes.hpp
-            Lumen/LumenRenderer/Camera.cpp
-            Lumen/LumenRenderer/Camera.hpp
-            Lumen/LumenRenderer/Renderer.cpp
-            Lumen/LumenRenderer/Renderer.hpp
-            Lumen/LumenRenderer/Ray.hpp
-            Lumen/LumenRenderer/Structure/Object.cpp
-            Lumen/LumenRenderer/Structure/Object.hpp)
+    include_directories(D:/DEV/embree-4.0.1.x64.windows/include)
 
-    target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb)
+    file(GLOB_RECURSE SOURCES "Lumen/*.cpp" "LumenCore/*.cpp")
+    file(GLOB_RECURSE HEADERS "Lumen/*.hpp" "LumenCore/*.hpp" "Lumen/Externals/*.h")
+
+
+    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+    target_link_libraries(Lumen PRIVATE glfw Vulkan::Vulkan imgui::imgui glm::glm TBB::tbb embree)
+
+    target_compile_definitions(${PROJECT_NAME} PUBLIC __SSE4_2__)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC __AVX2__)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
 
     set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()

@@ -13,7 +13,7 @@
 
 #include "Camera.hpp"
 #include "Ray.hpp"
-#include "Structure/Object.hpp"
+#include "Structure/Mesh.hpp"
 
 
 
@@ -23,11 +23,11 @@ namespace LumenRender {
     public:
         Renderer() = default;
 
-        void Render(const Camera &camera, const Object &objects);
+        void Render(const Camera &camera, const Mesh &objects);
 
         void OnResize(uint32_t width, uint32_t height);
 
-        inline std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
+        __forceinline std::shared_ptr<Lumen::Image> GetFinalImage() const { return m_Image; }
 
     private:
 
@@ -43,7 +43,7 @@ namespace LumenRender {
     private:
         std::shared_ptr<Lumen::Image> m_Image;
 
-        const Object *m_Objects{nullptr};
+        const Mesh *m_Objects{nullptr};
         const Camera *m_ActiveCamera{nullptr};
 
         uint32_t *m_ImageData{nullptr};
