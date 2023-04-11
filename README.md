@@ -1,6 +1,6 @@
 [![CMake](https://github.com/ZephirFXEC/Lumen/actions/workflows/cmake.yml/badge.svg)](https://github.com/ZephirFXEC/Lumen/actions/workflows/cmake.yml)
 ![Untitled-1](https://user-images.githubusercontent.com/66848869/202930412-3f399dad-4305-4be7-a370-21385a8eb718.png)
-> Development has been moved in the DEV branch (too much to refactor) 😔
+> Development has been moved in the DEV branch (last working version in Main) 😔
 
 
 ## Library Used
