@@ -94,66 +94,6 @@ class BVH : public IHittable<BVH>
 
     std::vector<BVHNode *> m_FlattenBVH;
 };
-
-struct TLASNode
-{
-    union {
-        struct
-        {
-            float dummy1[3];
-            uint32_t m_LeftRight;
-        };
-        struct
-        {
-            float dummy3[3];
-            unsigned short m_left, m_right;
-        };
-        glm::vec3 m_Bounds_min;
-        __m128 m_Bounds_min_m128;
-    };
-    union {
-        struct
-        {
-            float dummy2[3];
-            uint32_t m_BLAS;
-        };
-        glm::vec3 m_Bounds_max;
-        __m128 m_Bounds_max_m128;
-    };
-
-    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_LeftRight == 0; }
-};
-
-struct TLASNode
-{
-    union {
-        struct
-        {
-            float dummy1[3];
-            uint32_t m_LeftRight;
-        };
-        struct
-        {
-            float dummy3[3];
-            unsigned short m_left, m_right;
-        };
-        glm::vec3 m_Bounds_min;
-        __m128 m_Bounds_min_m128;
-    };
-    union {
-        struct
-        {
-            float dummy2[3];
-            uint32_t m_BLAS;
-        };
-        glm::vec3 m_Bounds_max;
-        __m128 m_Bounds_max_m128;
-    };
-
-    [[nodiscard]] __forceinline auto isLeaf() const -> bool { return m_LeftRight == 0; }
-};
-
-
 }// namespace LumenRender
 
 #endif// LUMEN_BVH_HPP

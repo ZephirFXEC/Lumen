@@ -20,10 +20,10 @@ class ExampleLayer : public Lumen::Layer
   public:
     ExampleLayer() : m_Camera(45.0F, 0.01F, 1000.0F)
     {
-        IHittable<Mesh> *mesh = new Mesh(
-          R"(C:\Users\enzoc\OneDrive - Griffith College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
+        // IHittable<Mesh> *mesh = new Mesh(R"(C:\Users\enzoc\OneDrive - Griffith
+        // College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
 
-        m_Scene.AddObject(mesh);
+        // m_Scene.AddObject(mesh);
     }
 
     void OnUpdate(float ts) override
