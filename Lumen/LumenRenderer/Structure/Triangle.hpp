@@ -18,9 +18,9 @@ namespace LumenRender {
 
 struct alignas(32) TriData
 {
-    glm::vec3 N{};
-    glm::vec2 UV{};
-    glm::vec3 Centroid{};
+    glm::vec3 N = {};
+    glm::vec2 UV = {};
+    glm::vec3 Centroid = {};
 };
 
 
@@ -29,7 +29,7 @@ class Triangle
   public:
     Triangle() = default;
 
-    explicit Triangle(const std::array<glm::vec3, 3> &v) : vertex{ v }, _e1(v[1] - v[0]), _e2(v[2] - v[0]) {}
+    explicit Triangle(const glm::vec3 *v) : mVertex{ v[0], v[1], v[2] }, _e1(v[1] - v[0]), _e2(v[2] - v[0]) {}
 
     static auto TriangleIntersect(const Ray &ray, const Triangle &tri, const uint32_t &primidx) -> bool;
 
@@ -38,12 +38,12 @@ class Triangle
     [[nodiscard]] auto GetBarycentricCoordinates(const glm::vec3 &p) const -> glm::vec3;
 
 
-    std::array<glm::vec3, 3> vertex{};
-    TriData *m_Data{ nullptr };
+    glm::vec3 mVertex[3] = {};
+    TriData *pData = nullptr;
 
   private:
-    glm::vec3 _e1{};
-    glm::vec3 _e2{};
+    glm::vec3 _e1 = {};
+    glm::vec3 _e2 = {};
 };
 
 

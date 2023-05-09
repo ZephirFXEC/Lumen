@@ -18,6 +18,7 @@ Checks: "*,
         -cppcoreguidelines-pro-type-union-access,
         -cppcoreguidelines-pro-bounds-pointer-arithmetic,
         -misc-non-private-member-variables-in-classes,
+        -bugprone-easily-swappable-parameters,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

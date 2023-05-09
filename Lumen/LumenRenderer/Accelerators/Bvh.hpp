@@ -17,8 +17,8 @@ namespace LumenRender {
 
 struct Bin
 {
-    AABB m_Bounds{ AABB() };
-    uint32_t m_TriCount{ 0 };
+    AABB m_Bounds = {};
+    uint32_t m_TriCount = 0;
 };
 
 struct BVHNode
@@ -53,24 +53,24 @@ class BVH : public IHittable<BVH>
     struct BuildJob
     {
         uint32_t m_nodeidx;
-        glm::vec3 m_centroidMin, m_centroidMax;
+        glm::vec3 m_centroidMin = {}, m_centroidMax = {};
     };
 
   public:
     BVH() = default;
-    ~BVH() override = default;
+    ~BVH() = default;
 
     explicit BVH(class IHittable<Mesh> *tri_mesh);
 
     void Build();
 
-    auto Traversal(const Ray &ray, float t_max) const -> bool;
+    bool Traversal(const Ray &ray, float t_max) const;
 
-    auto Traversal_SSE(Ray &ray, float t_max) const -> bool;
+    bool Traversal_SSE(Ray &ray, float t_max) const;
 
-    auto Hit(const Ray &ray, float t_max) const -> bool;
+    bool Hit(const Ray &ray, float t_max) const;
 
-    auto GetBounds(AABB &outbox) const -> AABB;
+    AABB GetBounds(AABB &outbox) const;
 
 
   private:
@@ -78,21 +78,18 @@ class BVH : public IHittable<BVH>
 
     void UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const;
 
-    auto FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const
-      -> float;
+    float FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &centroidMin, glm::vec3 &centroidMax) const;
 
-    auto FlattenBVH() -> void;
+    void FlattenBVH();
 
   public:
-    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
+    Mesh *m_mesh = nullptr;
+    BVHNode *m_bvhNode = nullptr;
+    uint32_t *m_triIdx = nullptr, m_nodeCount = 0;
+    std::array<BuildJob, 64> m_buildStack = {};
+    uint32_t m_buildStackPtr = 0;
 
-    Mesh *m_mesh{ nullptr };
-    BVHNode *m_bvhNode{ nullptr };
-    uint32_t *m_triIdx{ nullptr }, m_nodeCount{};
-    std::array<BuildJob, 64> m_buildStack{};
-    uint32_t m_buildStackPtr{};
-
-    std::vector<BVHNode *> m_FlattenBVH;
+    std::vector<BVHNode *> m_FlattenBVH = {};
 };
 }// namespace LumenRender
 

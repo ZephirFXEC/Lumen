@@ -22,9 +22,9 @@ namespace Lumen {
 
 struct ApplicationSpecification
 {
-  std::string Name = "Lumen Render";
-  int Width = 1600;
-  int Height = 900;
+    std::string Name = std::string("Lumen Render");
+    int Width = 1600;
+    int Height = 900;
 };
 
 class Application
@@ -74,7 +74,6 @@ public:
 
 private:
   void Init();
-
   void Shutdown();
 
 
@@ -82,9 +81,9 @@ private:
   GLFWwindow *m_WindowHandle = nullptr;
   bool m_Running = false;
 
-  float m_TimeStep{ 0.0F };
-  float m_FrameTime{ 0.0F };
-  float m_LastFrameTime{ 0.0F };
+  float m_TimeStep = 0.0F;
+  float m_FrameTime = 0.0F;
+  float m_LastFrameTime = 0.0F;
 
   std::vector<std::shared_ptr<Layer>> m_LayerStack;
   std::function<void()> m_MenubarCallback;

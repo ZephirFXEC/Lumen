@@ -7,7 +7,7 @@
 //                 * Support line primitive.
 //                 * Support points primitive.
 //                 * Support multiple search path for .mtl(v1 API).
-//                 * Support vertex weight `vw`(as an tinyobj extension)
+//                 * Support mVertex weight `vw`(as an tinyobj extension)
 //                 * Support escaped whitespece in mtllib
 //                 * Add robust triangulation using Mapbox earcut(TINYOBJLOADER_USE_MAPBOX_EARCUT).
 // version 1.4.0 : Modifed ParseTextureNameAndOption API
@@ -18,7 +18,7 @@
 // version 1.2.1 : Added initial support for line('l') primitive(PR #178)
 // version 1.2.0 : Hardened implementation(#175)
 // version 1.1.1 : Support smoothing groups(#162)
-// version 1.1.0 : Support parsing vertex color(#144)
+// version 1.1.0 : Support parsing mVertex color(#144)
 // version 1.0.8 : Fix parsing `g` tag just after `usemtl`(#138)
 // version 1.0.7 : Support multiple tex options(#126)
 // version 1.0.6 : Add TINYOBJLOADER_USE_DOUBLE option(#124)
@@ -74,7 +74,7 @@ namespace tinyobj {
 //  0 1)
 //                                         #     base_value = brightness,
 //                                         gain_value = contrast
-//  -o u [v [w]]                           # Origin offset             (default
+//  -o u [v [w]]                           # mOrigin offset             (default
 //  0 0 0)
 //  -s u [v [w]]                           # Scale                     (default
 //  1 1 1)
@@ -328,7 +328,7 @@ struct joint_and_weight_t
 
 struct skin_weight_t
 {
-    int vertex_id;// Corresponding vertex index in `attrib_t::vertices`.
+    int vertex_id;// Corresponding mVertex index in `attrib_t::vertices`.
                   // Compared to `index_t`, this index must be positive and
                   // start with 0(does not allow relative indexing)
     std::vector<joint_and_weight_t> weightValues;
@@ -385,7 +385,7 @@ struct attrib_t
 {
     std::vector<real_t> vertices;// 'v'(xyz)
 
-    // For backward compatibility, we store vertex weight in separate array.
+    // For backward compatibility, we store mVertex weight in separate array.
     std::vector<real_t> vertex_weights;// 'v'(w)
     std::vector<real_t> normals;// 'vn'
     std::vector<real_t> texcoords;// 'vt'(uv)
@@ -393,14 +393,14 @@ struct attrib_t
     // For backward compatibility, we store texture coordinate 'w' in separate
     // array.
     std::vector<real_t> texcoord_ws;// 'vt'(w)
-    std::vector<real_t> colors;// extension: vertex colors
+    std::vector<real_t> colors;// extension: mVertex colors
 
     //
     // TinyObj extension.
     //
 
     // NOTE(syoyo): array index is based on the appearance order.
-    // To get a corresponding skin weight for a specific vertex id `vid`,
+    // To get a corresponding skin weight for a specific mVertex id `vid`,
     // Need to reconstruct a look up table: `skin_weight_t::vertex_id` == `vid`
     // (e.g. using std::map, std::unordered_map)
     std::vector<skin_weight_t> skin_weights;
@@ -505,9 +505,9 @@ struct ObjReaderConfig
     // "earcut": Use the algorithm based on Ear clipping
     std::string triangulation_method;
 
-    /// Parse vertex color.
-    /// If vertex color is not present, its filled with default value.
-    /// false = no vertex color
+    /// Parse mVertex color.
+    /// If mVertex color is not present, its filled with default value.
+    /// false = no mVertex color
     /// This will increase memory of parsed .obj
     bool vertex_color;
 
@@ -594,7 +594,7 @@ class ObjReader
 /// directory.
 /// 'triangulate' is optional, and used whether triangulate polygon face in .obj
 /// or not.
-/// Option 'default_vcols_fallback' specifies whether vertex colors should
+/// Option 'default_vcols_fallback' specifies whether mVertex colors should
 /// always be defined, even if no colors are given (fallback to white).
 bool LoadObj(attrib_t *attrib,
   std::vector<shape_t> *shapes,
@@ -709,7 +709,7 @@ struct face_t
 {
     unsigned int smoothing_group_id;// smoothing group id. 0 = smoothing groupd is off.
     int pad_;
-    std::vector<vertex_index_t> vertex_indices;// face vertex indices.
+    std::vector<vertex_index_t> vertex_indices;// face mVertex indices.
 
     face_t() : smoothing_group_id(0), pad_(0) {}
 };
@@ -1072,7 +1072,7 @@ static inline void parseV(real_t *x,
     (*w) = parseReal(token, default_w);
 }
 
-// Extension: parse vertex with colors(6 items)
+// Extension: parse mVertex with colors(6 items)
 static inline bool parseVertexWithColor(real_t *x,
   real_t *y,
   real_t *z,
@@ -1481,7 +1481,7 @@ static bool exportGroupsToShape(shape_t *shape,
                         || ((3 * vi3 + 2) >= v.size())) {
                         // Invalid triangle.
                         // FIXME(syoyo): Is it ok to simply skip this invalid triangle?
-                        if (warn) { (*warn) += "Face with invalid vertex index found.\n"; }
+                        if (warn) { (*warn) += "Face with invalid mVertex index found.\n"; }
                         continue;
                     }
 
@@ -1762,7 +1762,7 @@ static bool exportGroupsToShape(shape_t *shape,
                             previousRemainingVertices = npolys;
                             remainingIterations = npolys;
                         } else {
-                            // We didn't consume a vertex on previous iteration, reduce the
+                            // We didn't consume a mVertex on previous iteration, reduce the
                             // available iterations.
                             remainingIterations--;
                         }
@@ -2532,7 +2532,7 @@ bool LoadObj(attrib_t *attrib,
 
         if (token[0] == '#') continue;// comment line
 
-        // vertex
+        // mVertex
         if (token[0] == 'v' && IS_SPACE((token[1]))) {
             token += 2;
             real_t x, y, z;
@@ -2636,7 +2636,7 @@ bool LoadObj(attrib_t *attrib,
                       &vi)) {
                     if (err) {
                         std::stringstream ss;
-                        ss << "Failed parse `l' line(e.g. zero value for vertex index. "
+                        ss << "Failed parse `l' line(e.g. zero value for mVertex index. "
                               "line "
                            << line_num << ".)\n";
                         (*err) += ss.str();
@@ -2670,7 +2670,7 @@ bool LoadObj(attrib_t *attrib,
                       &vi)) {
                     if (err) {
                         std::stringstream ss;
-                        ss << "Failed parse `p' line(e.g. zero value for vertex index. "
+                        ss << "Failed parse `p' line(e.g. zero value for mVertex index. "
                               "line "
                            << line_num << ".)\n";
                         (*err) += ss.str();
@@ -3036,10 +3036,10 @@ bool LoadObjWithCallback(std::istream &inStream,
 
         if (token[0] == '#') continue;// comment line
 
-        // vertex
+        // mVertex
         if (token[0] == 'v' && IS_SPACE((token[1]))) {
             token += 2;
-            // TODO(syoyo): Support parsing vertex color extension.
+            // TODO(syoyo): Support parsing mVertex color extension.
             real_t x, y, z, w;// w is optional. default = 1.0
             parseV(&x, &y, &z, &w, &token);
             if (callback.vertex_cb) { callback.vertex_cb(user_data, x, y, z, w); }

@@ -15,7 +15,7 @@ namespace LumenRender {
 constexpr int BINS = 12;
 
 BVH::BVH(class IHittable<Mesh> *tri_mesh)
-  : m_mesh(dynamic_cast<Mesh *>(tri_mesh)),
+  : m_mesh(reinterpret_cast<Mesh *>(tri_mesh)),
     m_bvhNode(
       static_cast<BVHNode *>(_aligned_malloc(sizeof(BVHNode) * m_mesh->GetTriCount() * 2 + 64, sizeof(BVHNode)))),
     m_triIdx(static_cast<uint32_t *>(_aligned_malloc(sizeof(uint32_t) * m_mesh->GetTriCount(), sizeof(uint32_t))))
@@ -82,11 +82,11 @@ auto BVH::FindBestPlane(BVHNode &node, int &axis, int &splitPos, glm::vec3 &cent
 
             auto &triangle = m_mesh->GetTriangles()[m_triIdx[node.m_LeftFirst + i]];
             uint32_t const binIdx = std::min(static_cast<uint32_t>(BINS - 1),
-              static_cast<uint32_t>((triangle.m_Data->Centroid[a] - boundsMin) * scale));
-            bin.at(binIdx).m_TriCount++;
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(0));
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(1));
-            AABB::Union(bin.at(binIdx).m_Bounds, triangle.vertex.at(2));
+              static_cast<uint32_t>((triangle->pData->Centroid[a] - boundsMin) * scale));
+            bin[binIdx].m_TriCount++;
+            AABB::Union(bin[binIdx].m_Bounds, triangle->mVertex[0]);
+            AABB::Union(bin[binIdx].m_Bounds, triangle->mVertex[1]);
+            AABB::Union(bin[binIdx].m_Bounds, triangle->mVertex[2]);
         }
         // gather data for the 7 planes between the 8 bins
         std::array<float, BINS - 1> leftArea{};
@@ -146,7 +146,7 @@ void BVH::Subdivide(uint32_t nodeIdx, uint32_t depth, uint32_t &nodePtr, glm::ve
 
     while (i <= j) {
         int const binIdx = std::min(BINS - 1,
-          static_cast<int>((m_mesh->GetTriangles()[m_triIdx[i]].m_Data->Centroid[axis] - centroidMin[axis]) * scale));
+          static_cast<int>((m_mesh->GetTriangles()[m_triIdx[i]]->pData->Centroid[axis] - centroidMin[axis]) * scale));
         if (binIdx < splitPos) {
             i++;
         } else {
@@ -198,18 +198,19 @@ void BVH::UpdateNodeBounds(uint32_t nodeIdx, glm::vec3 &centroidMin, glm::vec3 &
     centroidMin = glm::vec3(0.0F);
     centroidMax = glm::vec3(0.0F);
 
-    uint32_t const first = node.m_LeftFirst;
+    const uint32_t first = node.m_LeftFirst;
+
     for (uint32_t i = 0; i < node.m_TriCount; ++i) {
-        uint32_t const leafTriIdx = m_triIdx[first + i];
-        auto &leafTri = m_mesh->GetTriangles()[leafTriIdx];
-        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(0));
-        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(1));
-        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri.vertex.at(2));
-        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(0));
-        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(1));
-        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri.vertex.at(2));
-        centroidMin = glm::min(centroidMin, leafTri.m_Data->Centroid);
-        centroidMax = glm::max(centroidMax, leafTri.m_Data->Centroid);
+        const uint32_t leafTriIdx = m_triIdx[first + i];
+        const auto leafTri = m_mesh->GetTriangles()[leafTriIdx];
+        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri->mVertex[0]);
+        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri->mVertex[1]);
+        node.m_Bounds_min = glm::min(node.m_Bounds_min, leafTri->mVertex[2]);
+        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri->mVertex[0]);
+        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri->mVertex[1]);
+        node.m_Bounds_max = glm::max(node.m_Bounds_max, leafTri->mVertex[2]);
+        centroidMin = glm::min(centroidMin, leafTri->pData->Centroid);
+        centroidMax = glm::max(centroidMax, leafTri->pData->Centroid);
     }
 }
 
@@ -236,7 +237,7 @@ auto BVH::Traversal(const Ray &ray, float t_max) const -> bool
     if (!m_bvhNode) { return false; }
 
     // Precompute and store the inverse of ray.direction.
-    glm::vec3 const inv_dir = glm::vec3(1.0F) / ray.Direction;
+    glm::vec3 const inv_dir = glm::vec3(1.0F) / ray.mDirection;
 
     BVHNode *node = &m_bvhNode[0];
     std::array<BVHNode *, 64> stack{};
@@ -254,11 +255,11 @@ auto BVH::Traversal(const Ray &ray, float t_max) const -> bool
                 const auto &leafTri = m_mesh->GetTriangles()[m_triIdx[node->m_LeftFirst + i]];
 
                 // Use a early-exit strategy in the TriangleIntersect function.
-                if (Triangle::TriangleIntersect(ray, leafTri, m_triIdx[node->m_LeftFirst + i])
-                    && ray.m_Record->m_T < closest) {
+                if (Triangle::TriangleIntersect(ray, *leafTri, m_triIdx[node->m_LeftFirst + i])
+                    && ray.pRecord->mT < closest) {
                     hit = true;
-                    closest = ray.m_Record->m_T;
-                    ray.m_Record->m_Normal = leafTri.m_Data->N;
+                    closest = ray.pRecord->mT;
+                    ray.pRecord->mNormal = leafTri->pData->N;
                 }
             }
 
@@ -290,18 +291,16 @@ auto BVH::Traversal(const Ray &ray, float t_max) const -> bool
 }
 
 
-auto BVH::Traversal_SSE(Ray &ray, float t_max) const -> bool { return true; }
+bool BVH::Traversal_SSE(Ray &ray, float t_max) const { return true; }
 
 
-auto BVH::Hit(const Ray &ray, float t_max) const -> bool { return Traversal(ray, t_max); }
+bool BVH::Hit(const Ray &ray, float t_max) const { return Traversal(ray, t_max); }
 
-auto BVH::GetBounds(AABB &outbox) const -> AABB
+AABB BVH::GetBounds(AABB &outbox) const
 {
     outbox = AABB::Union(m_bvhNode[0].m_Bounds_min, m_bvhNode[0].m_Bounds_max);
     return outbox;
 }
-
-auto BVH::DeepCopy() const -> std::shared_ptr<IHittable> { return std::make_shared<BVH>(*this); }
 
 
 auto BVHNode::CalculateNodeCost(BVHNode &node) -> float

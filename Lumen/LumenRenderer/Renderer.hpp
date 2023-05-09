@@ -29,33 +29,31 @@ class Renderer
     Renderer() = default;
 
     void Render(const LumenRender::Camera &camera, const LumenRender::Scene &scene);
-
     void OnResize(uint32_t width, uint32_t height);
-
     void MemAlloc();
+    void ResetFrame() { mFrameSample = 1; }
 
-    [[nodiscard]] __forceinline auto GetFinalImage() const -> std::shared_ptr<Lumen::Image> { return m_Image; }
 
-    __forceinline auto GetSettings() -> Settings & { return m_Settings; }
+    __forceinline const std::shared_ptr<Lumen::Image> GetFinalImage() const { return pImage; }
+    __forceinline Settings &GetSettings() { return mSettings; }
 
-    void ResetFrame() { m_FrameSample = 1; }
 
   private:
-    auto TraceRay(LumenRender::Ray &ray) -> HitRecords &;
+    HitRecords &TraceRay(LumenRender::Ray &ray);
+    glm::vec4 PerPixel(const uint32_t &x, const uint32_t &y);
 
-    auto PerPixel(const uint32_t &x, const uint32_t &y) -> glm::vec4;
 
-    std::shared_ptr<Lumen::Image> m_Image;
-    Settings m_Settings;
+    std::shared_ptr<Lumen::Image> pImage = nullptr;
+    Settings mSettings = {};
 
-    const Camera *m_ActiveCamera{};
-    const Scene *m_ActiveScene{};
+    const Camera *pActiveCamera = nullptr;
+    const Scene *pActiveScene = nullptr;
 
-    uint32_t *m_ImageData = nullptr;
-    glm::vec4 *m_AccumulationBuffer = nullptr;
+    uint32_t *pImageData = nullptr;
+    glm::vec4 *pAccumulationBuffer = nullptr;
 
-    uint32_t m_FrameSample = 1;
-    HitRecords m_HitRecords{};
+    uint32_t mFrameSample = 1;
+    HitRecords mHitRecords = {};
 };
 
 }// namespace LumenRender

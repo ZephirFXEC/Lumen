@@ -15,8 +15,8 @@ auto AABB::IntersectAABB(const LumenRender::Ray &ray,
     float tmax = INF;
 
     for (int j = 0; j < 3; ++j) {
-        float const t1 = (min[j] - ray.Origin[j]) * invdir[j];
-        float const t2 = (max[j] - ray.Origin[j]) * invdir[j];
+        float const t1 = (min[j] - ray.mOrigin[j]) * invdir[j];
+        float const t2 = (max[j] - ray.mOrigin[j]) * invdir[j];
 
         tmin = std::min(std::max(t1, tmin), std::max(t2, tmin));
         tmax = std::max(std::min(t1, tmax), std::min(t2, tmax));

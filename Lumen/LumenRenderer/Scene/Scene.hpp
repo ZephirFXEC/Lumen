@@ -20,24 +20,14 @@ class Scene : public IHittable<Scene>
   public:
     Scene() = default;
 
-    auto AddObject(IHittable<Mesh> *object) -> void
-    {
-        m_Objects.insert({ m_Index, object });
-        m_Index++;
-    };
+    void AddObject(IHittable<Mesh> *object);
+    void CalculateBounds(AABB &outbox) const;
+    bool Hit(const Ray &ray, float t_max) const;
 
-    auto Hit(const Ray &ray, float t_max) const -> bool;
-
-    auto CalculateBounds(AABB &outbox) const -> AABB;
-
-    __forceinline auto GetObjects() -> std::unordered_map<uint32_t, IHittable<Mesh> *> const & { return m_Objects; }
-
-    [[nodiscard]] auto DeepCopy() const -> std::shared_ptr<IHittable>;
-
+    IHittable<Mesh> *mObjects{};
+    uint32_t m_Index = 0;
 
   private:
-    std::unordered_map<uint32_t, IHittable<Mesh> *> m_Objects{};
-    uint32_t m_Index = 0;
 };
 
 

@@ -11,35 +11,14 @@
 #include <vector>
 
 namespace LumenRender {
-class Camera
+struct Camera
 {
-  public:
     Camera(float verticalFOV, float nearClip, float farClip);
 
     auto OnUpdate(float ts) -> std::optional<bool>;
 
     void OnResize(uint32_t width, uint32_t height);
 
-    [[nodiscard]] __forceinline auto GetProjection() const -> const glm::mat4 & { return m_Projection; }
-
-    [[nodiscard]] __forceinline auto GetInverseProjection() const -> const glm::mat4 & { return m_InverseProjection; }
-
-    [[nodiscard]] __forceinline auto GetView() const -> const glm::mat4 & { return m_View; }
-
-    [[nodiscard]] __forceinline auto GetInverseView() const -> const glm::mat4 & { return m_InverseView; }
-
-    [[nodiscard]] __forceinline auto GetPosition() const -> const glm::vec3 & { return m_Position; }
-
-    [[nodiscard]] __forceinline auto GetDirection() const -> const glm::vec3 & { return m_ForwardDirection; }
-
-    [[nodiscard]] __forceinline auto GetRayDirections() const -> const std::vector<glm::vec3> &
-    {
-        return m_RayDirections;
-    }
-
-    static __forceinline constexpr auto GetRotationSpeed() -> float { return 0.3F; };
-
-  private:
     void RecalculateProjection();
 
     void RecalculateView();
@@ -47,24 +26,25 @@ class Camera
     void RecalculateRayDirections();
 
 
-    glm::mat4 m_Projection{ 1.0F };
-    glm::mat4 m_View{ 1.0F };
-    glm::mat4 m_InverseProjection{ 1.0F };
-    glm::mat4 m_InverseView{ 1.0F };
+    glm::mat4 mProjection = glm::mat4(1.0F);
+    glm::mat4 mView = glm::mat4(1.0F);
+    glm::mat4 mInverseProjection = glm::mat4(1.0F);
+    glm::mat4 mInverseView = glm::mat4(1.0F);
 
-    float m_VerticalFOV{ 45.0F };
-    float m_NearClip{ 0.1F };
-    float m_FarClip{ 100.0F };
+    float mVerticalFOV = 45.0F;
+    float mNearClip = 0.1F;
+    float mFarClip = 100.0F;
+    float mRotationSpeed = 0.3F;
 
-    glm::vec3 m_Position{ 0.0F, 0.0F, 0.0F };
-    glm::vec3 m_ForwardDirection{ 0.0F, 0.0F, 0.0F };
+    glm::vec3 mPosition = {};
+    glm::vec3 mForwardDirection = {};
 
     // Cached ray directions
-    std::vector<glm::vec3> m_RayDirections{};
+    std::vector<glm::vec3> mRayDirections = {};
 
-    glm::vec2 m_LastMousePosition{ 0.0F, 0.0F };
+    glm::vec2 mLastMousePosition = {};
 
-    uint32_t m_ViewportWidth{ 0 }, m_ViewportHeight{ 0 };
+    uint32_t mViewportWidth = 0, mViewportHeight = 0;
 };
 
 }// namespace LumenRender

@@ -18,7 +18,7 @@ using namespace LumenRender;
 class ExampleLayer : public Lumen::Layer
 {
   public:
-    ExampleLayer() : m_Camera(45.0F, 0.01F, 1000.0F)
+    ExampleLayer()
     {
         // IHittable<Mesh> *mesh = new Mesh(R"(C:\Users\enzoc\OneDrive - Griffith
         // College\Dev\workspaces\CLionProjects\Lumen\Lumen\Externals\torus.obj)");
@@ -28,9 +28,9 @@ class ExampleLayer : public Lumen::Layer
 
     void OnUpdate(float ts) override
     {
-        if (m_Camera.OnUpdate(ts)) {
-            m_Renderer.ResetFrame();
-            m_Renderer.MemAlloc();
+        if (mCamera.OnUpdate(ts)) {
+            mRenderer.ResetFrame();
+            mRenderer.MemAlloc();
         }
     }
 
@@ -40,29 +40,29 @@ class ExampleLayer : public Lumen::Layer
         embraceTheDarkness();
 
         ImGui::Begin("Property");
-        ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
+        ImGui::Checkbox("Accumulate", &mRenderer.GetSettings().Accumulate);
 
 
-        if (ImGui::Button("Reset")) { m_Renderer.ResetFrame(); }
+        if (ImGui::Button("Reset")) { mRenderer.ResetFrame(); }
 
-        ImGui::Text("Last Render : %.5fms", m_ElapsedTime);
+        ImGui::Text("Last Render : %.5fms", mElapsedTime);
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::Text("Objects : %llu", m_Scene.GetObjects().size());
+        ImGui::Text("Objects : %u", mScene.m_Index);
 
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::Begin("Viewport");
 
-        m_ViewportWidth = static_cast<int>(ImGui::GetContentRegionAvail().x);
-        m_ViewPortHeight = static_cast<int>(ImGui::GetContentRegionAvail().y);
+        mViewportWidth = static_cast<int>(ImGui::GetContentRegionAvail().x);
+        mViewportHeight = static_cast<int>(ImGui::GetContentRegionAvail().y);
 
-        auto image = m_Renderer.GetFinalImage();
+        auto image = mRenderer.GetFinalImage();
 
         if (image) {
-            ImGui::Image(image->GetDescriptorSet(),
-              { static_cast<float>(image->GetWidth()), static_cast<float>(image->GetHeight()) },
+            ImGui::Image(image->m_DescriptorSet,
+              { static_cast<float>(image->m_Width), static_cast<float>(image->m_Height) },
               ImVec2(0, 1),
               ImVec2(1, 0));
         }
@@ -158,22 +158,24 @@ class ExampleLayer : public Lumen::Layer
     void Render()
     {
 
-        m_Renderer.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
-        m_Camera.OnResize(static_cast<uint32_t>(m_ViewportWidth), static_cast<uint32_t>(m_ViewPortHeight));
+        mRenderer.OnResize(static_cast<uint32_t>(mViewportWidth), static_cast<uint32_t>(mViewportHeight));
+        mCamera.OnResize(static_cast<uint32_t>(mViewportWidth), static_cast<uint32_t>(mViewportHeight));
 
         Lumen::Timer timer;
-        m_Renderer.Render(m_Camera, m_Scene);
-        m_ElapsedTime = timer.ElapsedMillis();
+        mRenderer.Render(mCamera, mScene);
+        mElapsedTime = timer.ElapsedMillis();
     }
 
 
   private:
-    LumenRender::Renderer m_Renderer;
-    LumenRender::Camera m_Camera;
-    LumenRender::Scene m_Scene;
+    LumenRender::Renderer mRenderer = {};
+    LumenRender::Scene mScene = {};
+    LumenRender::Camera mCamera = Camera(45.0F, 0.01F, 1000.0F);
 
-    int m_ViewportWidth{}, m_ViewPortHeight{};
-    float m_ElapsedTime{};
+
+    int mViewportWidth = 0;
+    int mViewportHeight = 0;
+    float mElapsedTime = 0.0F;
 };
 
 auto Lumen::CreateApplication(int /*unused*/, char ** /*unused*/) -> Lumen::Application *
